@@ -1,0 +1,22 @@
+{
+  "name": "sessions",
+  "version": "1.0.0",
+  "description": "Sessions Directory Pattern - maintain context across AI coding sessions",
+  "author": {
+    "name": "Vieko Franetovic",
+    "email": "hello@vieko.dev",
+    "url": "https://vieko.dev"
+  },
+  "homepage": "https://vieko.dev/sessions",
+  "repository": "https://github.com/vieko/sessions",
+  "license": "MIT",
+  "keywords": [
+    "sessions",
+    "context",
+    "memory",
+    "workflow",
+    "documentation"
+  ],
+  "commands": "./commands/",
+  "skills": "./skills/"
+}
