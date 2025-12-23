@@ -19,13 +19,7 @@ This plugin provides commands and skills that make the pattern seamless.
 claude plugin marketplace add vieko/sessions
 
 # Install the plugin
-claude plugin install sessions
-```
-
-Or install directly:
-
-```bash
-claude plugin install sessions@vieko/sessions
+claude plugin install sessions@viekoslavia
 ```
 
 ## Commands
