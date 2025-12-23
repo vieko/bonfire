@@ -32,18 +32,15 @@ Read session context when the user:
 
 5. Check `.sessions/docs/` if the user asks about documented topics
 
-6. For monorepos, check `.sessions/packages/` for package-specific context
-
 ## File Structure
 
 ```
 .sessions/
 ├── index.md          # Main session context (read this first)
+├── config.json       # Project settings
 ├── archive/          # Completed work history
 ├── docs/             # Topic documentation
-├── plans/            # Implementation plans
-├── prep/             # Pre-session context
-└── packages/         # Monorepo package notes (if applicable)
+└── plans/            # Implementation plans
 ```
 
 ## Important

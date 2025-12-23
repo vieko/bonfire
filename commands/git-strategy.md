@@ -1,6 +1,6 @@
 ---
 description: Change how .sessions/ is handled in git
-allowed-tools: Bash(git:*), Read, Write
+allowed-tools: Bash(git:*), Read, Write, AskUserQuestion
 model: haiku
 ---
 
@@ -31,7 +31,12 @@ Present the git strategy options:
 
 ## Step 3: Get User Choice
 
-Ask which strategy they want to switch to.
+Use AskUserQuestion to ask which strategy:
+
+"Which git strategy for `.sessions/`?" (Header: "Git")
+- ignore-all (Recommended) - Keep sessions private/local
+- hybrid - Commit docs/plans, keep notes private
+- commit-all - Share everything with team
 
 ## Step 4: Update .gitignore
 

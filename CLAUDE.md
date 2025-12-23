@@ -64,7 +64,7 @@ Commands read config.json at runtime and respect the model preference.
 - Mechanical commands use `model: haiku` for speed
 - Thinking commands read config.json for model preference
 - Skills cannot specify models (always inherit)
-- Version: 0.4.0 (continuing from create-sessions-dir 0.3.x)
+- Version: 0.4.1 (continuing from create-sessions-dir 0.3.x)
 
 ## Testing Changes
 

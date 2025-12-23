@@ -18,32 +18,24 @@ Check if `<git-root>/.sessions/index.md` exists.
 
 1. Tell the user: "No sessions directory found. Let me set that up for you."
 
-2. Use the AskUserQuestion tool to ask ALL configuration questions at once:
+2. Use a single AskUserQuestion call with all 4 questions:
 
-   ```
-   Question 1: "Which model for /sessions:plan?"
-   Header: "Plan"
-   Options:
-   - inherit (Recommended) - Use conversation model
-   - opus - Deep architectural reasoning
-   - sonnet - Balanced speed/quality
-   - haiku - Fast, lightweight
+   1. "What model for `/sessions:plan`?" (Header: "Plan")
+      - inherit (Recommended) - Use conversation model
+      - opus - Deep architectural reasoning
+      - sonnet - Balanced speed/quality
+      - haiku - Fast, lightweight
 
-   Question 2: "Which model for /sessions:document?"
-   Header: "Document"
-   Options: (same as above)
+   2. "What model for `/sessions:document`?" (Header: "Document")
+      - Same options as above
 
-   Question 3: "Which model for /sessions:review?"
-   Header: "Review"
-   Options: (same as above)
+   3. "What model for `/sessions:review`?" (Header: "Review")
+      - Same options as above
 
-   Question 4: "Which git strategy for .sessions/?"
-   Header: "Git"
-   Options:
-   - Ignore all (Recommended) - Keep sessions completely local, private
-   - Hybrid - Commit docs/plans, keep working notes private
-   - Commit all - Share everything with team
-   ```
+   4. "How should `.sessions/` be handled in git?" (Header: "Git")
+      - ignore-all (Recommended) - Keep sessions private/local
+      - hybrid - Commit docs/plans, keep notes private
+      - commit-all - Share everything with team
 
 3. Create the directory structure:
    ```

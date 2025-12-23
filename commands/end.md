@@ -31,10 +31,13 @@ Update `<git-root>/.sessions/index.md`:
 
 3. Update "Current State" to reflect new status
 
-## Step 4: Commit Changes
+## Step 4: Commit Changes (if tracked)
 
-Stage and commit the session context:
+Read `<git-root>/.sessions/config.json` to check `gitStrategy`.
 
+**If gitStrategy is "ignore-all"**: Skip committing - nothing is tracked.
+
+**If gitStrategy is "hybrid" or "commit-all"**: Stage and commit:
 ```bash
 git add .sessions/
 git commit -m "docs: update session context"

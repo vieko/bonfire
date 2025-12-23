@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Claude Code plugins by Vieko",
-    "version": "0.4.0"
+    "version": "0.4.1"
   },
   "plugins": [
     {
       "name": "sessions",
       "source": "./",
       "description": "Sessions Directory Pattern - maintain context across AI coding sessions",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "author": {
         "name": "Vieko Franetovic"
       },

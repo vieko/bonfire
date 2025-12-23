@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.1] - 2025-12-22
+
+### Fixed
+
+- **`/sessions:configure`** - Now always runs interactively with all 4 questions
+- **`/sessions:end`** - Checks git strategy before committing; skips for `ignore-all`
+- **`/sessions:git-strategy`** - Now uses `AskUserQuestion` for consistent UX
+- **`/sessions:start`** - Aligned question format with configure command
+- **`session-context` skill** - Removed references to non-existent `prep/` and `packages/` directories
+
+### Changed
+
+- Removed `scripts/configure.sh` reference from CHANGELOG (was removed in refactor)
+
 ## [0.4.0] - 2025-12-22
 
 ### Added
