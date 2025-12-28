@@ -22,7 +22,9 @@ Read `<git-root>/.sessions/config.json` if it exists to see current settings.
 
 ## Step 4: Ask All Configuration Questions
 
-Use a single AskUserQuestion call with all questions:
+Use AskUserQuestion to ask configuration questions. Since AskUserQuestion has a 4-question limit, split into two rounds:
+
+### Round 1 (Models + Specs location):
 
 1. "What model for `/sessions:spec`?" (Header: "Spec")
    - inherit (Recommended) - Use conversation model
@@ -39,6 +41,8 @@ Use a single AskUserQuestion call with all questions:
 4. "Where should specs be saved?" (Header: "Specs location")
    - .sessions/specs/ (Recommended) - Keep with session context
    - specs/ - Project root level
+
+### Round 2 (Docs location + Git + Linear):
 
 5. "Where should docs be saved?" (Header: "Docs location")
    - .sessions/docs/ (Recommended) - Keep with session context

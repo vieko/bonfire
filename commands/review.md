@@ -127,6 +127,8 @@ gh issue create --title "Finding title" --body "Finding details"
 2. On success: Return issue URL/ID
 3. On failure: Warn user, offer to create GitHub issue instead
 
+Note: Tool names may vary by Linear MCP implementation.
+
 **For each created issue:**
 - Record the issue ID and URL
 - Note which tracker (GitHub/Linear) was used

@@ -91,10 +91,12 @@ Read `<git-root>/.sessions/config.json` and check `linearEnabled`.
 2. If Linear issue found, ask user: "Mark Linear issue [ISSUE-ID] as Done?"
 3. If user confirms:
    - Use Linear MCP `linear_update_issue` tool with:
-     - `issueId`: The issue ID (e.g., `ENG-123`)
-     - `stateId`: The "Done" state ID (or use `linear_get_issue` first to find valid states)
-   - Add a comment with link to archive/PR if available
+     - `id`: The issue ID (e.g., `ENG-123`)
+     - `status`: Set to "Done" or completed state
+   - Optionally use `linear_add_comment` to add link to archive/PR
 4. On failure: Warn user - "Couldn't update Linear issue. You may need to update it manually."
+
+Note: Tool names may vary by Linear MCP implementation.
 
 **If `linearEnabled` is false or not set**: Skip this step.
 

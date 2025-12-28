@@ -18,7 +18,9 @@ Check if `<git-root>/.sessions/index.md` exists.
 
 1. Tell the user: "No sessions directory found. Let me set that up for you."
 
-2. Use a single AskUserQuestion call with all questions:
+2. Use AskUserQuestion to ask setup questions. Since AskUserQuestion has a 4-question limit, split into two rounds:
+
+   ### Round 1 (Models + Specs location):
 
    1. "What model for `/sessions:spec`?" (Header: "Spec")
       - inherit (Recommended) - Use conversation model
@@ -35,6 +37,8 @@ Check if `<git-root>/.sessions/index.md` exists.
    4. "Where should specs be saved?" (Header: "Specs location")
       - .sessions/specs/ (Recommended) - Keep with session context
       - specs/ - Project root level
+
+   ### Round 2 (Docs location + Git):
 
    5. "Where should docs be saved?" (Header: "Docs location")
       - .sessions/docs/ (Recommended) - Keep with session context
@@ -235,10 +239,12 @@ First, read `<git-root>/.sessions/config.json` and check `linearEnabled`.
 **If `linearEnabled` is false or not set**: Skip Linear, treat as ad-hoc task.
 
 **If `linearEnabled` is true**:
-1. Use Linear MCP `linear_get_issue` tool with the issue ID (e.g., `ENG-123`)
+1. Use Linear MCP `linear_search_issues` tool to find the issue by ID (e.g., `ENG-123`)
 2. Extract: title, description, state, priority, labels, assignee
 3. On success: Summarize the issue context
 4. On failure: Warn user - "Couldn't fetch Linear issue. Linear MCP may not be configured. Continue without issue context?"
+
+Note: Tool names may vary by Linear MCP implementation. Common tools: `linear_search_issues`, `linear_create_issue`, `linear_update_issue`.
 
 ### Update Session Context
 
