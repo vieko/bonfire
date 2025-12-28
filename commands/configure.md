@@ -1,5 +1,5 @@
 ---
-description: Change project settings (models, git strategy)
+description: Change project settings (models, locations, git strategy)
 allowed-tools: Bash(git:*), Read, Write, AskUserQuestion
 model: haiku
 ---
@@ -22,9 +22,9 @@ Read `<git-root>/.sessions/config.json` if it exists to see current settings.
 
 ## Step 4: Ask All Configuration Questions
 
-Use a single AskUserQuestion call with all 4 questions:
+Use a single AskUserQuestion call with all questions:
 
-1. "What model for `/sessions:plan`?" (Header: "Plan")
+1. "What model for `/sessions:spec`?" (Header: "Spec")
    - inherit (Recommended) - Use conversation model
    - opus - Deep architectural reasoning
    - sonnet - Balanced speed/quality
@@ -36,9 +36,17 @@ Use a single AskUserQuestion call with all 4 questions:
 3. "What model for `/sessions:review`?" (Header: "Review")
    - Same options as above
 
-4. "How should `.sessions/` be handled in git?" (Header: "Git")
+4. "Where should specs be saved?" (Header: "Specs location")
+   - .sessions/specs/ (Recommended) - Keep with session context
+   - specs/ - Project root level
+
+5. "Where should docs be saved?" (Header: "Docs location")
+   - .sessions/docs/ (Recommended) - Keep with session context
+   - docs/ - Project root level
+
+6. "How should `.sessions/` be handled in git?" (Header: "Git")
    - ignore-all (Recommended) - Keep sessions private/local
-   - hybrid - Commit docs/plans, keep notes private
+   - hybrid - Commit docs/specs, keep notes private
    - commit-all - Share everything with team
 
 ## Step 5: Update Config
@@ -47,17 +55,19 @@ Write the updated `<git-root>/.sessions/config.json`:
 ```json
 {
   "models": {
-    "plan": "<user-answer>",
+    "spec": "<user-answer>",
     "document": "<user-answer>",
     "review": "<user-answer>"
   },
+  "specsLocation": "<user-answer>",
+  "docsLocation": "<user-answer>",
   "gitStrategy": "<user-answer>"
 }
 ```
 
 ## Step 6: Update Git Strategy
 
-If git strategy changed, update `<git-root>/.sessions/.gitignore`:
+If git strategy or locations changed, update `<git-root>/.sessions/.gitignore`:
 
 **Ignore all**:
 ```
@@ -65,20 +75,27 @@ If git strategy changed, update `<git-root>/.sessions/.gitignore`:
 !.gitignore
 ```
 
-**Hybrid**:
+**Hybrid** (only include dirs that are inside .sessions/):
 ```
 *
 !.gitignore
+```
+If docsLocation is `.sessions/docs/`, add:
+```
 !docs/
 !docs/**
-!plans/
-!plans/**
+```
+If specsLocation is `.sessions/specs/`, add:
+```
+!specs/
+!specs/**
 ```
 
 **Commit all**:
 ```
 data/
 scratch/
+scripts/
 ```
 
 If switching FROM commit/hybrid TO ignore:

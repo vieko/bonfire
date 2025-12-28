@@ -16,7 +16,7 @@ Based on $ARGUMENTS:
 
 - Read session context from `<git-root>/.sessions/index.md`
 - Get branch diff: `git diff main...HEAD` (or appropriate base)
-- Read relevant plans/docs from `.sessions/`
+- Read relevant specs/docs from `.sessions/`
 - Understand intent: what were we trying to accomplish?
 
 ## Step 3: Check Project Config
@@ -29,8 +29,6 @@ Read `<git-root>/.sessions/config.json` if it exists.
 - If "haiku": Focus on obvious issues, be quick
 
 If "inherit" or not set, proceed with current conversation model.
-
-**Scripts tracking**: If `scriptsTracking` is true, include scripts in review (Step 5).
 
 ## Step 4: Strategic Review
 
@@ -64,42 +62,23 @@ Analyze the work asking:
 - Appropriate abstractions
 - Technical debt introduced
 
-## Step 5: Scripts Review (if tracking enabled)
+## Step 5: Session Scripts Review
 
-If `scriptsTracking` is true in config, scan for scripts:
+Check if `<git-root>/.sessions/scripts/` contains any files.
 
-1. Find scripts directories: `<git-root>/scripts/`, `<git-root>/*/scripts/`
-2. For each script, check for `@session-script` frontmatter
-3. Identify:
-   - **Untracked scripts**: No frontmatter, should be categorized
-   - **Expired scripts**: `@expires` date has passed
-   - **Deprecated scripts**: `@lifecycle deprecated`
-   - **Orphaned scripts**: Reference issues that are closed
+If scripts exist, include in findings:
+- List scripts that may need attention
+- Note if any appear to be temporary/one-off vs reusable
+- Suggest moving useful scripts to project `scripts/` directory
 
-Report:
-```
-### Scripts Status
-
-**Untracked** (need frontmatter):
-- scripts/test-api.ts
-- scripts/seed-data.ts
-
-**Expired** (past expiration date):
-- scripts/temp-migration.ts (@expires 2025-12-01)
-
-**Deprecated** (marked for removal):
-- scripts/store-prompt-v1.ts
-
-**Orphaned** (issue closed):
-- scripts/GTMENG-350-debug.ts (issue closed 2025-12-10)
-```
+This is informational - actual script management happens during `/sessions:end`.
 
 ## Step 6: Categorize Findings
 
 For each finding, determine:
 - **Severity**: blocking | important | nice-to-have
 - **Effort**: trivial | small | medium | large
-- **Action**: fix-now | plan | create-issue
+- **Action**: fix-now | spec | create-issue
 
 ## Step 7: Present and Act
 
@@ -110,10 +89,10 @@ Present findings grouped by recommended action:
 
 → Ask: "Want me to fix these now?"
 
-### Plan (small/medium effort, important)
+### Spec (small/medium effort, important)
 [List items worth addressing this session]
 
-→ Ask: "Want me to create an implementation plan?"
+→ Ask: "Want me to create an implementation spec?"
 
 ### Create Issues (large effort or nice-to-have)
 [List items for future sessions]
@@ -124,7 +103,7 @@ Present findings grouped by recommended action:
 
 Based on user choice:
 - **Fix now**: Make the changes directly
-- **Plan**: Run `/sessions:plan` with findings
+- **Spec**: Run `/sessions:spec` with findings
 - **Create issues**: Use `gh issue create` or Linear MCP if available
 
 ## Step 9: Update Session Context

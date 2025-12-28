@@ -10,7 +10,11 @@ model: haiku
 
 Run `git rev-parse --show-toplevel` to locate the repository root.
 
-## Step 2: Explain Options
+## Step 2: Read Current Config
+
+Read `<git-root>/.sessions/config.json` to check current `specsLocation` and `docsLocation` settings.
+
+## Step 3: Explain Options
 
 Present the git strategy options:
 
@@ -19,8 +23,8 @@ Present the git strategy options:
    - Most private, nothing shared
    - Good for: solo work, sensitive projects
 
-2. **Hybrid** - Commit docs/plans, keep notes private
-   - docs/ and plans/ are committed
+2. **Hybrid** - Commit docs/specs, keep notes private
+   - docs/ and specs/ are committed
    - index.md and archive/ stay local
    - Good for: teams that want shared docs but private notes
 
@@ -29,16 +33,16 @@ Present the git strategy options:
    - Only data/ and scratch/ ignored
    - Good for: full transparency, team continuity
 
-## Step 3: Get User Choice
+## Step 4: Get User Choice
 
 Use AskUserQuestion to ask which strategy:
 
 "Which git strategy for `.sessions/`?" (Header: "Git")
 - ignore-all (Recommended) - Keep sessions private/local
-- hybrid - Commit docs/plans, keep notes private
+- hybrid - Commit docs/specs, keep notes private
 - commit-all - Share everything with team
 
-## Step 4: Update .gitignore
+## Step 5: Update .gitignore
 
 Write the appropriate `.gitignore` to `<git-root>/.sessions/.gitignore`:
 
@@ -48,23 +52,30 @@ Write the appropriate `.gitignore` to `<git-root>/.sessions/.gitignore`:
 !.gitignore
 ```
 
-**Hybrid**:
+**Hybrid** (only include dirs that are inside .sessions/):
 ```
 *
 !.gitignore
+```
+If docsLocation is `.sessions/docs/`, add:
+```
 !docs/
 !docs/**
-!plans/
-!plans/**
+```
+If specsLocation is `.sessions/specs/`, add:
+```
+!specs/
+!specs/**
 ```
 
 **Commit all**:
 ```
 data/
 scratch/
+scripts/
 ```
 
-## Step 5: Handle Git Tracking
+## Step 6: Handle Git Tracking
 
 If switching FROM commit/hybrid TO ignore:
 - Warn user that existing tracked files will remain tracked
@@ -75,7 +86,7 @@ If switching TO commit/hybrid:
 - Files will be picked up on next commit
 - No special action needed
 
-## Step 6: Confirm
+## Step 7: Confirm
 
 Report:
 - New strategy applied

@@ -9,16 +9,18 @@ allowed-tools: Read, Write, Glob, Grep, Bash(git:*)
 
 Run `git rev-parse --show-toplevel` to locate the repository root.
 
-## Step 2: Check Model Preference
+## Step 2: Check Config
 
 Read `<git-root>/.sessions/config.json` if it exists.
 
-If `models.document` is set to something other than "inherit", use that model for this task:
+**Model preference**: If `models.document` is set to something other than "inherit", use that model for this task:
 - If "opus": Be comprehensive, include deep architectural insights
 - If "sonnet": Balance depth with clarity
 - If "haiku": Be concise, focus on essentials
 
 If "inherit" or not set, proceed with current conversation model.
+
+**Docs location**: Read `docsLocation` from config. Default to `.sessions/docs/` if not set.
 
 ## Step 3: Understand the Topic
 
@@ -43,7 +45,7 @@ Examples:
 - `sampling-strategies.md`
 - `authentication-flow.md`
 
-Write the documentation to `<git-root>/.sessions/docs/<topic>.md`
+Write the documentation to `<git-root>/<docsLocation>/<topic>.md` (use location from config, default `.sessions/docs/`)
 
 Structure the documentation with:
 - **Overview**: What this is and why it exists

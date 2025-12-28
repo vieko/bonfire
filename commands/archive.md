@@ -57,7 +57,7 @@ Use this template:
 
 ## Related
 
-- [Links to related docs, plans, or code]
+- [Links to related docs, specs, or code]
 ```
 
 ## Step 4: Clean Up Index
@@ -73,23 +73,35 @@ Update `<git-root>/.sessions/index.md`:
   - [YYYY-MM-DD - Topic](archive/YYYY-MM-DD-issue-topic.md)
   ```
 
-## Step 5: Clean Up Plans (if applicable)
+## Step 5: Clean Up Specs (if applicable)
 
-Check if any plans in `<git-root>/.sessions/plans/` are now complete:
-- If the plan was fully implemented, delete the plan file (archive has the record)
-- If the plan has reusable reference material, move that content to `docs/` first
+Read `specsLocation` from `<git-root>/.sessions/config.json` (default `.sessions/specs/`).
 
-## Step 6: Commit Archive
+Check if any specs in the configured location are now complete:
+- If the spec was fully implemented, delete the spec file (archive has the record)
+- If the spec has reusable reference material, move that content to `docs/` first
 
-```bash
-git add .sessions/
-git commit -m "docs: archive completed session work"
-```
+## Step 6: Commit Archive (if tracked)
+
+Read `gitStrategy` from `<git-root>/.sessions/config.json`.
+
+**If gitStrategy is "ignore-all"**: Skip committing - archive is local only.
+
+**If gitStrategy is "hybrid" or "commit-all"**:
+1. **NEVER use `git add -f`** - respect gitignore
+2. Stage unignored files:
+   ```bash
+   git add .sessions/
+   ```
+3. Check if anything was staged before committing:
+   ```bash
+   git diff --cached --quiet .sessions/ || git commit -m "docs: archive completed session work"
+   ```
 
 ## Step 7: Confirm
 
 Report:
 - What was archived
-- Any plans cleaned up
+- Any specs cleaned up
 - Current state of index.md
 - Ready for next session

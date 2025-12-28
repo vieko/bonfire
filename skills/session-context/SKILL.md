@@ -26,9 +26,9 @@ Read session context when the user:
    - Current project status and recent work
    - Active decisions and their rationale
    - Known blockers or pending issues
-   - Links to relevant plans or documentation
+   - Links to relevant specs or documentation
 
-4. Check `.sessions/plans/` if the user asks about implementation plans
+4. Check `.sessions/specs/` if the user asks about implementation specs
 
 5. Check `.sessions/docs/` if the user asks about documented topics
 
@@ -40,7 +40,7 @@ Read session context when the user:
 ├── config.json       # Project settings
 ├── archive/          # Completed work history
 ├── docs/             # Topic documentation
-└── plans/            # Implementation plans
+└── specs/            # Implementation specs
 ```
 
 ## Important

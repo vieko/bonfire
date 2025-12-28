@@ -18,9 +18,9 @@ Check if `<git-root>/.sessions/index.md` exists.
 
 1. Tell the user: "No sessions directory found. Let me set that up for you."
 
-2. Use a single AskUserQuestion call with all 4 questions:
+2. Use a single AskUserQuestion call with all questions:
 
-   1. "What model for `/sessions:plan`?" (Header: "Plan")
+   1. "What model for `/sessions:spec`?" (Header: "Spec")
       - inherit (Recommended) - Use conversation model
       - opus - Deep architectural reasoning
       - sonnet - Balanced speed/quality
@@ -32,21 +32,36 @@ Check if `<git-root>/.sessions/index.md` exists.
    3. "What model for `/sessions:review`?" (Header: "Review")
       - Same options as above
 
-   4. "How should `.sessions/` be handled in git?" (Header: "Git")
+   4. "Where should specs be saved?" (Header: "Specs location")
+      - .sessions/specs/ (Recommended) - Keep with session context
+      - specs/ - Project root level
+
+   5. "Where should docs be saved?" (Header: "Docs location")
+      - .sessions/docs/ (Recommended) - Keep with session context
+      - docs/ - Project root level
+
+   6. "How should `.sessions/` be handled in git?" (Header: "Git")
       - ignore-all (Recommended) - Keep sessions private/local
-      - hybrid - Commit docs/plans, keep notes private
+      - hybrid - Commit docs/specs, keep notes private
       - commit-all - Share everything with team
 
-3. Create the directory structure:
+3. Create the directory structure based on user choices:
+
+   **Always create in .sessions/**:
    ```
    .sessions/
    ├── index.md
    ├── config.json
    ├── archive/
-   ├── plans/
-   ├── docs/
+   ├── scripts/
    └── .gitignore
    ```
+
+   **If specsLocation is `.sessions/specs/`**: create `.sessions/specs/`
+   **If specsLocation is `specs/`**: create `<git-root>/specs/`
+
+   **If docsLocation is `.sessions/docs/`**: create `.sessions/docs/`
+   **If docsLocation is `docs/`**: create `<git-root>/docs/`
 
 4. Detect project name from: package.json name → git remote → directory name
 
@@ -54,10 +69,12 @@ Check if `<git-root>/.sessions/index.md` exists.
    ```json
    {
      "models": {
-       "plan": "<user-answer>",
+       "spec": "<user-answer>",
        "document": "<user-answer>",
        "review": "<user-answer>"
      },
+     "specsLocation": "<user-answer>",
+     "docsLocation": "<user-answer>",
      "gitStrategy": "<user-answer>"
    }
    ```
@@ -121,7 +138,7 @@ Check if `<git-root>/.sessions/index.md` exists.
    [Any additional context]
    ```
 
-7. Create `.gitignore` based on chosen strategy:
+7. Create `.gitignore` based on chosen strategy and locations:
 
    **Ignore all**:
    ```
@@ -129,20 +146,27 @@ Check if `<git-root>/.sessions/index.md` exists.
    !.gitignore
    ```
 
-   **Hybrid**:
+   **Hybrid** (only include dirs that are inside .sessions/):
    ```
    *
    !.gitignore
+   ```
+   If docsLocation is `.sessions/docs/`, add:
+   ```
    !docs/
    !docs/**
-   !plans/
-   !plans/**
+   ```
+   If specsLocation is `.sessions/specs/`, add:
+   ```
+   !specs/
+   !specs/**
    ```
 
    **Commit all**:
    ```
    data/
    scratch/
+   scripts/
    ```
 
 **If .sessions/ EXISTS**, proceed to Step 3.
@@ -163,7 +187,7 @@ Read `.sessions/index.md` for current project state, recent work, and priorities
 
 - `/sessions:start` - Start a session (reads context)
 - `/sessions:end` - End session (updates context)
-- `/sessions:plan` - Create implementation plan
+- `/sessions:spec` - Create implementation spec
 - `/sessions:document <topic>` - Document a topic
 - `/sessions:review` - Review work for blindspots and improvements
 - `/sessions:archive` - Archive completed work

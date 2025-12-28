@@ -1,6 +1,6 @@
 ---
 description: End session - update context and commit changes
-allowed-tools: Bash(git:*), Read, Write
+allowed-tools: Bash(git:*), Bash(rm:*), Bash(mv:*), Bash(mkdir:*), Read, Write, Glob, AskUserQuestion
 model: haiku
 ---
 
@@ -31,21 +31,50 @@ Update `<git-root>/.sessions/index.md`:
 
 3. Update "Current State" to reflect new status
 
-## Step 4: Commit Changes (if tracked)
+## Step 4: Manage Session Scripts
+
+Check if `<git-root>/.sessions/scripts/` exists and contains any files.
+
+**If scripts exist**, use AskUserQuestion to ask what to do with each script:
+
+"What should happen to these session scripts?" (Header: "Scripts", multiSelect: false)
+
+For each script found, present options:
+- **Keep** - Leave in `.sessions/scripts/` for next session
+- **Move to project** - Move to `<git-root>/scripts/` (create if needed)
+- **Delete** - Remove the script
+
+Execute the user's choices:
+- **Keep**: No action needed
+- **Move to project**: `mkdir -p <git-root>/scripts/ && mv <script> <git-root>/scripts/`
+- **Delete**: `rm <script>`
+
+**If no scripts exist**, skip this step.
+
+## Step 5: Commit Changes (if tracked)
 
 Read `<git-root>/.sessions/config.json` to check `gitStrategy`.
 
-**If gitStrategy is "ignore-all"**: Skip committing - nothing is tracked.
+**If gitStrategy is "ignore-all"**: Skip committing - nothing is tracked. Tell the user session context was updated locally.
 
-**If gitStrategy is "hybrid" or "commit-all"**: Stage and commit:
-```bash
-git add .sessions/
-git commit -m "docs: update session context"
-```
+**If gitStrategy is "hybrid" or "commit-all"**:
 
-If the commit fails, help resolve the issue.
+1. **Check what can be staged**: Run `git status .sessions/` to see what files are not ignored
+2. **NEVER use `git add -f`** - if a file is gitignored, respect that
+3. **Stage only unignored files**:
+   ```bash
+   git add .sessions/
+   ```
+4. **Check if anything was staged**: Run `git diff --cached --quiet .sessions/`
+   - If nothing staged (exit code 0), tell user "Session context updated locally (files are gitignored)"
+   - If changes staged, commit:
+     ```bash
+     git commit -m "docs: update session context"
+     ```
 
-## Step 5: Confirm
+If the commit fails due to hooks, help resolve the issue (but never bypass hooks with `--no-verify`).
+
+## Step 6: Confirm
 
 Summarize:
 - What was documented

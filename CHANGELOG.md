@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2025-12-28
+
+### Added
+
+- **Session scripts management** - Location-based script tracking
+  - `.sessions/scripts/` directory for temporary session scripts
+  - `/sessions:end` prompts to keep, move to project, or delete scripts
+  - Simple workflow replaces complex `@session-script` frontmatter approach
+
+- **Configurable artifact locations**
+  - `specsLocation`: Save specs in `.sessions/specs/` or project root `specs/`
+  - `docsLocation`: Save docs in `.sessions/docs/` or project root `docs/`
+  - Asked during `/sessions:start` setup and changeable via `/sessions:configure`
+
+### Changed
+
+- **Renamed `plans/` to `specs/`** - Clearer distinction from Claude Code's plan mode
+  - `/sessions:plan` → `/sessions:spec`
+  - `plans/` directory → `specs/`
+  - `models.plan` → `models.spec` in config.json
+
+- **Hardened git operations**
+  - Commands never use `git add -f` - respects gitignore
+  - Checks if files can be staged before committing
+  - Clear messaging when files are gitignored
+
+- **Simplified scripts review in `/sessions:review`**
+  - Removed `scriptsTracking` config option
+  - Removed `@session-script` frontmatter requirement
+  - Now just lists scripts in `.sessions/scripts/` that need attention
+
+### Migration from 0.4.x
+
+1. Rename your `plans/` directory to `specs/` (if using hybrid/commit-all git strategy)
+2. Update `models.plan` to `models.spec` in `.sessions/config.json`
+3. Run `/sessions:configure` to set new location preferences
+
 ## [0.4.1] - 2025-12-22
 
 ### Fixed

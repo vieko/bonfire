@@ -1,6 +1,6 @@
 # Sessions
 
-> **v0.4.1** - [Changelog](CHANGELOG.md)
+> **v0.5.0** - [Changelog](CHANGELOG.md)
 
 A Claude Code plugin for maintaining context across AI coding sessions.
 
@@ -29,8 +29,8 @@ All commands are namespaced under `sessions:`:
 | Command | Description |
 |---------|-------------|
 | `/sessions:start` | Start a session - reads context, scaffolds `.sessions/` on first run |
-| `/sessions:end` | End session - update context and commit changes |
-| `/sessions:plan` | Create an implementation plan |
+| `/sessions:end` | End session - update context, manage scripts, commit changes |
+| `/sessions:spec` | Create an implementation spec |
 | `/sessions:document <topic>` | Document a topic in the codebase |
 | `/sessions:review` | Review work for blindspots, gaps, and improvements |
 | `/sessions:archive` | Archive completed session work |
@@ -43,9 +43,11 @@ On first `/sessions:start`, you'll be asked to configure:
 
 | Setting | Options | Default |
 |---------|---------|---------|
-| Model for `/plan` | inherit, haiku, sonnet, opus | inherit |
+| Model for `/spec` | inherit, haiku, sonnet, opus | inherit |
 | Model for `/document` | inherit, haiku, sonnet, opus | inherit |
 | Model for `/review` | inherit, haiku, sonnet, opus | inherit |
+| Specs location | .sessions/specs/, specs/ | .sessions/specs/ |
+| Docs location | .sessions/docs/, docs/ | .sessions/docs/ |
 | Git strategy | ignore-all, hybrid, commit-all | ignore-all |
 
 Settings are stored in `.sessions/config.json` per-project.
@@ -77,8 +79,9 @@ The plugin creates and manages:
 ├── index.md          # Living context document
 ├── config.json       # Project settings
 ├── archive/          # Completed work
-├── plans/            # Implementation plans
-├── docs/             # Topic documentation
+├── specs/            # Implementation specs (or at project root)
+├── docs/             # Topic documentation (or at project root)
+├── scripts/          # Temporary session scripts
 └── .gitignore        # Based on chosen strategy
 ```
 
@@ -89,7 +92,7 @@ Choose how `.sessions/` is handled:
 | Strategy | What's tracked | Best for |
 |----------|---------------|----------|
 | **Ignore all** | Nothing | Solo work, privacy |
-| **Hybrid** | docs/, plans/ only | Teams wanting shared docs |
+| **Hybrid** | docs/, specs/ only | Teams wanting shared docs |
 | **Commit all** | Everything | Full transparency |
 
 Change anytime with `/sessions:git-strategy`.
@@ -99,7 +102,7 @@ Change anytime with `/sessions:git-strategy`.
 | Type | Pattern | Example |
 |------|---------|---------|
 | Archive | `YYYY-MM-DD-<issue>-<topic>.md` | `2025-12-22-GTMENG-387-inbound-improvements.md` |
-| Plans | `<issue>-<topic>.md` | `GTMENG-410-webhook-refactor.md` |
+| Specs | `<issue>-<topic>.md` | `GTMENG-410-webhook-refactor.md` |
 | Docs | `<topic>.md` | `inbound-agent-architecture.md` |
 
 Issue IDs are optional but encouraged for traceability.

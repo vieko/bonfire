@@ -9,7 +9,7 @@ sessions/
 ├── commands/             # Slash commands (/sessions:*)
 │   ├── start.md          # Begin session, scaffold if needed (haiku)
 │   ├── end.md            # Update context, commit (haiku)
-│   ├── plan.md           # Create implementation plan (inherit)
+│   ├── spec.md           # Create implementation spec (inherit)
 │   ├── document.md       # Document a topic (inherit)
 │   ├── review.md         # Strategic work review (inherit)
 │   ├── archive.md        # Archive completed work (haiku)
@@ -29,10 +29,11 @@ The plugin provides commands that manage a `.sessions/` directory in user projec
 ```
 .sessions/
 ├── index.md      # Living context document (read at start, updated at end)
-├── config.json   # Project settings (models, git strategy)
+├── config.json   # Project settings (models, locations, git strategy)
 ├── archive/      # Completed work (YYYY-MM-DD-<issue>-<topic>.md)
-├── plans/        # Implementation plans (<issue>-<topic>.md)
-├── docs/         # Reference documentation (<topic>.md)
+├── specs/        # Implementation specs (<issue>-<topic>.md) - location configurable
+├── docs/         # Reference documentation (<topic>.md) - location configurable
+├── scripts/      # Temporary session scripts (managed at /sessions:end)
 └── .gitignore    # Based on chosen strategy
 ```
 
@@ -43,15 +44,19 @@ All settings are stored in `.sessions/config.json` per-project:
 ```json
 {
   "models": {
-    "plan": "inherit",
+    "spec": "inherit",
     "document": "inherit",
     "review": "opus"
   },
+  "specsLocation": ".sessions/specs/",
+  "docsLocation": ".sessions/docs/",
   "gitStrategy": "ignore-all"
 }
 ```
 
 - **models**: Which model to use for thinking commands (inherit, haiku, sonnet, opus)
+- **specsLocation**: Where specs are saved (.sessions/specs/ or specs/)
+- **docsLocation**: Where docs are saved (.sessions/docs/ or docs/)
 - **gitStrategy**: How .sessions/ is handled in git (ignore-all, hybrid, commit-all)
 
 Commands read config.json at runtime and respect the model preference.
@@ -64,7 +69,7 @@ Commands read config.json at runtime and respect the model preference.
 - Mechanical commands use `model: haiku` for speed
 - Thinking commands read config.json for model preference
 - Skills cannot specify models (always inherit)
-- Version: 0.4.1 (continuing from create-sessions-dir 0.3.x)
+- Version: 0.5.0 (continuing from create-sessions-dir 0.3.x)
 
 ## Testing Changes
 
