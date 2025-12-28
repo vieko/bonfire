@@ -49,6 +49,10 @@ Use a single AskUserQuestion call with all questions:
    - hybrid - Commit docs/specs, keep notes private
    - commit-all - Share everything with team
 
+7. "Enable Linear MCP integration?" (Header: "Linear")
+   - No (Recommended) - Skip Linear integration
+   - Yes - Fetch/create Linear issues (requires Linear MCP)
+
 ## Step 5: Update Config
 
 Write the updated `<git-root>/.sessions/config.json`:
@@ -61,7 +65,8 @@ Write the updated `<git-root>/.sessions/config.json`:
   },
   "specsLocation": "<user-answer>",
   "docsLocation": "<user-answer>",
-  "gitStrategy": "<user-answer>"
+  "gitStrategy": "<user-answer>",
+  "linearEnabled": <true-or-false>
 }
 ```
 

@@ -1,6 +1,6 @@
 ---
 description: Review work for blindspots, gaps, and improvements
-allowed-tools: Bash(git:*), Bash(gh:*), Read, Glob, Grep, Write
+allowed-tools: Bash(git:*), Bash(gh:*), Read, Glob, Grep, Write, mcp__linear__*
 ---
 
 # Review Work
@@ -104,7 +104,32 @@ Present findings grouped by recommended action:
 Based on user choice:
 - **Fix now**: Make the changes directly
 - **Spec**: Run `/sessions:spec` with findings
-- **Create issues**: Use `gh issue create` or Linear MCP if available
+- **Create issues**: See below
+
+### Creating Issues
+
+First, read `<git-root>/.sessions/config.json` and check `linearEnabled`.
+
+**Offer choices based on config:**
+- Always offer: "Create GitHub issue"
+- If `linearEnabled` is true: Also offer "Create Linear issue"
+
+**GitHub Issue Creation:**
+```bash
+gh issue create --title "Finding title" --body "Finding details"
+```
+
+**Linear Issue Creation (if enabled):**
+1. Use Linear MCP `linear_create_issue` tool with:
+   - `title`: Finding summary
+   - `description`: Finding details with context
+   - `teamId`: Infer from session context if available, otherwise use default
+2. On success: Return issue URL/ID
+3. On failure: Warn user, offer to create GitHub issue instead
+
+**For each created issue:**
+- Record the issue ID and URL
+- Note which tracker (GitHub/Linear) was used
 
 ## Step 9: Update Session Context
 

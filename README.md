@@ -49,6 +49,7 @@ On first `/sessions:start`, you'll be asked to configure:
 | Specs location | .sessions/specs/, specs/ | .sessions/specs/ |
 | Docs location | .sessions/docs/, docs/ | .sessions/docs/ |
 | Git strategy | ignore-all, hybrid, commit-all | ignore-all |
+| Linear integration | Yes, No | No |
 
 Settings are stored in `.sessions/config.json` per-project.
 
@@ -107,11 +108,47 @@ Change anytime with `/sessions:git-strategy`.
 
 Issue IDs are optional but encouraged for traceability.
 
+## Linear Integration
+
+Enable Linear MCP integration to manage Linear issues alongside your sessions:
+
+- **Start**: Fetch Linear issue context with `ENG-123` or Linear URL
+- **Review**: Create Linear issues from findings
+- **Archive**: Mark Linear issues as Done when work completes
+
+### Setup
+
+1. Install and configure [Linear MCP](https://github.com/anthropics/anthropic-quickstarts/tree/main/mcp-linear)
+2. Run `/sessions:configure` and enable Linear integration
+3. Use Linear issue IDs (e.g., `ENG-123`) when starting sessions
+
+### Usage
+
+```
+# Start session with Linear issue
+/sessions:start
+> What do you want to work on?
+> ENG-123
+
+# After review, create issues
+/sessions:review
+> Want me to create GitHub/Linear issues?
+> Create Linear issue
+
+# Archive marks issue as Done
+/sessions:archive
+> Mark Linear issue ENG-123 as Done?
+> Yes
+```
+
+If Linear MCP is not configured, the plugin warns gracefully and continues without Linear features.
+
 ## Requirements
 
 - [Claude Code CLI](https://claude.ai/code)
 - Git repository (for context location)
 - `gh` CLI (optional, for GitHub integration)
+- [Linear MCP](https://github.com/anthropics/anthropic-quickstarts/tree/main/mcp-linear) (optional, for Linear integration)
 
 ## Migration from create-sessions-dir
 

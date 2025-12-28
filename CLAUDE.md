@@ -50,7 +50,8 @@ All settings are stored in `.sessions/config.json` per-project:
   },
   "specsLocation": ".sessions/specs/",
   "docsLocation": ".sessions/docs/",
-  "gitStrategy": "ignore-all"
+  "gitStrategy": "ignore-all",
+  "linearEnabled": false
 }
 ```
 
@@ -58,6 +59,7 @@ All settings are stored in `.sessions/config.json` per-project:
 - **specsLocation**: Where specs are saved (.sessions/specs/ or specs/)
 - **docsLocation**: Where docs are saved (.sessions/docs/ or docs/)
 - **gitStrategy**: How .sessions/ is handled in git (ignore-all, hybrid, commit-all)
+- **linearEnabled**: Enable Linear MCP integration (true/false)
 
 Commands read config.json at runtime and respect the model preference.
 

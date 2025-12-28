@@ -1,6 +1,6 @@
 ---
 description: Archive completed session work
-allowed-tools: Bash(git:*), Read, Write, Glob
+allowed-tools: Bash(git:*), Read, Write, Glob, mcp__linear__*
 model: haiku
 ---
 
@@ -81,7 +81,24 @@ Check if any specs in the configured location are now complete:
 - If the spec was fully implemented, delete the spec file (archive has the record)
 - If the spec has reusable reference material, move that content to `docs/` first
 
-## Step 6: Commit Archive (if tracked)
+## Step 6: Update Linear Issue (if applicable)
+
+Read `<git-root>/.sessions/config.json` and check `linearEnabled`.
+
+**If `linearEnabled` is true**:
+
+1. Check if archived work references a Linear issue (look in session context for `[A-Z]+-[0-9]+` pattern)
+2. If Linear issue found, ask user: "Mark Linear issue [ISSUE-ID] as Done?"
+3. If user confirms:
+   - Use Linear MCP `linear_update_issue` tool with:
+     - `issueId`: The issue ID (e.g., `ENG-123`)
+     - `stateId`: The "Done" state ID (or use `linear_get_issue` first to find valid states)
+   - Add a comment with link to archive/PR if available
+4. On failure: Warn user - "Couldn't update Linear issue. You may need to update it manually."
+
+**If `linearEnabled` is false or not set**: Skip this step.
+
+## Step 7: Commit Archive (if tracked)
 
 Read `gitStrategy` from `<git-root>/.sessions/config.json`.
 
@@ -98,7 +115,7 @@ Read `gitStrategy` from `<git-root>/.sessions/config.json`.
    git diff --cached --quiet .sessions/ || git commit -m "docs: archive completed session work"
    ```
 
-## Step 7: Confirm
+## Step 8: Confirm
 
 Report:
 - What was archived
