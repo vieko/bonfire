@@ -23,6 +23,8 @@ Based on $ARGUMENTS:
 
 ## Step 3: Run Review (Subagent)
 
+**Progress**: Tell the user "Reviewing work for blindspots and gaps..."
+
 Use the Task tool to invoke the **work-reviewer** subagent.
 
 Provide the review context:
@@ -46,6 +48,33 @@ Return categorized findings with severity and effort estimates.
 **Wait for the subagent to return findings** before proceeding.
 
 The subagent runs in isolated context (sonnet model), preserving main context for action decisions.
+
+### Review Validation
+
+After the subagent returns, validate the response:
+
+**Valid response contains:**
+- `## Summary` with finding counts
+- At least one of: `## Fix Now`, `## Needs Spec`, or `## Create Issues`
+
+**On valid response**: Proceed to Step 4.
+
+**On partial response** (missing categories but has findings):
+1. Warn user: "Review returned partial results. Some categories may be missing."
+2. Present available findings.
+3. Continue to Step 5.
+
+**On invalid/empty response**:
+1. Warn user: "Review subagent returned no findings. I'll review directly."
+2. Fall back to in-context review:
+   - Read changed files from git diff
+   - Analyze for common issues (missing tests, error handling, etc.)
+   - Check for TODOs and incomplete implementations
+3. Present in-context findings using the same format.
+
+**On subagent failure** (timeout, error):
+1. Warn user: "Review subagent failed. Continuing with direct review."
+2. Perform in-context review as above.
 
 ## Step 4: Session Scripts Review
 
