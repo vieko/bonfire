@@ -128,6 +128,10 @@ flowchart TD
 - [Code reference]: `path/to/file.ts`
 ```
 
+## Formatting Tip
+
+If the generated doc has inconsistent formatting, configure a PostToolUse hook to auto-format files after writes. See [PostToolUse Formatter Hook](../docs/post-tool-use-formatter-hook.md).
+
 ## Step 6: Link to Session Context
 
 Add a reference to the doc in `<git-root>/.bonfire/index.md` under Key Resources or Notes.

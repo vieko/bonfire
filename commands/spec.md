@@ -75,9 +75,13 @@ After the subagent returns, validate the response:
 
 ## Step 5: Interview Phase (Main Context)
 
+**Progress**: Tell the user "Starting interview (3 rounds: core decisions, edge cases, testing & scope)..."
+
 Using the research findings, interview the user with **informed questions** via AskUserQuestion.
 
 ### Round 1: Core Decisions
+
+**Progress**: "Round 1/3: Core decisions..."
 
 Ask about fundamental approach based on patterns found:
 
@@ -87,6 +91,8 @@ Example questions (adapt based on actual findings):
 - "I see [Library] is used for [purpose]. Should we use it here or try [Alternative]?"
 
 ### Round 2: Edge Cases & Tradeoffs
+
+**Progress**: "Round 2/3: Edge cases and tradeoffs..."
 
 Based on Round 1 answers and research, ask about:
 - Error handling approach
@@ -100,6 +106,8 @@ Example questions:
 - "[Approach A] is simpler but [tradeoff]. [Approach B] is more complex but [benefit]. Preference?"
 
 ### Round 3: Testing & Scope (Required)
+
+**Progress**: "Round 3/3: Testing and scope (final round)..."
 
 Always ask about testing and scope, even if user seems ready to proceed:
 
@@ -228,6 +236,10 @@ Read the generated spec and present a summary. Ask if user wants to:
 - "I found `UserService` uses repository pattern but `OrderService` uses direct DB access. Which approach?"
 - "The `auth` middleware validates JWT but doesn't check permissions. Should this feature add permission checks or assume auth is enough?"
 - "There's a `BaseController` with shared logic. Extend it or keep this feature standalone?"
+
+## Formatting Tip
+
+If the generated spec has inconsistent formatting, configure a PostToolUse hook to auto-format files after writes. See [PostToolUse Formatter Hook](../docs/post-tool-use-formatter-hook.md).
 
 ## Spec Lifecycle
 
