@@ -22,7 +22,7 @@ You end up re-explaining context, re-making decisions, and watching your AI part
 
 Sessions maintains a living context document that gets read at session start and updated at session end. Your AI partner picks up exactly where you left off.
 
-`/sessions:start` → *reads context* → [ ... work ... ] → `/sessions:end` → *saves context*
+`/sessions:start` → *reads context* → [ WORK ] → `/sessions:end` → *saves context*
 
 That's it. No complex setup. No external services. Just Markdown files in your repo.
 
