@@ -157,25 +157,47 @@ The subagent will write the spec file directly to the Output Path.
 
 ### Spec Verification
 
-After the spec-writer subagent returns:
+After the spec-writer subagent returns, verify the spec is complete.
 
-1. **Verify file exists**: Read the spec file at `<git-root>/<specsLocation>/<filename>.md`
+**Key sections to check** (lenient - only these 4):
+- `## Overview`
+- `## Decisions`
+- `## Implementation Steps`
+- `## Edge Cases`
 
-2. **On success** (file exists with content):
-   - Tell user: "Spec written successfully."
-   - Proceed to Step 7 (Link to Session Context).
+**Verification steps:**
 
-3. **On failure** (file missing or empty):
-   - Warn user: "Spec file wasn't written correctly. Writing directly..."
-   - Write the spec yourself using the Write tool with:
-     - Research findings from Step 4
-     - Interview answers from Step 5
-     - Spec template from spec-writer.md
+1. **Read the spec file** at `<git-root>/<specsLocation>/<filename>.md`
+
+2. **If file missing or empty**:
+   - Warn user: "Spec file wasn't written. Writing directly..."
+   - Write the spec yourself using the Write tool
+   - Run verification again on the written file
+
+3. **If file exists, check for key sections**:
+   - Scan content for the 4 section headers above
+   - Track which sections are present/missing
+
+4. **If all 4 sections present**:
+   - Tell user: "Spec written and verified (4/4 key sections present)."
    - Proceed to Step 7.
 
-4. **On subagent failure** (timeout, error):
-   - Warn user: "Spec writer failed. Writing spec directly..."
-   - Write the spec yourself as above.
+5. **If 1-3 sections missing** (partial write):
+   - Warn user: "Spec appears incomplete. Missing sections: [list missing]"
+   - Show which sections ARE present
+   - Ask: "Proceed with partial spec, retry write, or abort?"
+   - **Proceed**: Continue to Step 7
+   - **Retry**: Re-invoke spec-writer subagent with same input, then verify again
+   - **Abort**: Stop and inform user the incomplete spec file remains at path
+
+6. **If all sections missing but has content**:
+   - Treat as invalid format, trigger fallback write
+   - Write the spec yourself, then verify the written file
+
+**On subagent failure** (timeout, error):
+- Warn user: "Spec writer failed. Writing spec directly..."
+- Write the spec yourself using the Write tool
+- Run verification on the written file
 
 ## Step 7: Link to Session Context
 
