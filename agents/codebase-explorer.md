@@ -15,6 +15,21 @@ You'll receive a research directive with specific questions about:
 - Potential conflicts to surface
 - Specific areas to explore
 
+## Output Limits
+
+STRICT limits to prevent context overflow:
+
+| Section | Limit |
+|---------|-------|
+| Patterns Found | Max 10 items |
+| Key Files | Max 15 files |
+| Constraints | Max 8 items |
+| Potential Conflicts | Max 5 items |
+| Snippets | Max 15 lines each, max 3 snippets |
+| **Total output** | **< 150 lines** |
+
+If you find more than the limit, prioritize by relevance and note "X additional items omitted".
+
 ## Output Format
 
 Return findings as structured markdown. Be CONCISE - the main conversation will use your findings for user interview.
@@ -40,14 +55,14 @@ Return findings as structured markdown. Be CONCISE - the main conversation will 
 
 ## Relevant Snippets
 
-[Only if < 15 lines and directly answers a research question]
+[Only if directly answers a research question - max 15 lines, max 3 snippets]
 ```
 
 ## Rules
 
 1. **DO NOT** return entire file contents
 2. **DO NOT** include files that aren't directly relevant
-3. **BE CONCISE** - aim for < 100 lines total output
+3. **RESPECT LIMITS** - stay within output limits above
 4. **ANSWER** the research questions, don't just explore randomly
 5. **PRIORITIZE** - most important findings first
 6. If you find nothing relevant, say so clearly
