@@ -43,7 +43,8 @@ Use AskUserQuestion to ask configuration questions (4 questions, one round):
 
 ## Step 5: Update Config
 
-Write the updated `<git-root>/.sessions/config.json`:
+**Completely overwrite** `<git-root>/.sessions/config.json` with only these fields (do not preserve old fields like `models`):
+
 ```json
 {
   "specsLocation": "<user-answer>",
