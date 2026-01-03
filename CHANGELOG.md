@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.0] - 2026-01-03
+
+### Added
+
+- **doc-writer subagent** - Writes documentation in isolated context (#5)
+  - Model: inherit (same as spec-writer)
+  - Tools: Read, Write
+  - Input: Research findings + topic metadata
+  - Output: Complete documentation file
+  - `/bonfire:document` now uses doc-writer after codebase-explorer
+  - Added doc verification (checks 4 key sections: Overview, Key Files, How It Works, Gotchas)
+
+- **Resumable subagent support** - Multi-pass analysis for large codebases (#6)
+  - All subagent-using commands now support resume via Task tool's `resume` parameter
+  - When to offer: "X additional items omitted", partial coverage, user requests deeper analysis
+  - Up to 3 passes maximum per exploration/review
+  - Findings are merged across passes
+
+### Changed
+
+- `/bonfire:document` - Now uses two subagents (explorer → writer) matching spec pattern
+- `/bonfire:spec` - Added resumable exploration section
+- `/bonfire:review` - Added resumable review section
+- Updated plugin.json to include doc-writer agent
+
 ## [0.8.2] - 2026-01-03
 
 ### Added
@@ -23,7 +48,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Updated plugin description to match README: "AI forgets everything between sessions. Bonfire fixes that."
+- Updated plugin description to match README: "AI forgets everything between sessions. Bonfire remembers."
 
 ## [0.8.0] - 2026-01-03
 

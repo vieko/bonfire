@@ -72,7 +72,31 @@ After the subagent returns, validate the response:
 2. Perform in-context research as above.
 3. Continue to Step 5.
 
-## Step 5: Create Documentation
+### Resumable Exploration (Large Codebases)
+
+For very large codebases, exploration may need multiple passes. The Task tool returns an `agentId` you can use to resume.
+
+**When to offer resume:**
+- Subagent returns with "X additional items omitted" notes
+- Findings cover only part of the topic (e.g., found architecture but not flows)
+- User asks for deeper exploration of a specific aspect
+
+**To resume exploration:**
+1. Tell user: "Exploration found [X] but there's more to document. Continue exploring [specific aspect]?"
+2. If yes, re-invoke codebase-explorer with the `resume` parameter:
+   - Pass the agentId from the previous invocation
+   - Provide a refined directive: "Continue exploring: [specific aspect]. Focus on [what to find]."
+3. Merge findings from resumed exploration with previous findings.
+4. Repeat if needed, up to 3 passes maximum.
+
+**Example multi-pass scenario:**
+- Pass 1: "Document payment system" → finds payment service, stripe integration
+- Pass 2 (resume): "Continue exploring: refund handling" → finds refund logic, webhooks
+- Merge: Combined findings produce more complete documentation
+
+## Step 5: Write Documentation (Subagent)
+
+**Progress**: Tell the user "Writing documentation..."
 
 **Naming convention**: `<topic>.md` (kebab-case)
 
@@ -81,52 +105,67 @@ Examples:
 - `sampling-strategies.md`
 - `authentication-flow.md`
 
-Write the documentation to `<git-root>/<docsLocation>/<topic>.md`
+Use the Task tool to invoke the **doc-writer** subagent.
 
-Structure the documentation using the research findings:
+Provide the prompt in this exact format:
 
-```markdown
-# [TOPIC]
+```
+## Research Findings
 
-## Overview
+<paste structured findings from Step 4>
 
-[What this is and why it exists - synthesized from research]
+## Doc Metadata
 
-## Architecture
-
-[How it's structured - from research findings]
-
-```mermaid
-flowchart TD
-    A[Component A] --> B[Component B]
-    B --> C[Component C]
+- **Topic**: <topic name>
+- **Output Path**: <git-root>/<docsLocation>/<topic>.md
+- **Date**: <YYYY-MM-DD>
 ```
 
-## Key Files
+The subagent will write the doc file directly to the Output Path.
 
-| File | Purpose |
-|------|---------|
-| `path/to/file.ts` | [From research findings] |
-| `path/to/other.ts` | [From research findings] |
+### Doc Verification
 
-## How It Works
+After the doc-writer subagent returns, verify the doc is complete.
 
-[Step-by-step flow and behavior - from research]
+**Key sections to check** (lenient - only these 4):
+- `## Overview`
+- `## Key Files`
+- `## How It Works`
+- `## Gotchas`
 
-## Usage Examples
+**Verification steps:**
 
-[Code examples, CLI commands, etc.]
+1. **Read the doc file** at `<git-root>/<docsLocation>/<topic>.md`
 
-## Gotchas
+2. **If file missing or empty**:
+   - Warn user: "Doc file wasn't written. Writing directly..."
+   - Write the doc yourself using the Write tool
+   - Run verification again on the written file
 
-- [From research findings]
-- [Common mistakes or edge cases]
+3. **If file exists, check for key sections**:
+   - Scan content for the 4 section headers above
+   - Track which sections are present/missing
 
-## Related
+4. **If all 4 sections present**:
+   - Tell user: "Doc written and verified (4/4 key sections present)."
+   - Proceed to Step 6.
 
-- [Link to related doc](other-doc.md)
-- [Code reference]: `path/to/file.ts`
-```
+5. **If 1-3 sections missing** (partial write):
+   - Warn user: "Doc appears incomplete. Missing sections: [list missing]"
+   - Show which sections ARE present
+   - Ask: "Proceed with partial doc, retry write, or abort?"
+   - **Proceed**: Continue to Step 6
+   - **Retry**: Re-invoke doc-writer subagent with same input, then verify again
+   - **Abort**: Stop and inform user the incomplete doc file remains at path
+
+6. **If all sections missing but has content**:
+   - Treat as invalid format, trigger fallback write
+   - Write the doc yourself, then verify the written file
+
+**On subagent failure** (timeout, error):
+- Warn user: "Doc writer failed. Writing doc directly..."
+- Write the doc yourself using the Write tool
+- Run verification on the written file
 
 ## Formatting Tip
 

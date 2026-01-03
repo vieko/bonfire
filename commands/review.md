@@ -76,6 +76,28 @@ After the subagent returns, validate the response:
 1. Warn user: "Review subagent failed. Continuing with direct review."
 2. Perform in-context review as above.
 
+### Resumable Review (Large Changes)
+
+For large changesets, review may need multiple passes. The Task tool returns an `agentId` you can use to resume.
+
+**When to offer resume:**
+- Review covers many files and user wants deeper analysis of specific area
+- Findings mention "additional items omitted" or suggest areas need more attention
+- User wants to focus review on specific aspect (e.g., "look more at tests")
+
+**To resume review:**
+1. Tell user: "Review covered [X]. Want deeper analysis of [specific area]?"
+2. If yes, re-invoke work-reviewer with the `resume` parameter:
+   - Pass the agentId from the previous invocation
+   - Provide a focused directive: "Continue review focusing on: [specific area]."
+3. Merge findings from resumed review with previous findings.
+4. Repeat if needed, up to 3 passes maximum.
+
+**Example multi-pass scenario:**
+- Pass 1: General review → finds 5 issues, notes "test coverage not analyzed"
+- Pass 2 (resume): "Continue review focusing on: test coverage" → finds 3 more test gaps
+- Merge: Combined findings give complete picture
+
 ## Step 4: Session Scripts Review
 
 Check if `<git-root>/.bonfire/scripts/` contains any files.

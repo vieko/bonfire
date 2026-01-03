@@ -73,6 +73,28 @@ After the subagent returns, validate the response:
 2. Perform in-context research as above.
 3. Continue to Step 5.
 
+### Resumable Exploration (Large Codebases)
+
+For very large codebases, exploration may need multiple passes. The Task tool returns an `agentId` you can use to resume.
+
+**When to offer resume:**
+- Subagent returns with "X additional items omitted" notes
+- Findings cover only part of the codebase (e.g., backend but not frontend)
+- User asks for deeper exploration of a specific area
+
+**To resume exploration:**
+1. Tell user: "Exploration found [X] but there's more to explore. Continue exploring [specific area]?"
+2. If yes, re-invoke codebase-explorer with the `resume` parameter:
+   - Pass the agentId from the previous invocation
+   - Provide a refined directive: "Continue exploring: [specific area]. Focus on [what to find]."
+3. Merge findings from resumed exploration with previous findings.
+4. Repeat if needed, up to 3 passes maximum.
+
+**Example multi-pass scenario:**
+- Pass 1: "Research authentication" → finds auth middleware, auth service
+- Pass 2 (resume): "Continue exploring: authorization rules" → finds permissions, role checks
+- Merge: Combined findings inform better interview questions
+
 ## Step 5: Interview Phase (Main Context)
 
 **Progress**: Tell the user "Starting interview (3 rounds: core decisions, edge cases, testing & scope)..."

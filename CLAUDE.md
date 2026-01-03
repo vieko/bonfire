@@ -83,6 +83,7 @@ Main Context (user interaction)
 |-------|-------|---------|
 | `codebase-explorer` | haiku | Fast pattern/architecture research |
 | `spec-writer` | inherit | Synthesize findings + interview → spec |
+| `doc-writer` | inherit | Synthesize findings → documentation |
 | `work-reviewer` | sonnet | Strategic review, categorized findings |
 
 ## Development Notes

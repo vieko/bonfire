@@ -1,7 +1,7 @@
 {
   "name": "bonfire",
-  "version": "0.8.2",
-  "description": "AI forgets everything between sessions. Bonfire fixes that.",
+  "version": "0.9.0",
+  "description": "AI forgets everything between sessions. Bonfire remembers.",
   "author": {
     "name": "Vieko Franetovic",
     "email": "hello@vieko.dev",
@@ -23,6 +23,7 @@
   "agents": [
     "./agents/codebase-explorer.md",
     "./agents/spec-writer.md",
-    "./agents/work-reviewer.md"
+    "./agents/work-reviewer.md",
+    "./agents/doc-writer.md"
   ]
 }

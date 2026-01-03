@@ -4,7 +4,7 @@
   <img src="bonfire.png" alt="Bonfire" width="200">
 </p>
 
-Your AI coding partner forgets everything between conversations. Bonfire fixes that.
+Your AI coding partner forgets everything between conversations. Bonfire remembers.
 
 ```bash
 claude plugin marketplace add vieko/bonfire
