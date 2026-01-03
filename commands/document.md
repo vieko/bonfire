@@ -25,6 +25,8 @@ If no topic provided, ask the user what they want documented.
 
 ## Step 4: Explore the Codebase (Subagent)
 
+**Progress**: Tell the user "Exploring codebase for [TOPIC]..."
+
 Use the Task tool to invoke the **codebase-explorer** subagent for research.
 
 Provide a research directive:
@@ -45,6 +47,30 @@ Return structured findings with file paths and brief descriptions.
 **Wait for the subagent to return findings** before proceeding.
 
 The subagent runs in isolated context (haiku model, fast), preserving main context for writing.
+
+### Exploration Validation
+
+After the subagent returns, validate the response:
+
+**Valid response contains at least one of:**
+- `## Architecture` or `## Patterns Found` with content
+- `## Key Files` with entries
+- `## Flow` or `## Gotchas` with items
+
+**On valid response**: Proceed to Step 5.
+
+**On invalid/empty response**:
+1. Warn user: "Codebase exploration returned limited results. I'll research directly."
+2. Fall back to in-context research:
+   - `Glob("**/*[topic-related]*")` to find relevant files
+   - `Grep("topic-keywords")` to find implementations
+   - Read identified files
+3. Continue to Step 5 with in-context findings.
+
+**On subagent failure** (timeout, error):
+1. Warn user: "Subagent exploration failed. Continuing with direct research."
+2. Perform in-context research as above.
+3. Continue to Step 5.
 
 ## Step 5: Create Documentation
 

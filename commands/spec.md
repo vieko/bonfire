@@ -28,6 +28,8 @@ Check for existing context:
 
 ## Step 4: Research Phase (Subagent)
 
+**Progress**: Tell the user "Researching codebase for patterns and constraints..."
+
 Use the Task tool to invoke the **codebase-explorer** subagent for research.
 
 Provide a research directive with these questions:
@@ -46,6 +48,30 @@ Return structured findings only - no raw file contents.
 **Wait for the subagent to return findings** before proceeding.
 
 The subagent runs in isolated context (haiku model, fast), preserving main context for interview.
+
+### Research Validation
+
+After the subagent returns, validate the response:
+
+**Valid response contains at least one of:**
+- `## Patterns Found` or `## Patterns & Architecture` with content
+- `## Key Files` with entries
+- `## Constraints Discovered` or `## Technical Constraints` with items
+
+**On valid response**: Proceed to Step 5.
+
+**On invalid/empty response**:
+1. Warn user: "Codebase exploration returned limited results. I'll research directly."
+2. Fall back to in-context research using Glob, Grep, and Read:
+   - Search for patterns: `Glob("**/*.{ts,js,py,go}")` to find code files
+   - Look for similar implementations: `Grep("pattern-keyword")`
+   - Read key files identified
+3. Continue to Step 5 with in-context findings.
+
+**On subagent failure** (timeout, error):
+1. Warn user: "Subagent research failed. Continuing with direct exploration."
+2. Perform in-context research as above.
+3. Continue to Step 5.
 
 ## Step 5: Interview Phase (Main Context)
 
@@ -94,6 +120,8 @@ Tell the user "I have enough to write the spec" when ready.
 
 ## Step 6: Write the Spec (Subagent)
 
+**Progress**: Tell the user "Writing implementation spec..."
+
 Use the Task tool to invoke the **spec-writer** subagent.
 
 Provide the prompt in this exact format:
@@ -128,6 +156,28 @@ Provide the prompt in this exact format:
 The subagent will write the spec file directly to the Output Path.
 
 **Naming convention**: `<issue-id>-<topic>.md` or `<topic>.md`
+
+### Spec Verification
+
+After the spec-writer subagent returns:
+
+1. **Verify file exists**: Read the spec file at `<git-root>/<specsLocation>/<filename>.md`
+
+2. **On success** (file exists with content):
+   - Tell user: "Spec written successfully."
+   - Proceed to Step 7 (Link to Session Context).
+
+3. **On failure** (file missing or empty):
+   - Warn user: "Spec file wasn't written correctly. Writing directly..."
+   - Write the spec yourself using the Write tool with:
+     - Research findings from Step 4
+     - Interview answers from Step 5
+     - Spec template from spec-writer.md
+   - Proceed to Step 7.
+
+4. **On subagent failure** (timeout, error):
+   - Warn user: "Spec writer failed. Writing spec directly..."
+   - Write the spec yourself as above.
 
 ## Step 7: Link to Session Context
 

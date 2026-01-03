@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.2] - 2026-01-03
+
+### Added
+
+- **Subagent error handling** - Graceful fallbacks when subagents fail
+  - Progress messages: "Researching codebase...", "Writing spec...", etc.
+  - Output validation: Checks subagent returned expected structure
+  - Fallback behavior: Falls back to in-context operation on failure
+  - File verification: Confirms spec files were actually written
+  - Pattern follows established "warn + offer alternative" convention
+
+### Changed
+
+- `/bonfire:spec` - Added research validation and spec verification sections
+- `/bonfire:document` - Added exploration validation section
+- `/bonfire:review` - Added review validation section
+
 ## [0.8.1] - 2026-01-03
 
 ### Changed
