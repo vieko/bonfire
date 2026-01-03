@@ -1,10 +1,14 @@
-# Sessions
+# Bonfire
 
-Your AI coding partner forgets everything between conversations. Sessions fixes that.
+<p align="center">
+  <img src="bonfire.png" alt="Bonfire" width="200">
+</p>
+
+Save your progress at the bonfire. Your AI coding partner forgets everything between conversations - Bonfire fixes that.
 
 ```bash
-claude plugin marketplace add vieko/sessions
-claude plugin install sessions@vieko
+claude plugin marketplace add vieko/bonfire
+claude plugin install bonfire@vieko
 ```
 
 ## The Problem
@@ -20,9 +24,9 @@ You end up re-explaining context, re-making decisions, and watching your AI part
 
 ## The Solution
 
-Sessions maintains a living context document that gets read at session start and updated at session end. Your AI partner picks up exactly where you left off.
+Bonfire maintains a living context document that gets read at session start and updated at session end. Your AI partner picks up exactly where you left off.
 
-`/sessions:start` → *reads context* → WORK → `/sessions:end` → *saves context*
+`/bonfire:start` → *reads context* → WORK → `/bonfire:end` → *saves context*
 
 That's it. No complex setup. No external services. Just Markdown files in your repo.
 
@@ -31,37 +35,37 @@ That's it. No complex setup. No external services. Just Markdown files in your r
 | Tool | Primary Question |
 |------|------------------|
 | Issue/task trackers | "What's the work?" |
-| Sessions | "Where are we and what did we decide?" |
+| Bonfire | "Where are we and what did we decide?" |
 
-Sessions complements your issue tracker. Use GitHub Issues, Linear, Beads, or Beans for tasks. Use Sessions for workflow context.
+Bonfire complements your issue tracker. Use GitHub Issues, Linear, Beads, or Beans for tasks. Use Bonfire for workflow context.
 
 ## Quick Start
 
 ```bash
 # Install
-claude plugin marketplace add vieko/sessions
-claude plugin install sessions@vieko
+claude plugin marketplace add vieko/bonfire
+claude plugin install bonfire@vieko
 
-# First run scaffolds .sessions/ and asks setup questions
-/sessions:start
+# First run scaffolds .bonfire/ and asks setup questions
+/bonfire:start
 ```
 
 ## Commands
 
 | Command | What it does |
 |---------|--------------|
-| `/sessions:start` | Read context, scaffold on first run |
-| `/sessions:end` | Update context, commit changes |
-| `/sessions:spec <topic>` | Create implementation spec (researches codebase, interviews you) |
-| `/sessions:document <topic>` | Document a codebase topic |
-| `/sessions:review` | Find blindspots, gaps, and quick wins |
-| `/sessions:archive` | Archive completed work |
-| `/sessions:configure` | Change project settings |
+| `/bonfire:start` | Read context, scaffold on first run |
+| `/bonfire:end` | Update context, commit changes |
+| `/bonfire:spec <topic>` | Create implementation spec (researches codebase, interviews you) |
+| `/bonfire:document <topic>` | Document a codebase topic |
+| `/bonfire:review` | Find blindspots, gaps, and quick wins |
+| `/bonfire:archive` | Archive completed work |
+| `/bonfire:configure` | Change project settings |
 
 ## What Gets Created
 
 ```
-.sessions/
+.bonfire/
 ├── index.md      # Living context (the important one)
 ├── config.json   # Your settings
 ├── archive/      # Completed work history
@@ -90,16 +94,16 @@ This happens automatically.
 
 ## Configuration
 
-First `/sessions:start` asks you to configure:
+First `/bonfire:start` asks you to configure:
 
 | Setting | Options |
 |---------|---------|
-| Specs location | `.sessions/specs/` or `specs/` |
-| Docs location | `.sessions/docs/` or `docs/` |
+| Specs location | `.bonfire/specs/` or `specs/` |
+| Docs location | `.bonfire/docs/` or `docs/` |
 | Git strategy | ignore-all, hybrid, commit-all |
 | Linear integration | Yes or No |
 
-Change anytime with `/sessions:configure`.
+Change anytime with `/bonfire:configure`.
 
 ### Git Strategies
 
@@ -114,10 +118,10 @@ Change anytime with `/sessions:configure`.
 If you use Linear for issue tracking:
 
 1. Install [Linear MCP](https://github.com/anthropics/anthropic-quickstarts/tree/main/mcp-linear)
-2. Enable via `/sessions:configure`
+2. Enable via `/bonfire:configure`
 3. Reference issues by ID: `ENG-123`
 
-Sessions will fetch issue context on start, create issues from review findings, and mark issues Done on archive.
+Bonfire will fetch issue context on start, create issues from review findings, and mark issues Done on archive.
 
 ## Proactive Skills
 
@@ -137,7 +141,7 @@ Optional: `gh` CLI for GitHub integration, Linear MCP for Linear integration.
 
 ## Learn More
 
-**Blog post**: [Save Your Progress](https://vieko.dev/sessions)
+**Blog post**: [Save Your Progress](https://vieko.dev/bonfire)
 
 **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 

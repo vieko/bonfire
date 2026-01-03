@@ -4,7 +4,7 @@ allowed-tools: Bash(git:*), Read, Write, AskUserQuestion
 model: haiku
 ---
 
-# Configure Sessions
+# Configure Bonfire
 
 Always runs interactively - asks all configuration questions regardless of arguments.
 
@@ -12,27 +12,27 @@ Always runs interactively - asks all configuration questions regardless of argum
 
 Run `git rev-parse --show-toplevel` to locate the repository root.
 
-## Step 2: Check for Sessions Directory
+## Step 2: Check for Bonfire Directory
 
-If `<git-root>/.sessions/` does not exist, tell the user to run `/sessions:start` first.
+If `<git-root>/.bonfire/` does not exist, tell the user to run `/bonfire:start` first.
 
 ## Step 3: Read Current Config
 
-Read `<git-root>/.sessions/config.json` if it exists to see current settings.
+Read `<git-root>/.bonfire/config.json` if it exists to see current settings.
 
 ## Step 4: Ask All Configuration Questions
 
 Use AskUserQuestion to ask configuration questions (4 questions, one round):
 
 1. "Where should specs be saved?" (Header: "Specs")
-   - .sessions/specs/ (Recommended) - Keep with session context
+   - .bonfire/specs/ (Recommended) - Keep with session context
    - specs/ - Project root level
 
 2. "Where should docs be saved?" (Header: "Docs")
-   - .sessions/docs/ (Recommended) - Keep with session context
+   - .bonfire/docs/ (Recommended) - Keep with session context
    - docs/ - Project root level
 
-3. "How should `.sessions/` be handled in git?" (Header: "Git")
+3. "How should `.bonfire/` be handled in git?" (Header: "Git")
    - ignore-all (Recommended) - Keep sessions private/local
    - hybrid - Commit docs/specs, keep notes private
    - commit-all - Share everything with team
@@ -43,7 +43,7 @@ Use AskUserQuestion to ask configuration questions (4 questions, one round):
 
 ## Step 5: Update Config
 
-**Completely overwrite** `<git-root>/.sessions/config.json` with only these fields (do not preserve old fields like `models`):
+**Completely overwrite** `<git-root>/.bonfire/config.json` with only these fields (do not preserve old fields like `models`):
 
 ```json
 {
@@ -56,7 +56,7 @@ Use AskUserQuestion to ask configuration questions (4 questions, one round):
 
 ## Step 6: Update Git Strategy
 
-If git strategy or locations changed, update `<git-root>/.sessions/.gitignore`:
+If git strategy or locations changed, update `<git-root>/.bonfire/.gitignore`:
 
 **Ignore all**:
 ```
@@ -64,17 +64,17 @@ If git strategy or locations changed, update `<git-root>/.sessions/.gitignore`:
 !.gitignore
 ```
 
-**Hybrid** (only include dirs that are inside .sessions/):
+**Hybrid** (only include dirs that are inside .bonfire/):
 ```
 *
 !.gitignore
 ```
-If docsLocation is `.sessions/docs/`, add:
+If docsLocation is `.bonfire/docs/`, add:
 ```
 !docs/
 !docs/**
 ```
-If specsLocation is `.sessions/specs/`, add:
+If specsLocation is `.bonfire/specs/`, add:
 ```
 !specs/
 !specs/**
@@ -89,7 +89,7 @@ scripts/
 
 If switching FROM commit/hybrid TO ignore:
 - Warn user that existing tracked files will remain tracked
-- Offer to run: `git rm -r --cached .sessions/`
+- Offer to run: `git rm -r --cached .bonfire/`
 
 ## Step 7: Confirm
 

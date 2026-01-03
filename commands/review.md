@@ -16,9 +16,9 @@ Based on $ARGUMENTS:
 
 ## Step 2: Gather Context
 
-- Read session context from `<git-root>/.sessions/index.md`
+- Read session context from `<git-root>/.bonfire/index.md`
 - Get branch diff: `git diff main...HEAD` (or appropriate base)
-- Read relevant specs/docs from `.sessions/`
+- Read relevant specs/docs from `.bonfire/`
 - Understand intent: what were we trying to accomplish?
 
 ## Step 3: Run Review (Subagent)
@@ -49,14 +49,14 @@ The subagent runs in isolated context (sonnet model), preserving main context fo
 
 ## Step 4: Session Scripts Review
 
-Check if `<git-root>/.sessions/scripts/` contains any files.
+Check if `<git-root>/.bonfire/scripts/` contains any files.
 
 If scripts exist, include in findings:
 - List scripts that may need attention
 - Note if any appear to be temporary/one-off vs reusable
 - Suggest moving useful scripts to project `scripts/` directory
 
-This is informational - actual script management happens during `/sessions:end`.
+This is informational - actual script management happens during `/bonfire:end`.
 
 ## Step 5: Present Findings
 
@@ -81,12 +81,12 @@ Present the subagent's findings grouped by recommended action:
 
 Based on user choice:
 - **Fix now**: Make the changes directly
-- **Spec**: Run `/sessions:spec` with findings
+- **Spec**: Run `/bonfire:spec` with findings
 - **Create issues**: See below
 
 ### Creating Issues
 
-First, read `<git-root>/.sessions/config.json` and check `linearEnabled`.
+First, read `<git-root>/.bonfire/config.json` and check `linearEnabled`.
 
 **Offer choices based on config:**
 - Always offer: "Create GitHub issue"
@@ -113,7 +113,7 @@ Note: Tool names may vary by Linear MCP implementation.
 
 ## Step 7: Update Session Context
 
-Add review outcomes to `<git-root>/.sessions/index.md`:
+Add review outcomes to `<git-root>/.bonfire/index.md`:
 - Key findings noted
 - Issues created (with links)
 - Work deferred to future sessions
