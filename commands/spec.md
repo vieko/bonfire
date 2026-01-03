@@ -38,8 +38,8 @@ Provide a research directive with these questions:
 Research the codebase for implementing: [TOPIC]
 
 Find:
-1. **Patterns & Architecture**: How similar features are implemented, existing abstractions to reuse, naming conventions
-2. **Technical Constraints**: Dependencies, API boundaries, performance considerations
+1. **Patterns**: How similar features are implemented, existing abstractions to reuse, naming conventions
+2. **Constraints**: Dependencies, API boundaries, performance considerations
 3. **Potential Conflicts**: Files that need changes, intersections with existing code, migration concerns
 
 Return structured findings only - no raw file contents.
@@ -54,9 +54,9 @@ The subagent runs in isolated context (haiku model, fast), preserving main conte
 After the subagent returns, validate the response:
 
 **Valid response contains at least one of:**
-- `## Patterns Found` or `## Patterns & Architecture` with content
+- `## Patterns Found` with content
 - `## Key Files` with entries
-- `## Constraints Discovered` or `## Technical Constraints` with items
+- `## Constraints Discovered` with items
 
 **On valid response**: Proceed to Step 5.
 
