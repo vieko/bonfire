@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0] - 2026-01-03
+
+### Changed
+
+- **Renamed plugin from "Sessions" to "Bonfire"** - Save-game metaphor inspired by Dark Souls checkpoints
+  - All commands: `/sessions:*` → `/bonfire:*`
+  - Directory: `.sessions/` → `.bonfire/`
+  - Skills: `session-context` → `bonfire-context`, `archive-session` → `archive-bonfire`
+  - GitHub repo: vieko/sessions → vieko/bonfire
+  - Blog post URL: vieko.dev/sessions → vieko.dev/bonfire
+
+### Why This Change
+
+"Sessions" was functional but not memorable. "Bonfire" evokes the Dark Souls checkpoint mechanic - rest, recover, save progress before heading into the unknown. The metaphor fits the workflow.
+
+### Migration from 0.7.x
+
+Existing `.sessions/` directories will NOT be automatically migrated. To migrate:
+
+1. Rename your `.sessions/` directory to `.bonfire/`
+2. Update any hardcoded references in your CLAUDE.md
+3. Use new `/bonfire:*` commands
+
 ## [0.7.0] - 2026-01-02
 
 ### Added
@@ -14,17 +37,17 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- **`/sessions:spec`** - Now uses subagents for research and writing phases
+- **`/bonfire:spec`** - Now uses subagents for research and writing phases
   - Research runs in isolated context, returns structured summary
   - Interview stays in main context with clean state
   - Spec writing runs in isolated context
   - Result: ~70% less main context consumption
 
-- **`/sessions:document`** - Now uses codebase-explorer subagent
+- **`/bonfire:document`** - Now uses codebase-explorer subagent
   - Exploration runs in isolated context
   - Only findings summary returns to main context
 
-- **`/sessions:review`** - Now uses work-reviewer subagent
+- **`/bonfire:review`** - Now uses work-reviewer subagent
   - Analysis runs in isolated context (sonnet for depth)
   - Categorized findings return to main context for action decisions
 
@@ -45,13 +68,13 @@ Context burns out quickly during spec/document/review operations, requiring shor
 ### Added
 
 - **Linear MCP integration** - Full issue lifecycle support
-  - `/sessions:start` - Fetch Linear issue context with `ENG-123` or Linear URL
-  - `/sessions:review` - Create Linear issues from findings
-  - `/sessions:archive` - Mark Linear issues as Done when work completes
+  - `/bonfire:start` - Fetch Linear issue context with `ENG-123` or Linear URL
+  - `/bonfire:review` - Create Linear issues from findings
+  - `/bonfire:archive` - Mark Linear issues as Done when work completes
   - `linearEnabled` config option (opt-in, default false)
   - Graceful degradation when Linear MCP not configured
 
-- **Hybrid spec approach** - Research-informed interviewing for `/sessions:spec`
+- **Hybrid spec approach** - Research-informed interviewing for `/bonfire:spec`
   - Step 4: Research phase (patterns, constraints, conflicts)
   - Step 5: Interview phase (3 rounds: core → edge cases → scope)
   - Informed questions based on codebase findings, not generic prompts
@@ -59,7 +82,7 @@ Context burns out quickly during spec/document/review operations, requiring shor
 
 ### Changed
 
-- `/sessions:configure` now asks about Linear integration
+- `/bonfire:configure` now asks about Linear integration
 - Added `mcp__linear__*` to allowed-tools in start, review, and archive commands
 - Documented AskUserQuestion 4-question limit in configure and start commands
 
@@ -73,19 +96,19 @@ Context burns out quickly during spec/document/review operations, requiring shor
 ### Added
 
 - **Session scripts management** - Location-based script tracking
-  - `.sessions/scripts/` directory for temporary session scripts
-  - `/sessions:end` prompts to keep, move to project, or delete scripts
+  - `.bonfire/scripts/` directory for temporary session scripts
+  - `/bonfire:end` prompts to keep, move to project, or delete scripts
   - Simple workflow replaces complex `@session-script` frontmatter approach
 
 - **Configurable artifact locations**
-  - `specsLocation`: Save specs in `.sessions/specs/` or project root `specs/`
-  - `docsLocation`: Save docs in `.sessions/docs/` or project root `docs/`
-  - Asked during `/sessions:start` setup and changeable via `/sessions:configure`
+  - `specsLocation`: Save specs in `.bonfire/specs/` or project root `specs/`
+  - `docsLocation`: Save docs in `.bonfire/docs/` or project root `docs/`
+  - Asked during `/bonfire:start` setup and changeable via `/bonfire:configure`
 
 ### Changed
 
 - **Renamed `plans/` to `specs/`** - Clearer distinction from Claude Code's plan mode
-  - `/sessions:plan` → `/sessions:spec`
+  - `/bonfire:plan` → `/bonfire:spec`
   - `plans/` directory → `specs/`
   - `models.plan` → `models.spec` in config.json
 
@@ -94,26 +117,26 @@ Context burns out quickly during spec/document/review operations, requiring shor
   - Checks if files can be staged before committing
   - Clear messaging when files are gitignored
 
-- **Simplified scripts review in `/sessions:review`**
+- **Simplified scripts review in `/bonfire:review`**
   - Removed `scriptsTracking` config option
   - Removed `@session-script` frontmatter requirement
-  - Now just lists scripts in `.sessions/scripts/` that need attention
+  - Now just lists scripts in `.bonfire/scripts/` that need attention
 
 ### Migration from 0.4.x
 
 1. Rename your `plans/` directory to `specs/` (if using hybrid/commit-all git strategy)
-2. Update `models.plan` to `models.spec` in `.sessions/config.json`
-3. Run `/sessions:configure` to set new location preferences
+2. Update `models.plan` to `models.spec` in `.bonfire/config.json`
+3. Run `/bonfire:configure` to set new location preferences
 
 ## [0.4.1] - 2025-12-22
 
 ### Fixed
 
-- **`/sessions:configure`** - Now always runs interactively with all 4 questions
-- **`/sessions:end`** - Checks git strategy before committing; skips for `ignore-all`
-- **`/sessions:git-strategy`** - Now uses `AskUserQuestion` for consistent UX
-- **`/sessions:start`** - Aligned question format with configure command
-- **`session-context` skill** - Removed references to non-existent `prep/` and `packages/` directories
+- **`/bonfire:configure`** - Now always runs interactively with all 4 questions
+- **`/bonfire:end`** - Checks git strategy before committing; skips for `ignore-all`
+- **`/bonfire:git-strategy`** - Now uses `AskUserQuestion` for consistent UX
+- **`/bonfire:start`** - Aligned question format with configure command
+- **`bonfire-context` skill** - Removed references to non-existent `prep/` and `packages/` directories
 
 ### Changed
 
@@ -123,14 +146,14 @@ Context burns out quickly during spec/document/review operations, requiring shor
 
 ### Added
 
-- **`/sessions:review`** - Strategic work review command
+- **`/bonfire:review`** - Strategic work review command
   - Identifies blindspots, gaps, quick wins
   - Checks best practices and maintainability
   - Categorizes findings by severity and effort
   - Offers to fix, plan, or create issues
   - Optional scripts tracking integration
 
-- **`/sessions:configure`** - Plugin configuration command
+- **`/bonfire:configure`** - Plugin configuration command
   - Global model preferences (plan, document, review)
   - Per-project settings (git strategy, docs location, scripts tracking)
 
@@ -138,19 +161,19 @@ Context burns out quickly during spec/document/review operations, requiring shor
   - `@session-script` frontmatter standard for agent-generated scripts
   - Lifecycle management: permanent, temporary, deprecated
   - Expiration dates for temporary scripts
-  - `/sessions:review` scans for stale/expired scripts
+  - `/bonfire:review` scans for stale/expired scripts
 
 - **`scripts/configure.sh`** - Updates command frontmatter
   - Validates model values (inherit, haiku, sonnet, opus)
   - Handles add, update, and remove operations
 
-- **CLAUDE.md creation** - Auto-created on `/sessions:start`
-  - Points Claude to `.sessions/index.md`
-  - Lists available session commands
+- **CLAUDE.md creation** - Auto-created on `/bonfire:start`
+  - Points Claude to `.bonfire/index.md`
+  - Lists available bonfire commands
   - Updates existing CLAUDE.md if missing session reference
 
-- **Per-project config** (`.sessions/config.json`)
-  - `docsLocation`: `.sessions/docs/` or `docs/` (root)
+- **Per-project config** (`.bonfire/config.json`)
+  - `docsLocation`: `.bonfire/docs/` or `docs/` (root)
   - `scriptsTracking`: enabled/disabled
 
 - **Model specifications**
@@ -193,11 +216,11 @@ Context burns out quickly during spec/document/review operations, requiring shor
 
 ### Migration from create-sessions-dir
 
-1. Install the sessions plugin
-2. Existing `.sessions/` directories work as-is
+1. Install the bonfire plugin
+2. Existing `.sessions/` directories need to be renamed to `.bonfire/`
 3. Remove old `.claude/commands/` (plugin provides them)
 4. Remove old `.claude/skills/` (plugin provides them)
-5. Run `/sessions:configure` to set model preferences
+5. Run `/bonfire:configure` to set model preferences
 
 ## [0.3.x] - Previous (create-sessions-dir)
 

@@ -1,5 +1,5 @@
 ---
-description: Start a new session - reads context and scaffolds .sessions/ if needed
+description: Start a new session - reads context and scaffolds .bonfire/ if needed
 allowed-tools: Bash(git:*), Bash(gh:*), Bash(mkdir:*), Read, Write, Glob, AskUserQuestion, mcp__linear__*
 model: haiku
 ---
@@ -8,27 +8,27 @@ model: haiku
 
 ## Step 1: Find Git Root
 
-Run `git rev-parse --show-toplevel` to locate the repository root. All session files live at `<git-root>/.sessions/`.
+Run `git rev-parse --show-toplevel` to locate the repository root. All session files live at `<git-root>/.bonfire/`.
 
-## Step 2: Check for Sessions Directory
+## Step 2: Check for Bonfire Directory
 
-Check if `<git-root>/.sessions/index.md` exists.
+Check if `<git-root>/.bonfire/index.md` exists.
 
-**If .sessions/ does NOT exist**, scaffold it:
+**If .bonfire/ does NOT exist**, scaffold it:
 
-1. Tell the user: "No sessions directory found. Let me set that up for you."
+1. Tell the user: "No bonfire directory found. Let me set that up for you."
 
 2. Use AskUserQuestion to ask setup questions (4 questions, one round):
 
    1. "Where should specs be saved?" (Header: "Specs")
-      - .sessions/specs/ (Recommended) - Keep with session context
+      - .bonfire/specs/ (Recommended) - Keep with session context
       - specs/ - Project root level
 
    2. "Where should docs be saved?" (Header: "Docs")
-      - .sessions/docs/ (Recommended) - Keep with session context
+      - .bonfire/docs/ (Recommended) - Keep with session context
       - docs/ - Project root level
 
-   3. "How should `.sessions/` be handled in git?" (Header: "Git")
+   3. "How should `.bonfire/` be handled in git?" (Header: "Git")
       - ignore-all (Recommended) - Keep sessions private/local
       - hybrid - Commit docs/specs, keep notes private
       - commit-all - Share everything with team
@@ -39,9 +39,9 @@ Check if `<git-root>/.sessions/index.md` exists.
 
 3. Create the directory structure based on user choices:
 
-   **Always create in .sessions/**:
+   **Always create in .bonfire/**:
    ```
-   .sessions/
+   .bonfire/
    ├── index.md
    ├── config.json
    ├── archive/
@@ -49,10 +49,10 @@ Check if `<git-root>/.sessions/index.md` exists.
    └── .gitignore
    ```
 
-   **If specsLocation is `.sessions/specs/`**: create `.sessions/specs/`
+   **If specsLocation is `.bonfire/specs/`**: create `.bonfire/specs/`
    **If specsLocation is `specs/`**: create `<git-root>/specs/`
 
-   **If docsLocation is `.sessions/docs/`**: create `.sessions/docs/`
+   **If docsLocation is `.bonfire/docs/`**: create `.bonfire/docs/`
    **If docsLocation is `docs/`**: create `<git-root>/docs/`
 
 4. Detect project name from: package.json name → git remote → directory name
@@ -134,17 +134,17 @@ Check if `<git-root>/.sessions/index.md` exists.
    !.gitignore
    ```
 
-   **Hybrid** (only include dirs that are inside .sessions/):
+   **Hybrid** (only include dirs that are inside .bonfire/):
    ```
    *
    !.gitignore
    ```
-   If docsLocation is `.sessions/docs/`, add:
+   If docsLocation is `.bonfire/docs/`, add:
    ```
    !docs/
    !docs/**
    ```
-   If specsLocation is `.sessions/specs/`, add:
+   If specsLocation is `.bonfire/specs/`, add:
    ```
    !specs/
    !specs/**
@@ -157,7 +157,7 @@ Check if `<git-root>/.sessions/index.md` exists.
    scripts/
    ```
 
-**If .sessions/ EXISTS**, proceed to Step 3.
+**If .bonfire/ EXISTS**, proceed to Step 3.
 
 ## Step 3: Check/Update CLAUDE.md
 
@@ -169,30 +169,30 @@ Check if `<git-root>/CLAUDE.md` exists.
 
 ## Quick Context
 
-Read `.sessions/index.md` for current project state, recent work, and priorities.
+Read `.bonfire/index.md` for current project state, recent work, and priorities.
 
-## Session Commands
+## Bonfire Commands
 
-- `/sessions:start` - Start a session (reads context)
-- `/sessions:end` - End session (updates context)
-- `/sessions:spec` - Create implementation spec
-- `/sessions:document <topic>` - Document a topic
-- `/sessions:review` - Review work for blindspots and improvements
-- `/sessions:archive` - Archive completed work
-- `/sessions:configure` - Change project settings
+- `/bonfire:start` - Start a session (reads context)
+- `/bonfire:end` - End session (updates context)
+- `/bonfire:spec` - Create implementation spec
+- `/bonfire:document <topic>` - Document a topic
+- `/bonfire:review` - Review work for blindspots and improvements
+- `/bonfire:archive` - Archive completed work
+- `/bonfire:configure` - Change project settings
 ```
 
-**If CLAUDE.md EXISTS**, check if it references `.sessions/index.md`. If not, append:
+**If CLAUDE.md EXISTS**, check if it references `.bonfire/index.md`. If not, append:
 ```markdown
 
 ## Session Context
 
-Read `.sessions/index.md` for current project state, recent work, and priorities.
+Read `.bonfire/index.md` for current project state, recent work, and priorities.
 ```
 
 ## Step 4: Read Session Context
 
-Read `<git-root>/.sessions/index.md` and report when ready.
+Read `<git-root>/.bonfire/index.md` and report when ready.
 
 Summarize:
 - Current state
@@ -218,7 +218,7 @@ Use `gh` CLI:
 
 ### Linear Issues
 
-First, read `<git-root>/.sessions/config.json` and check `linearEnabled`.
+First, read `<git-root>/.bonfire/config.json` and check `linearEnabled`.
 
 **If `linearEnabled` is false or not set**: Skip Linear, treat as ad-hoc task.
 

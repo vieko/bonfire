@@ -12,14 +12,14 @@ Run `git rev-parse --show-toplevel` to locate the repository root.
 
 ## Step 2: Review Completed Work
 
-Read `<git-root>/.sessions/index.md` and identify completed work:
+Read `<git-root>/.bonfire/index.md` and identify completed work:
 - Sessions with merged PRs
 - Completed features/tasks
 - Work that's no longer active
 
 ## Step 3: Create Archive Entry
 
-Move completed session content to `<git-root>/.sessions/archive/`.
+Move completed session content to `<git-root>/.bonfire/archive/`.
 
 **Naming convention**: `YYYY-MM-DD-<issue-id>-<topic>.md`
 
@@ -62,7 +62,7 @@ Use this template:
 
 ## Step 4: Clean Up Index
 
-Update `<git-root>/.sessions/index.md`:
+Update `<git-root>/.bonfire/index.md`:
 - Remove archived session entries from Recent Sessions
 - Keep Current State focused on active work
 - Update Next Session Priorities
@@ -75,7 +75,7 @@ Update `<git-root>/.sessions/index.md`:
 
 ## Step 5: Clean Up Specs (if applicable)
 
-Read `specsLocation` from `<git-root>/.sessions/config.json` (default `.sessions/specs/`).
+Read `specsLocation` from `<git-root>/.bonfire/config.json` (default `.bonfire/specs/`).
 
 Check if any specs in the configured location are now complete:
 - If the spec was fully implemented, delete the spec file (archive has the record)
@@ -83,7 +83,7 @@ Check if any specs in the configured location are now complete:
 
 ## Step 6: Update Linear Issue (if applicable)
 
-Read `<git-root>/.sessions/config.json` and check `linearEnabled`.
+Read `<git-root>/.bonfire/config.json` and check `linearEnabled`.
 
 **If `linearEnabled` is true**:
 
@@ -102,7 +102,7 @@ Note: Tool names may vary by Linear MCP implementation.
 
 ## Step 7: Commit Archive (if tracked)
 
-Read `gitStrategy` from `<git-root>/.sessions/config.json`.
+Read `gitStrategy` from `<git-root>/.bonfire/config.json`.
 
 **If gitStrategy is "ignore-all"**: Skip committing - archive is local only.
 
@@ -110,11 +110,11 @@ Read `gitStrategy` from `<git-root>/.sessions/config.json`.
 1. **NEVER use `git add -f`** - respect gitignore
 2. Stage unignored files:
    ```bash
-   git add .sessions/
+   git add .bonfire/
    ```
 3. Check if anything was staged before committing:
    ```bash
-   git diff --cached --quiet .sessions/ || git commit -m "docs: archive completed session work"
+   git diff --cached --quiet .bonfire/ || git commit -m "docs: archive completed session work"
    ```
 
 ## Step 8: Confirm

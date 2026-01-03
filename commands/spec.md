@@ -13,16 +13,16 @@ Run `git rev-parse --show-toplevel` to locate the repository root.
 
 ## Step 2: Check Config
 
-Read `<git-root>/.sessions/config.json` if it exists.
+Read `<git-root>/.bonfire/config.json` if it exists.
 
-**Specs location**: Read `specsLocation` from config. Default to `.sessions/specs/` if not set.
+**Specs location**: Read `specsLocation` from config. Default to `.bonfire/specs/` if not set.
 
 ## Step 3: Gather Initial Context
 
 Get the topic from $ARGUMENTS or ask if unclear.
 
 Check for existing context:
-- Read `<git-root>/.sessions/index.md` for project state
+- Read `<git-root>/.bonfire/index.md` for project state
 - Check for `SPEC.md` or `spec.md` in git root (user's spec template)
 - If issue ID provided, note for filename
 
@@ -107,7 +107,7 @@ The subagent will write the spec file directly.
 
 ## Step 7: Link to Session Context
 
-Add a reference to the spec in `<git-root>/.sessions/index.md` under Current State.
+Add a reference to the spec in `<git-root>/.bonfire/index.md` under Current State.
 
 ## Step 8: Confirm
 

@@ -13,9 +13,9 @@ Run `git rev-parse --show-toplevel` to locate the repository root.
 
 ## Step 2: Check Config
 
-Read `<git-root>/.sessions/config.json` if it exists.
+Read `<git-root>/.bonfire/config.json` if it exists.
 
-**Docs location**: Read `docsLocation` from config. Default to `.sessions/docs/` if not set.
+**Docs location**: Read `docsLocation` from config. Default to `.bonfire/docs/` if not set.
 
 ## Step 3: Understand the Topic
 
@@ -104,7 +104,7 @@ flowchart TD
 
 ## Step 6: Link to Session Context
 
-Add a reference to the doc in `<git-root>/.sessions/index.md` under Key Resources or Notes.
+Add a reference to the doc in `<git-root>/.bonfire/index.md` under Key Resources or Notes.
 
 ## Step 7: Confirm
 
