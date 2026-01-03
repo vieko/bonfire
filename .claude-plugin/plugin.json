@@ -1,6 +1,6 @@
 {
   "name": "sessions",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Sessions Directory Pattern - maintain context across AI coding sessions",
   "author": {
     "name": "Vieko Franetovic",
@@ -15,8 +15,10 @@
     "context",
     "memory",
     "workflow",
-    "documentation"
+    "documentation",
+    "subagents"
   ],
   "commands": "./commands/",
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "agents": "./agents/"
 }

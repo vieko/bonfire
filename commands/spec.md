@@ -1,11 +1,11 @@
 ---
 description: Create an implementation spec for a feature or task
-allowed-tools: Read, Write, Glob, Grep, Bash(git:*), AskUserQuestion, Task
+allowed-tools: Read, Write, Bash(git:*), AskUserQuestion, Task
 ---
 
 # Create Implementation Spec
 
-A hybrid approach: research the codebase first, then interview with informed questions.
+A hybrid approach using subagents: research in isolated context, interview in main context, write in isolated context.
 
 ## Step 1: Find Git Root
 
@@ -14,13 +14,6 @@ Run `git rev-parse --show-toplevel` to locate the repository root.
 ## Step 2: Check Config
 
 Read `<git-root>/.sessions/config.json` if it exists.
-
-**Model preference**: If `models.spec` is set to something other than "inherit", use that model for this task:
-- If "opus": Use deep architectural reasoning, be thorough
-- If "sonnet": Balance depth with efficiency
-- If "haiku": Be concise and fast
-
-If "inherit" or not set, proceed with current conversation model.
 
 **Specs location**: Read `specsLocation` from config. Default to `.sessions/specs/` if not set.
 
@@ -33,30 +26,30 @@ Check for existing context:
 - Check for `SPEC.md` or `spec.md` in git root (user's spec template)
 - If issue ID provided, note for filename
 
-## Step 4: Research Phase
+## Step 4: Research Phase (Subagent)
 
-Launch a thorough codebase exploration. Look for:
+Use the Task tool to invoke the **codebase-explorer** subagent for research.
 
-**Patterns & Architecture**:
-- How similar features are implemented
-- Existing abstractions that could be reused
-- Naming conventions and code organization
+Provide a research directive with these questions:
 
-**Technical Constraints**:
-- Dependencies and their limitations
-- API boundaries and contracts
-- Performance considerations
+```
+Research the codebase for implementing: [TOPIC]
 
-**Potential Conflicts**:
-- Files that might need changes
-- Areas where this feature intersects existing code
-- Migration or backwards compatibility concerns
+Find:
+1. **Patterns & Architecture**: How similar features are implemented, existing abstractions to reuse, naming conventions
+2. **Technical Constraints**: Dependencies, API boundaries, performance considerations
+3. **Potential Conflicts**: Files that need changes, intersections with existing code, migration concerns
 
-**Document your findings** - these inform the interview questions.
+Return structured findings only - no raw file contents.
+```
 
-## Step 5: Interview Phase
+**Wait for the subagent to return findings** before proceeding.
 
-Use AskUserQuestion to interview the user with **informed questions** based on research findings. Questions should be non-obvious and specific to what you discovered.
+The subagent runs in isolated context (haiku model, fast), preserving main context for interview.
+
+## Step 5: Interview Phase (Main Context)
+
+Using the research findings, interview the user with **informed questions** via AskUserQuestion.
 
 ### Round 1: Core Decisions
 
@@ -71,12 +64,12 @@ Example questions (adapt based on actual findings):
 
 Based on Round 1 answers and research, ask about:
 - Error handling approach
-- Edge cases you identified
+- Edge cases identified in research
 - Performance vs simplicity tradeoffs
 - User experience considerations
 
 Example questions:
-- "What should happen when [edge case you found]?"
+- "What should happen when [edge case from research]?"
 - "I found [potential conflict]. How should we handle it?"
 - "[Approach A] is simpler but [tradeoff]. [Approach B] is more complex but [benefit]. Preference?"
 
@@ -97,81 +90,20 @@ Keep asking rounds of questions until you have clarity on:
 - [ ] Testing approach
 - [ ] Scope boundaries
 
-Tell the user "I have enough to write the spec" when ready, or ask what's still unclear.
+Tell the user "I have enough to write the spec" when ready.
 
-## Step 6: Write the Spec
+## Step 6: Write the Spec (Subagent)
 
-Synthesize research + interview into a comprehensive spec.
+Use the Task tool to invoke the **spec-writer** subagent.
 
-**Naming convention**: `<issue-id>-<topic>.md`
+Provide:
+1. **Research findings** from Step 4
+2. **Interview Q&A** from Step 5
+3. **Metadata**: topic, issue ID, output path (`<git-root>/<specsLocation>/<filename>.md`)
 
-Write to `<git-root>/<specsLocation>/<filename>.md`
+The subagent will write the spec file directly.
 
-Use this template:
-```markdown
-# Spec: [TOPIC]
-
-**Created**: [DATE]
-**Issue**: [ISSUE-ID or N/A]
-**Status**: Draft
-
-## Overview
-
-[What we're building and why - from interview]
-
-## Context
-
-[Key findings from codebase research that informed decisions]
-
-## Decisions
-
-[Document key decisions made during interview with rationale]
-
-- **[Decision 1]**: [Choice] - [Why]
-- **[Decision 2]**: [Choice] - [Why]
-
-## Approach
-
-[High-level strategy synthesized from research + interview]
-
-## Files to Modify
-
-- `path/to/file.ts` - [what changes]
-
-## Files to Create
-
-- `path/to/new.ts` - [purpose]
-
-## Implementation Steps
-
-1. [ ] Step one
-2. [ ] Step two
-3. [ ] Step three
-
-## Edge Cases
-
-- [Edge case 1] → [How we handle it]
-- [Edge case 2] → [How we handle it]
-
-## Testing Strategy
-
-- [ ] Unit tests for X
-- [ ] Integration test for Y
-- [ ] Manual verification of Z
-
-## Out of Scope
-
-- [Explicitly excluded items]
-
-## Risks & Considerations
-
-- [Risk 1]
-- [Risk 2]
-
-## Open Questions
-
-- [Any remaining uncertainties]
-```
+**Naming convention**: `<issue-id>-<topic>.md` or `<topic>.md`
 
 ## Step 7: Link to Session Context
 
@@ -179,7 +111,7 @@ Add a reference to the spec in `<git-root>/.sessions/index.md` under Current Sta
 
 ## Step 8: Confirm
 
-Present the spec summary. Ask if user wants to:
+Read the generated spec and present a summary. Ask if user wants to:
 - Proceed with implementation
 - Refine specific sections
 - Add more detail to any area

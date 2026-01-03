@@ -6,23 +6,23 @@
   },
   "metadata": {
     "description": "Claude Code plugins by Vieko",
-    "version": "0.6.0"
+    "version": "0.7.0"
   },
   "plugins": [
     {
       "name": "sessions",
       "source": "./",
       "description": "Sessions Directory Pattern - maintain context across AI coding sessions",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "author": {
         "name": "Vieko Franetovic"
       },
       "homepage": "https://vieko.dev/sessions",
       "repository": "https://github.com/vieko/sessions",
       "license": "MIT",
-      "keywords": ["sessions", "context", "memory", "workflow"],
+      "keywords": ["sessions", "context", "memory", "workflow", "subagents"],
       "category": "productivity",
-      "tags": ["sessions", "context", "documentation"]
+      "tags": ["sessions", "context", "documentation", "subagents"]
     }
   ]
 }

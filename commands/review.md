@@ -1,9 +1,11 @@
 ---
 description: Review work for blindspots, gaps, and improvements
-allowed-tools: Bash(git:*), Bash(gh:*), Read, Glob, Grep, Write, mcp__linear__*
+allowed-tools: Bash(git:*), Bash(gh:*), Read, Write, Task, mcp__linear__*
 ---
 
 # Review Work
+
+Strategic review using subagent for analysis, preserving main context for action decisions.
 
 ## Step 1: Determine Scope
 
@@ -19,50 +21,33 @@ Based on $ARGUMENTS:
 - Read relevant specs/docs from `.sessions/`
 - Understand intent: what were we trying to accomplish?
 
-## Step 3: Check Project Config
+## Step 3: Run Review (Subagent)
 
-Read `<git-root>/.sessions/config.json` if it exists.
+Use the Task tool to invoke the **work-reviewer** subagent.
 
-**Model preference**: If `models.review` is set to something other than "inherit":
-- If "opus": Be thorough, find subtle issues, architectural concerns
-- If "sonnet": Balance depth with efficiency
-- If "haiku": Focus on obvious issues, be quick
+Provide the review context:
 
-If "inherit" or not set, proceed with current conversation model.
+```
+Review this work for blindspots, gaps, and improvements.
 
-## Step 4: Strategic Review
+**Scope**: [Branch diff / session work / specific area]
 
-Analyze the work asking:
+**Intent**: [What we were trying to accomplish - from session context]
 
-**Blindspots**: What are we not seeing?
-- Edge cases not handled
-- Error scenarios not considered
-- User flows not covered
-- Dependencies not accounted for
+**Files changed**:
+[List of modified files from git diff]
 
-**Gaps**: What's incomplete?
-- Missing tests
-- Missing documentation
-- Incomplete implementations
-- TODOs left unaddressed
+**Session context**:
+[Relevant notes from index.md]
 
-**Quick Wins**: What small improvements would add significant value?
-- Easy refactors
-- Low-hanging performance gains
-- Simple UX improvements
+Return categorized findings with severity and effort estimates.
+```
 
-**Best Practices**: Are we following conventions?
-- Project patterns
-- Language/framework idioms
-- Security practices
-- Accessibility standards
+**Wait for the subagent to return findings** before proceeding.
 
-**Maintainability**: Will future-us thank present-us?
-- Clear naming and structure
-- Appropriate abstractions
-- Technical debt introduced
+The subagent runs in isolated context (sonnet model), preserving main context for action decisions.
 
-## Step 5: Session Scripts Review
+## Step 4: Session Scripts Review
 
 Check if `<git-root>/.sessions/scripts/` contains any files.
 
@@ -73,33 +58,26 @@ If scripts exist, include in findings:
 
 This is informational - actual script management happens during `/sessions:end`.
 
-## Step 6: Categorize Findings
+## Step 5: Present Findings
 
-For each finding, determine:
-- **Severity**: blocking | important | nice-to-have
-- **Effort**: trivial | small | medium | large
-- **Action**: fix-now | spec | create-issue
-
-## Step 7: Present and Act
-
-Present findings grouped by recommended action:
+Present the subagent's findings grouped by recommended action:
 
 ### Fix Now (trivial effort)
-[List items that can be fixed immediately]
+[List items from subagent that can be fixed immediately]
 
-→ Ask: "Want me to fix these now?"
+> Ask: "Want me to fix these now?"
 
-### Spec (small/medium effort, important)
-[List items worth addressing this session]
+### Needs Spec (important, needs planning)
+[List items that need implementation planning]
 
-→ Ask: "Want me to create an implementation spec?"
+> Ask: "Want me to create an implementation spec?"
 
 ### Create Issues (large effort or nice-to-have)
 [List items for future sessions]
 
-→ Ask: "Want me to create GitHub/Linear issues?"
+> Ask: "Want me to create GitHub/Linear issues?"
 
-## Step 8: Execute Chosen Action
+## Step 6: Execute Chosen Action
 
 Based on user choice:
 - **Fix now**: Make the changes directly
@@ -133,7 +111,7 @@ Note: Tool names may vary by Linear MCP implementation.
 - Record the issue ID and URL
 - Note which tracker (GitHub/Linear) was used
 
-## Step 9: Update Session Context
+## Step 7: Update Session Context
 
 Add review outcomes to `<git-root>/.sessions/index.md`:
 - Key findings noted

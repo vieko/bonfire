@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0] - 2026-01-02
+
+### Added
+
+- **Subagent architecture** - Context-efficient operations for heavy commands
+  - `codebase-explorer` (haiku) - Fast, isolated codebase research
+  - `spec-writer` (inherit) - Synthesizes research + interview into specs
+  - `work-reviewer` (sonnet) - Strategic review with categorized findings
+  - Subagents ship with plugin in `agents/` directory
+
+### Changed
+
+- **`/sessions:spec`** - Now uses subagents for research and writing phases
+  - Research runs in isolated context, returns structured summary
+  - Interview stays in main context with clean state
+  - Spec writing runs in isolated context
+  - Result: ~70% less main context consumption
+
+- **`/sessions:document`** - Now uses codebase-explorer subagent
+  - Exploration runs in isolated context
+  - Only findings summary returns to main context
+
+- **`/sessions:review`** - Now uses work-reviewer subagent
+  - Analysis runs in isolated context (sonnet for depth)
+  - Categorized findings return to main context for action decisions
+
+- Removed `Glob` and `Grep` from spec/document/review allowed-tools (subagents handle this)
+- Subagent model takes precedence over config.json model settings
+
+### Why This Change
+
+Context burns out quickly during spec/document/review operations, requiring shorter sessions and frequent auto-compacting. Subagents isolate heavy research from the main conversation, preserving context for user interaction.
+
 ## [0.6.0] - 2025-12-28
 
 ### Added

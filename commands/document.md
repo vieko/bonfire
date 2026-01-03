@@ -1,9 +1,11 @@
 ---
 description: Create documentation about a topic in the codebase
-allowed-tools: Read, Write, Glob, Grep, Bash(git:*)
+allowed-tools: Read, Write, Bash(git:*), Task
 ---
 
 # Document Topic
+
+Create reference documentation using subagent for research, preserving main context.
 
 ## Step 1: Find Git Root
 
@@ -13,13 +15,6 @@ Run `git rev-parse --show-toplevel` to locate the repository root.
 
 Read `<git-root>/.sessions/config.json` if it exists.
 
-**Model preference**: If `models.document` is set to something other than "inherit", use that model for this task:
-- If "opus": Be comprehensive, include deep architectural insights
-- If "sonnet": Balance depth with clarity
-- If "haiku": Be concise, focus on essentials
-
-If "inherit" or not set, proceed with current conversation model.
-
 **Docs location**: Read `docsLocation` from config. Default to `.sessions/docs/` if not set.
 
 ## Step 3: Understand the Topic
@@ -28,13 +23,28 @@ The topic to document is: $ARGUMENTS
 
 If no topic provided, ask the user what they want documented.
 
-## Step 4: Explore the Codebase
+## Step 4: Explore the Codebase (Subagent)
 
-Launch a thorough exploration to understand the topic:
-- Search for relevant files and patterns
-- Read key implementation files
-- Understand the architecture and flow
-- Note important details, gotchas, and decisions
+Use the Task tool to invoke the **codebase-explorer** subagent for research.
+
+Provide a research directive:
+
+```
+Research the codebase to document: [TOPIC]
+
+Find:
+1. **Architecture**: How this system/feature is structured, key components
+2. **Key Files**: Important files and their roles
+3. **Flow**: How data/control flows through the system
+4. **Patterns**: Design patterns and conventions used
+5. **Gotchas**: Important details, edge cases, things to watch out for
+
+Return structured findings with file paths and brief descriptions.
+```
+
+**Wait for the subagent to return findings** before proceeding.
+
+The subagent runs in isolated context (haiku model, fast), preserving main context for writing.
 
 ## Step 5: Create Documentation
 
@@ -45,28 +55,20 @@ Examples:
 - `sampling-strategies.md`
 - `authentication-flow.md`
 
-Write the documentation to `<git-root>/<docsLocation>/<topic>.md` (use location from config, default `.sessions/docs/`)
+Write the documentation to `<git-root>/<docsLocation>/<topic>.md`
 
-Structure the documentation with:
-- **Overview**: What this is and why it exists
-- **Architecture**: How it's structured (use mermaid diagrams for complex flows)
-- **Key Files**: Important files and their roles
-- **How It Works**: Flow and behavior
-- **Usage Examples**: How to use/modify it
-- **Gotchas**: Things to watch out for
-- **Related**: Links to related docs or code
+Structure the documentation using the research findings:
 
-Use this template:
 ```markdown
 # [TOPIC]
 
 ## Overview
 
-[What this is and why it exists]
+[What this is and why it exists - synthesized from research]
 
 ## Architecture
 
-[How it's structured]
+[How it's structured - from research findings]
 
 ```mermaid
 flowchart TD
@@ -78,12 +80,12 @@ flowchart TD
 
 | File | Purpose |
 |------|---------|
-| `path/to/file.ts` | [Description] |
-| `path/to/other.ts` | [Description] |
+| `path/to/file.ts` | [From research findings] |
+| `path/to/other.ts` | [From research findings] |
 
 ## How It Works
 
-[Step-by-step flow and behavior]
+[Step-by-step flow and behavior - from research]
 
 ## Usage Examples
 
@@ -91,8 +93,8 @@ flowchart TD
 
 ## Gotchas
 
-- [Thing to watch out for]
-- [Common mistake]
+- [From research findings]
+- [Common mistakes or edge cases]
 
 ## Related
 
