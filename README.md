@@ -1,174 +1,149 @@
 # Sessions
 
-> **v0.7.0** - [Changelog](CHANGELOG.md)
-
-A Claude Code plugin for maintaining context across AI coding sessions.
-
-## What is this?
-
-The **Sessions Directory Pattern** is a workflow for maintaining context with stateless AI agents. Instead of relying on the agent to "remember" previous conversations, you maintain a living document that gets read at session start and updated at session end.
-
-This plugin provides commands and skills that make the pattern seamless.
-
-**Learn more**: [Pairing with a Partner Who Forgets Everything](https://vieko.dev/sessions)
-
-## Installation
+Your AI coding partner forgets everything between conversations. Sessions fixes that.
 
 ```bash
-# Add the marketplace
 claude plugin marketplace add vieko/sessions
-
-# Install the plugin
 claude plugin install sessions@vieko
+```
+
+## The Problem
+
+AI agents are stateless. Every conversation starts from zero. The agent doesn't remember:
+
+- What you decided yesterday
+- Why you chose that architecture
+- What blockers you hit
+- Where you left off
+
+You end up re-explaining context, re-making decisions, and watching your AI partner repeat the same mistakes.
+
+## The Solution
+
+Sessions maintains a living context document that gets read at session start and updated at session end. Your AI partner picks up exactly where you left off.
+
+```
+/sessions:start     → reads context, knows what's happening
+[... do work ...]
+/sessions:end       → updates context, commits changes
+```
+
+That's it. No complex setup. No external services. Just Markdown files in your repo.
+
+## Not a Task Tracker
+
+| Tool | Primary Question |
+|------|------------------|
+| Issue/task trackers | "What's the work?" |
+| Sessions | "Where are we and what did we decide?" |
+
+Sessions complements your issue tracker. Use GitHub Issues, Linear, Beads, or Beans for tasks. Use Sessions for workflow context.
+
+## Quick Start
+
+```bash
+# Install
+claude plugin marketplace add vieko/sessions
+claude plugin install sessions@vieko
+
+# First run scaffolds .sessions/ and asks setup questions
+/sessions:start
 ```
 
 ## Commands
 
-All commands are namespaced under `sessions:`:
-
-| Command | Description |
-|---------|-------------|
-| `/sessions:start` | Start a session - reads context, scaffolds `.sessions/` on first run |
-| `/sessions:end` | End session - update context, manage scripts, commit changes |
-| `/sessions:spec` | Create an implementation spec |
-| `/sessions:document <topic>` | Document a topic in the codebase |
-| `/sessions:review` | Review work for blindspots, gaps, and improvements |
-| `/sessions:archive` | Archive completed session work |
+| Command | What it does |
+|---------|--------------|
+| `/sessions:start` | Read context, scaffold on first run |
+| `/sessions:end` | Update context, manage scripts, commit |
+| `/sessions:spec <topic>` | Create implementation spec (researches codebase, interviews you) |
+| `/sessions:document <topic>` | Document a codebase topic |
+| `/sessions:review` | Find blindspots, gaps, and quick wins |
+| `/sessions:archive` | Archive completed work |
 | `/sessions:configure` | Change project settings |
-| `/sessions:git-strategy` | Change how `.sessions/` is handled in git |
 
-## Configuration
+## What Gets Created
 
-On first `/sessions:start`, you'll be asked to configure:
+```
+.sessions/
+├── index.md      # Living context (the important one)
+├── config.json   # Your settings
+├── archive/      # Completed work history
+├── specs/        # Implementation specs
+├── docs/         # Topic documentation
+└── scripts/      # Temporary session scripts
+```
 
-| Setting | Options | Default |
-|---------|---------|---------|
-| Specs location | .sessions/specs/, specs/ | .sessions/specs/ |
-| Docs location | .sessions/docs/, docs/ | .sessions/docs/ |
-| Git strategy | ignore-all, hybrid, commit-all | ignore-all |
-| Linear integration | Yes, No | No |
+The `index.md` is where the magic happens. It tracks:
 
-Settings are stored in `.sessions/config.json` per-project. Change anytime with `/sessions:configure`.
+- Current state and branch
+- Recent session summaries
+- Decisions made and why
+- Blockers encountered
+- Next priorities
 
 ## Context-Efficient Operations
 
-Heavy commands (`/spec`, `/document`, `/review`) use **subagents** for context efficiency:
+Heavy commands (`/spec`, `/document`, `/review`) use subagents to avoid burning your main conversation context:
 
-- Research runs in an isolated context (haiku model, fast)
+- Research runs in isolated context (fast, cheap)
 - Only structured summaries return to main conversation
-- User interview and interaction stay in main context
-- Result: longer sessions without context burnout
+- Result: longer sessions without context exhaustion
 
-This happens automatically - no configuration needed.
+This happens automatically.
 
-## Skills (Passive Context)
+## Configuration
 
-The plugin includes skills that Claude uses automatically:
+First `/sessions:start` asks you to configure:
 
-### Session Context
-Claude automatically reads `.sessions/index.md` when you ask about:
+| Setting | Options |
+|---------|---------|
+| Specs location | `.sessions/specs/` or `specs/` |
+| Docs location | `.sessions/docs/` or `docs/` |
+| Git strategy | ignore-all, hybrid, commit-all |
+| Linear integration | Yes or No |
+
+Change anytime with `/sessions:configure`.
+
+### Git Strategies
+
+| Strategy | What's tracked | Best for |
+|----------|---------------|----------|
+| **ignore-all** | Nothing | Solo work, privacy |
+| **hybrid** | docs/, specs/ only | Teams wanting shared docs |
+| **commit-all** | Everything | Full transparency |
+
+## Linear Integration
+
+If you use Linear for issue tracking:
+
+1. Install [Linear MCP](https://github.com/anthropics/anthropic-quickstarts/tree/main/mcp-linear)
+2. Enable via `/sessions:configure`
+3. Reference issues by ID: `ENG-123`
+
+Sessions will fetch issue context on start, create issues from review findings, and mark issues Done on archive.
+
+## Passive Context
+
+Claude automatically reads your session context when you ask things like:
 - "What's the project status?"
 - "What were we working on?"
 - "What decisions have we made?"
 
-### Archive Awareness
-Claude suggests archiving when:
-- You merge a PR: "merge it", "ship it"
-- After successful `gh pr merge`
-- You mention completion: "done with X", "shipped"
-
-## Directory Structure
-
-The plugin creates and manages:
-
-```
-.sessions/
-├── index.md          # Living context document
-├── config.json       # Project settings
-├── archive/          # Completed work
-├── specs/            # Implementation specs (or at project root)
-├── docs/             # Topic documentation (or at project root)
-├── scripts/          # Temporary session scripts
-└── .gitignore        # Based on chosen strategy
-```
-
-## Git Strategies
-
-Choose how `.sessions/` is handled:
-
-| Strategy | What's tracked | Best for |
-|----------|---------------|----------|
-| **Ignore all** | Nothing | Solo work, privacy |
-| **Hybrid** | docs/, specs/ only | Teams wanting shared docs |
-| **Commit all** | Everything | Full transparency |
-
-Change anytime with `/sessions:git-strategy`.
-
-## Naming Conventions
-
-| Type | Pattern | Example |
-|------|---------|---------|
-| Archive | `YYYY-MM-DD-<issue>-<topic>.md` | `2025-12-22-GTMENG-387-inbound-improvements.md` |
-| Specs | `<issue>-<topic>.md` | `GTMENG-410-webhook-refactor.md` |
-| Docs | `<topic>.md` | `inbound-agent-architecture.md` |
-
-Issue IDs are optional but encouraged for traceability.
-
-## Linear Integration
-
-Enable Linear MCP integration to manage Linear issues alongside your sessions:
-
-- **Start**: Fetch Linear issue context with `ENG-123` or Linear URL
-- **Review**: Create Linear issues from findings
-- **Archive**: Mark Linear issues as Done when work completes
-
-### Setup
-
-1. Install and configure [Linear MCP](https://github.com/anthropics/anthropic-quickstarts/tree/main/mcp-linear)
-2. Run `/sessions:configure` and enable Linear integration
-3. Use Linear issue IDs (e.g., `ENG-123`) when starting sessions
-
-### Usage
-
-```
-# Start session with Linear issue
-/sessions:start
-> What do you want to work on?
-> ENG-123
-
-# After review, create issues
-/sessions:review
-> Want me to create GitHub/Linear issues?
-> Create Linear issue
-
-# Archive marks issue as Done
-/sessions:archive
-> Mark Linear issue ENG-123 as Done?
-> Yes
-```
-
-If Linear MCP is not configured, the plugin warns gracefully and continues without Linear features.
+And suggests archiving when you merge PRs or mention shipping.
 
 ## Requirements
 
 - [Claude Code CLI](https://claude.ai/code)
-- Git repository (for context location)
-- `gh` CLI (optional, for GitHub integration)
-- [Linear MCP](https://github.com/anthropics/anthropic-quickstarts/tree/main/mcp-linear) (optional, for Linear integration)
+- Git repository
 
-## Migration from create-sessions-dir
+Optional: `gh` CLI for GitHub integration, Linear MCP for Linear integration.
 
-If you used `npx create-sessions-dir` before:
+## Learn More
 
-1. Install this plugin
-2. Your existing `.sessions/` directory works as-is
-3. Old `.claude/commands/` can be removed (plugin provides commands)
-4. Old `.claude/skills/` can be removed (plugin provides skills)
-5. Run `/sessions:configure` to set up your preferences
+**Blog post**: [Pairing with a Partner Who Forgets Everything](https://vieko.dev/sessions)
 
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for version history.
+**Changelog**: [CHANGELOG.md](CHANGELOG.md)
 
 ## License
 
