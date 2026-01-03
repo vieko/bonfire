@@ -18,13 +18,17 @@ You'll receive a structured prompt with these sections:
 
 ## Interview Q&A
 
-**Q1**: <question asked>
-**A1**: <user's answer>
+### Core Decisions
+**Q**: <question about fundamental approach>
+**A**: <user's answer>
 
-**Q2**: <question asked>
-**A2**: <user's answer>
+### Edge Cases & Tradeoffs
+**Q**: <question about error handling, edge cases>
+**A**: <user's answer>
 
-...
+### Scope & Boundaries
+**Q**: <question about what's in/out of scope>
+**A**: <user's answer>
 
 ## Spec Metadata
 
@@ -35,6 +39,11 @@ You'll receive a structured prompt with these sections:
 ```
 
 All sections are required. Write the spec to the exact path specified in Output Path.
+
+**Mapping Q&A to spec sections:**
+- Core Decisions → Decisions, Approach
+- Edge Cases & Tradeoffs → Edge Cases, Risks & Considerations
+- Scope & Boundaries → Out of Scope, Implementation Steps
 
 ## Output
 

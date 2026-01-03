@@ -105,13 +105,17 @@ Provide the prompt in this exact format:
 
 ## Interview Q&A
 
-**Q1**: <first question you asked>
-**A1**: <user's answer>
+### Core Decisions
+**Q**: <question from Round 1>
+**A**: <user's answer>
 
-**Q2**: <second question you asked>
-**A2**: <user's answer>
+### Edge Cases & Tradeoffs
+**Q**: <question from Round 2>
+**A**: <user's answer>
 
-<continue for all Q&A>
+### Scope & Boundaries
+**Q**: <question from Round 3>
+**A**: <user's answer>
 
 ## Spec Metadata
 
