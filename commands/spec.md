@@ -96,12 +96,32 @@ Tell the user "I have enough to write the spec" when ready.
 
 Use the Task tool to invoke the **spec-writer** subagent.
 
-Provide:
-1. **Research findings** from Step 4
-2. **Interview Q&A** from Step 5
-3. **Metadata**: topic, issue ID, output path (`<git-root>/<specsLocation>/<filename>.md`)
+Provide the prompt in this exact format:
 
-The subagent will write the spec file directly.
+```
+## Research Findings
+
+<paste structured findings from Step 4>
+
+## Interview Q&A
+
+**Q1**: <first question you asked>
+**A1**: <user's answer>
+
+**Q2**: <second question you asked>
+**A2**: <user's answer>
+
+<continue for all Q&A>
+
+## Spec Metadata
+
+- **Topic**: <topic name>
+- **Issue**: <issue ID or N/A>
+- **Output Path**: <git-root>/<specsLocation>/<filename>.md
+- **Date**: <YYYY-MM-DD>
+```
+
+The subagent will write the spec file directly to the Output Path.
 
 **Naming convention**: `<issue-id>-<topic>.md` or `<topic>.md`
 
