@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.1] - 2026-01-05
+
+### Changed
+
+- Setup questions now use "Default" instead of "Recommended" for option labels
+  - Affects `/bonfire:start` (scaffolding) and `/bonfire:configure`
+  - Clearer terminology: these are defaults, not recommendations
+
 ## [0.9.0] - 2026-01-03
 
 ### Added

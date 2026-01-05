@@ -21,20 +21,20 @@ Check if `<git-root>/.bonfire/index.md` exists.
 2. Use AskUserQuestion to ask setup questions (4 questions, one round):
 
    1. "Where should specs be saved?" (Header: "Specs")
-      - .bonfire/specs/ (Recommended) - Keep with session context
+      - .bonfire/specs/ (Default) - Keep with session context
       - specs/ - Project root level
 
    2. "Where should docs be saved?" (Header: "Docs")
-      - .bonfire/docs/ (Recommended) - Keep with session context
+      - .bonfire/docs/ (Default) - Keep with session context
       - docs/ - Project root level
 
    3. "How should `.bonfire/` be handled in git?" (Header: "Git")
-      - ignore-all (Recommended) - Keep sessions private/local
+      - ignore-all (Default) - Keep sessions private/local
       - hybrid - Commit docs/specs, keep notes private
       - commit-all - Share everything with team
 
    4. "Enable Linear MCP integration?" (Header: "Linear")
-      - No (Recommended) - Skip Linear integration
+      - No (Default) - Skip Linear integration
       - Yes - Fetch/create Linear issues (requires Linear MCP)
 
 3. Create the directory structure based on user choices:
