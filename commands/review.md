@@ -1,6 +1,6 @@
 ---
 description: Review work for blindspots, gaps, and improvements
-allowed-tools: Bash(git:*), Bash(gh:*), Read, Write, Task, mcp__linear__*
+allowed-tools: Bash(git:*), Bash(gh:*), Bash(linear:*), Read, Write, Task
 ---
 
 # Review Work
@@ -149,14 +149,14 @@ gh issue create --title "Finding title" --body "Finding details"
 ```
 
 **Linear Issue Creation (if enabled):**
-1. Use Linear MCP `linear_create_issue` tool with:
-   - `title`: Finding summary
-   - `description`: Finding details with context
-   - `teamId`: Infer from session context if available, otherwise use default
+1. Use linear-cli to create the issue:
+   ```bash
+   linear issue create --title "Finding title" --description "Finding details"
+   ```
 2. On success: Return issue URL/ID
 3. On failure: Warn user, offer to create GitHub issue instead
 
-Note: Tool names may vary by Linear MCP implementation.
+Note: Run `linear issue create --help` to see available options (team, priority, labels, etc.).
 
 **For each created issue:**
 - Record the issue ID and URL

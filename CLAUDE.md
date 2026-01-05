@@ -57,7 +57,7 @@ All settings are stored in `.bonfire/config.json` per-project:
 - **specsLocation**: Where specs are saved (.bonfire/specs/ or specs/)
 - **docsLocation**: Where docs are saved (.bonfire/docs/ or docs/)
 - **gitStrategy**: How .bonfire/ is handled in git (ignore-all, hybrid, commit-all)
-- **linearEnabled**: Enable Linear MCP integration (true/false)
+- **linearEnabled**: Enable Linear integration via linear-cli (true/false)
 
 ## Subagent Architecture
 

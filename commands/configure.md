@@ -37,9 +37,9 @@ Use AskUserQuestion to ask configuration questions (4 questions, one round):
    - hybrid - Commit docs/specs, keep notes private
    - commit-all - Share everything with team
 
-4. "Enable Linear MCP integration?" (Header: "Linear")
+4. "Enable Linear integration?" (Header: "Linear")
    - No (Default) - Skip Linear integration
-   - Yes - Fetch/create Linear issues (requires Linear MCP)
+   - Yes - Fetch/create Linear issues (requires linear-cli)
 
 ## Step 5: Update Config
 

@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.2] - 2026-01-05
+
+### Changed
+
+- **Replaced Linear MCP with linear-cli** - Lower context cost, better developer experience
+  - Install: `brew install schpet/tap/linear` then `linear auth`
+  - Commands now use `Bash(linear:*)` instead of `mcp__linear__*`
+  - ~5x less context (~2KB vs ~10KB) with on-demand discovery via `--help`
+  - Bonus: git integration (branch creation from issues)
+  - See [linear-cli](https://github.com/schpet/linear-cli) for full documentation
+
+### Migration from 0.9.1
+
+If you use Linear integration:
+1. Install linear-cli: `brew install schpet/tap/linear`
+2. Authenticate: `linear auth`
+3. (Optional) Remove Linear MCP from your Claude Code config
+
 ## [0.9.1] - 2026-01-05
 
 ### Changed

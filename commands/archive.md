@@ -1,6 +1,6 @@
 ---
 description: Archive completed session work
-allowed-tools: Bash(git:*), Read, Write, Glob, mcp__linear__*
+allowed-tools: Bash(git:*), Bash(linear:*), Read, Write, Glob
 model: haiku
 ---
 
@@ -90,13 +90,17 @@ Read `<git-root>/.bonfire/config.json` and check `linearEnabled`.
 1. Check if archived work references a Linear issue (look in session context for `[A-Z]+-[0-9]+` pattern)
 2. If Linear issue found, ask user: "Mark Linear issue [ISSUE-ID] as Done?"
 3. If user confirms:
-   - Use Linear MCP `linear_update_issue` tool with:
-     - `id`: The issue ID (e.g., `ENG-123`)
-     - `status`: Set to "Done" or completed state
-   - Optionally use `linear_add_comment` to add link to archive/PR
+   - Use linear-cli to update the issue:
+     ```bash
+     linear issue update ENG-123 --state "Done"
+     ```
+   - Optionally add a comment with link to archive/PR:
+     ```bash
+     linear issue comment add ENG-123 -b "Archived: [link]"
+     ```
 4. On failure: Warn user - "Couldn't update Linear issue. You may need to update it manually."
 
-Note: Tool names may vary by Linear MCP implementation.
+Note: Run `linear issue update --help` to see available options.
 
 **If `linearEnabled` is false or not set**: Skip this step.
 

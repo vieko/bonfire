@@ -117,11 +117,14 @@ Change anytime with `/bonfire:configure`.
 
 If you use Linear for issue tracking:
 
-1. Install [Linear MCP](https://github.com/anthropics/anthropic-quickstarts/tree/main/mcp-linear)
-2. Enable via `/bonfire:configure`
-3. Reference issues by ID: `ENG-123`
+1. Install [linear-cli](https://github.com/schpet/linear-cli) (`brew install schpet/tap/linear`)
+2. Authenticate: `linear auth`
+3. Enable via `/bonfire:configure`
+4. Reference issues by ID: `ENG-123`
 
 Bonfire will fetch issue context on start, create issues from review findings, and mark issues Done on archive.
+
+**Why linear-cli over Linear MCP?** Lower context cost (~2KB vs ~10KB), on-demand discovery via `--help`, and git integration as a bonus.
 
 ## Proactive Skills
 
@@ -137,7 +140,7 @@ And suggests archiving when you merge PRs or mention shipping.
 - [Claude Code CLI](https://claude.ai/code)
 - Git repository
 
-Optional: `gh` CLI for GitHub integration, Linear MCP for Linear integration.
+Optional: `gh` CLI for GitHub integration, [linear-cli](https://github.com/schpet/linear-cli) for Linear integration.
 
 ## Recommended: Auto-Formatting Hook
 

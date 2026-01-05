@@ -1,6 +1,6 @@
 ---
 description: Start a new session - reads context and scaffolds .bonfire/ if needed
-allowed-tools: Bash(git:*), Bash(gh:*), Bash(mkdir:*), Read, Write, Glob, AskUserQuestion, mcp__linear__*
+allowed-tools: Bash(git:*), Bash(gh:*), Bash(mkdir:*), Bash(linear:*), Read, Write, Glob, AskUserQuestion
 model: haiku
 ---
 
@@ -33,9 +33,9 @@ Check if `<git-root>/.bonfire/index.md` exists.
       - hybrid - Commit docs/specs, keep notes private
       - commit-all - Share everything with team
 
-   4. "Enable Linear MCP integration?" (Header: "Linear")
+   4. "Enable Linear integration?" (Header: "Linear")
       - No (Default) - Skip Linear integration
-      - Yes - Fetch/create Linear issues (requires Linear MCP)
+      - Yes - Fetch/create Linear issues (requires linear-cli)
 
 3. Create the directory structure based on user choices:
 
@@ -223,12 +223,15 @@ First, read `<git-root>/.bonfire/config.json` and check `linearEnabled`.
 **If `linearEnabled` is false or not set**: Skip Linear, treat as ad-hoc task.
 
 **If `linearEnabled` is true**:
-1. Use Linear MCP `linear_search_issues` tool to find the issue by ID (e.g., `ENG-123`)
+1. Use linear-cli to fetch the issue:
+   ```bash
+   linear issue view ENG-123
+   ```
 2. Extract: title, description, state, priority, labels, assignee
 3. On success: Summarize the issue context
-4. On failure: Warn user - "Couldn't fetch Linear issue. Linear MCP may not be configured. Continue without issue context?"
+4. On failure: Warn user - "Couldn't fetch Linear issue. Is linear-cli installed and authenticated? Continue without issue context?"
 
-Note: Tool names may vary by Linear MCP implementation. Common tools: `linear_search_issues`, `linear_create_issue`, `linear_update_issue`.
+Note: Run `linear issue view --help` to see available options.
 
 ### Update Session Context
 
