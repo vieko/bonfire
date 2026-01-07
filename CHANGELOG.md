@@ -2,16 +2,6 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.9.3] - 2026-01-06
-
-### Added
-
-- **Optional session duration tracking** - Hidden feature to track session length
-  - Enable via config.json: `"trackSessionDuration": true`
-  - `/bonfire:start` records session start time
-  - `/bonfire:end` calculates and displays duration in session header
-  - Format: `### Session 15 - 2026-01-06 (1h 23m)`
-
 ## [0.9.2] - 2026-01-05
 
 ### Changed

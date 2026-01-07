@@ -1,6 +1,6 @@
 ---
 description: End session - update context and commit changes
-allowed-tools: Bash(git:*), Bash(rm:*), Bash(mv:*), Bash(mkdir:*), Bash(*/duration.sh:*), Read, Write, Glob, AskUserQuestion
+allowed-tools: Bash(git:*), Bash(rm:*), Bash(mv:*), Bash(mkdir:*), Read, Write, Glob, AskUserQuestion
 model: haiku
 ---
 
@@ -9,18 +9,6 @@ model: haiku
 ## Step 1: Find Git Root
 
 Run `git rev-parse --show-toplevel` to locate the repository root.
-
-## Step 1.5: Check Session Duration Tracking
-
-Read `<git-root>/.bonfire/config.json`. If `trackSessionDuration` is `true` and `sessionStartTime` exists:
-
-1. Calculate duration using the helper script:
-   ```bash
-   <plugin-dir>/scripts/duration.sh "<sessionStartTime>"
-   ```
-   Output format: "1h 23m" or "45m"
-2. Store this duration to include in the session entry header
-3. Clear `sessionStartTime` from config.json (set to `null`)
 
 ## Step 2: Review Session Work
 
@@ -33,24 +21,15 @@ Review what was accomplished this session by examining:
 
 Update `<git-root>/.bonfire/index.md`:
 
-1. Update the session entry header. If duration was calculated in Step 1.5, include it:
-   ```markdown
-   ### Session 15 - 2026-01-06 (1h 23m)
-   ```
-   If no duration tracking, use the standard format:
-   ```markdown
-   ### Session 15 - 2026-01-06
-   ```
-
-2. Update the session entry with:
+1. Update the session entry with:
    - **Accomplished**: List what was completed
    - **Decisions**: Key decisions made and rationale
    - **Files Modified**: Important files changed (if relevant)
    - **Blockers**: Any issues encountered
 
-3. Update "Next Session Priorities" based on remaining work
+2. Update "Next Session Priorities" based on remaining work
 
-4. Update "Current State" to reflect new status
+3. Update "Current State" to reflect new status
 
 ## Step 4: Manage Session Scripts
 

@@ -201,20 +201,6 @@ Summarize:
 
 Then ask: "What do you want to work on this session?"
 
-## Step 4.5: Record Session Start Time (if enabled)
-
-Read `<git-root>/.bonfire/config.json`. If `trackSessionDuration` is `true`:
-
-1. Record the current ISO timestamp
-2. Update config.json with `sessionStartTime`:
-   ```json
-   {
-     "sessionStartTime": "2026-01-06T10:30:00.000Z"
-   }
-   ```
-
-This timestamp will be used by `/bonfire:end` to calculate session duration.
-
 ## Step 5: Fetch External Context (Optional)
 
 **Only fetch if user provides a new URL or issue ID:**
