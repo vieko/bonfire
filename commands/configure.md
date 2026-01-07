@@ -84,7 +84,6 @@ If specsLocation is `.bonfire/specs/`, add:
 ```
 data/
 scratch/
-scripts/
 ```
 
 If switching FROM commit/hybrid TO ignore:

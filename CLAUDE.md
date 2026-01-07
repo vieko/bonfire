@@ -37,7 +37,6 @@ The plugin provides commands that manage a `.bonfire/` directory in user project
 ├── archive/      # Completed work (YYYY-MM-DD-<issue>-<topic>.md)
 ├── specs/        # Implementation specs (<issue>-<topic>.md) - location configurable
 ├── docs/         # Reference documentation (<topic>.md) - location configurable
-├── scripts/      # Temporary session scripts (managed at /bonfire:end)
 └── .gitignore    # Based on chosen strategy
 ```
 

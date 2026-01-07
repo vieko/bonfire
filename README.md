@@ -70,8 +70,7 @@ claude plugin install bonfire@vieko
 ├── config.json   # Your settings
 ├── archive/      # Completed work history
 ├── specs/        # Implementation specs
-├── docs/         # Topic documentation
-└── scripts/      # Temporary session scripts
+└── docs/         # Topic documentation
 ```
 
 The `index.md` is where the magic happens. It tracks:

@@ -72,7 +72,6 @@ If specsLocation is `.bonfire/specs/`, add:
 ```
 data/
 scratch/
-scripts/
 ```
 
 ## Step 6: Handle Git Tracking

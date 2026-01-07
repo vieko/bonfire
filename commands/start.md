@@ -45,7 +45,6 @@ Check if `<git-root>/.bonfire/index.md` exists.
    ├── index.md
    ├── config.json
    ├── archive/
-   ├── scripts/
    └── .gitignore
    ```
 
@@ -154,7 +153,6 @@ Check if `<git-root>/.bonfire/index.md` exists.
    ```
    data/
    scratch/
-   scripts/
    ```
 
 **If .bonfire/ EXISTS**, proceed to Step 3.

@@ -1,6 +1,6 @@
 ---
 description: End session - update context and commit changes
-allowed-tools: Bash(git:*), Bash(rm:*), Bash(mv:*), Bash(mkdir:*), Read, Write, Glob, AskUserQuestion
+allowed-tools: Bash(git:*), Read, Write, Glob, AskUserQuestion
 model: haiku
 ---
 
@@ -31,27 +31,7 @@ Update `<git-root>/.bonfire/index.md`:
 
 3. Update "Current State" to reflect new status
 
-## Step 4: Manage Session Scripts
-
-Check if `<git-root>/.bonfire/scripts/` exists and contains any files.
-
-**If scripts exist**, use AskUserQuestion to ask what to do with each script:
-
-"What should happen to these session scripts?" (Header: "Scripts", multiSelect: false)
-
-For each script found, present options:
-- **Keep** - Leave in `.bonfire/scripts/` for next session
-- **Move to project** - Move to `<git-root>/scripts/` (create if needed)
-- **Delete** - Remove the script
-
-Execute the user's choices:
-- **Keep**: No action needed
-- **Move to project**: `mkdir -p <git-root>/scripts/ && mv <script> <git-root>/scripts/`
-- **Delete**: `rm <script>`
-
-**If no scripts exist**, skip this step.
-
-## Step 5: Commit Changes (if tracked)
+## Step 4: Commit Changes (if tracked)
 
 Read `<git-root>/.bonfire/config.json` to check `gitStrategy`.
 
@@ -74,7 +54,7 @@ Read `<git-root>/.bonfire/config.json` to check `gitStrategy`.
 
 If the commit fails due to hooks, help resolve the issue (but never bypass hooks with `--no-verify`).
 
-## Step 6: Confirm
+## Step 5: Confirm
 
 Summarize:
 - What was documented

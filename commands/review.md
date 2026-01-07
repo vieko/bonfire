@@ -62,7 +62,7 @@ After the subagent returns, validate the response:
 **On partial response** (missing categories but has findings):
 1. Warn user: "Review returned partial results. Some categories may be missing."
 2. Present available findings.
-3. Continue to Step 5.
+3. Continue to Step 4.
 
 **On invalid/empty response**:
 1. Warn user: "Review subagent returned no findings. I'll review directly."
@@ -98,18 +98,7 @@ For large changesets, review may need multiple passes. The Task tool returns an 
 - Pass 2 (resume): "Continue review focusing on: test coverage" → finds 3 more test gaps
 - Merge: Combined findings give complete picture
 
-## Step 4: Session Scripts Review
-
-Check if `<git-root>/.bonfire/scripts/` contains any files.
-
-If scripts exist, include in findings:
-- List scripts that may need attention
-- Note if any appear to be temporary/one-off vs reusable
-- Suggest moving useful scripts to project `scripts/` directory
-
-This is informational - actual script management happens during `/bonfire:end`.
-
-## Step 5: Present Findings
+## Step 4: Present Findings
 
 Present the subagent's findings grouped by recommended action:
 
@@ -128,7 +117,7 @@ Present the subagent's findings grouped by recommended action:
 
 > Ask: "Want me to create GitHub/Linear issues?"
 
-## Step 6: Execute Chosen Action
+## Step 5: Execute Chosen Action
 
 Based on user choice:
 - **Fix now**: Make the changes directly
@@ -162,7 +151,7 @@ Note: Run `linear issue create --help` to see available options (team, priority,
 - Record the issue ID and URL
 - Note which tracker (GitHub/Linear) was used
 
-## Step 7: Update Session Context
+## Step 6: Update Session Context
 
 Add review outcomes to `<git-root>/.bonfire/index.md`:
 - Key findings noted
