@@ -4,7 +4,7 @@
   <img src="bonfire.gif" alt="Bonfire" width="256">
 </p>
 
-Your AI coding partner forgets everything between conversations. Bonfire remembers.
+Claude Code forgets everything between conversations. Bonfire remembers.
 
 ```bash
 claude plugin marketplace add vieko/bonfire
@@ -24,7 +24,7 @@ You end up re-explaining context, re-making decisions, and watching your AI part
 
 ## The Solution
 
-Bonfire maintains a living context document that gets read at session start and updated at session end. Your AI partner picks up exactly where you left off. It's like a saved game for your work.
+Bonfire maintains a living context document that gets read at session start and updated at session end. Claude Code picks up exactly where you left off. It's like a saved game for your work.
 
 `/bonfire:start` → *reads context* → WORK → `/bonfire:end` → *saves context*
 
@@ -127,7 +127,7 @@ Bonfire will fetch issue context on start, create issues from review findings, a
 
 ## Proactive Skills
 
-Claude automatically reads your session context when you ask things like:
+Claude Code automatically reads your session context when you ask things like:
 - "What's the project status?"
 - "What were we working on?"
 - "What decisions have we made?"
