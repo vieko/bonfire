@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.4] - 2026-01-08
+
+### Added
+
+- **Agent color coding** - Visual identification for subagents in Claude Code UI
+  - `codebase-explorer`: teal (research/discovery)
+  - `spec-writer`: blue (writing specs)
+  - `doc-writer`: blue (writing docs)
+  - `work-reviewer`: orange (review/warnings)
+
 ## [0.9.3] - 2026-01-07
 
 ### Removed
