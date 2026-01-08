@@ -151,6 +151,10 @@ Keep Claude's code formatted with a PostToolUse hook that runs your project's fo
 
 **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 
+## Credits
+
+Bonfire animation by [Jon Romero Ruiz](https://x.com/jonroru).
+
 ## License
 
 MIT © [Vieko Franetovic](https://vieko.dev)
