@@ -6,6 +6,8 @@
 
 Claude Code forgets everything between conversations. Bonfire remembers.
 
+*A Claude Code plugin that maintains a living context document—read at session start, updated at session end. Pick up exactly where you left off.*
+
 ```bash
 claude plugin marketplace add vieko/bonfire
 claude plugin install bonfire@vieko
