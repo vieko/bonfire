@@ -4,38 +4,21 @@ Session persistence for AI coding - save your progress at the bonfire.
 
 ## Installation
 
-### Option 1: Full Setup (Recommended)
-
-Copy the OpenCode files to your project:
+**Project install:**
 
 ```bash
-# Clone the repo
 git clone https://github.com/vieko/bonfire.git /tmp/bonfire
-
-# Copy to your project
-cp -r /tmp/bonfire/opencode/* /path/to/your/project/.opencode/
-
-# Clean up
+cp -r /tmp/bonfire/opencode/* .opencode/
 rm -rf /tmp/bonfire
 ```
 
-Or for global installation:
+**Global install** (available in all projects):
 
 ```bash
+git clone https://github.com/vieko/bonfire.git /tmp/bonfire
 cp -r /tmp/bonfire/opencode/* ~/.config/opencode/
+rm -rf /tmp/bonfire
 ```
-
-### Option 2: Plugin Only (npm)
-
-If you only want the archive suggestion hooks (not the full command suite):
-
-```json
-{
-  "plugin": ["opencode-bonfire"]
-}
-```
-
-This gives you automatic archive suggestions after PR merges, but you'll need to manage session context manually.
 
 ## What's Included
 
@@ -48,7 +31,7 @@ This gives you automatic archive suggestions after PR merges, but you'll need to
 
 ## Configuration
 
-The `opencode.json` configures:
+The `opencode.json` configures automatic context loading:
 
 ```json
 {
@@ -57,23 +40,16 @@ The `opencode.json` configures:
 }
 ```
 
-This loads your project's `CLAUDE.md` and bonfire session context automatically.
-
 ## Usage
 
-```bash
-# Start a session
-/bonfire-start
-
-# ... do your work ...
-
-# End the session
-/bonfire-end
-
-# Create specs, docs, reviews
-/bonfire-spec <topic>
-/bonfire-document <topic>
-/bonfire-review
+```
+/bonfire-start              # Start session, scaffold if needed
+/bonfire-end                # Update context, commit changes
+/bonfire-spec <topic>       # Create implementation spec
+/bonfire-document <topic>   # Document a codebase topic
+/bonfire-review             # Find blindspots and gaps
+/bonfire-archive            # Archive completed work
+/bonfire-configure          # Change project settings
 ```
 
 ## Compatibility

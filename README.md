@@ -19,27 +19,20 @@ claude plugin install bonfire@vieko
 
 ### OpenCode
 
-**Full install** (commands, agents, skills, plugin):
+**Project install:**
 
 ```bash
-# Clone and copy to your project
 git clone https://github.com/vieko/bonfire.git /tmp/bonfire
 cp -r /tmp/bonfire/opencode/* .opencode/
 rm -rf /tmp/bonfire
 ```
 
-**Plugin only** (just archive suggestions via npm):
-
-```json
-{
-  "plugin": ["opencode-bonfire"]
-}
-```
-
 **Global install** (available in all projects):
 
 ```bash
+git clone https://github.com/vieko/bonfire.git /tmp/bonfire
 cp -r /tmp/bonfire/opencode/* ~/.config/opencode/
+rm -rf /tmp/bonfire
 ```
 
 ## The Problem
