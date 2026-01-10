@@ -1,0 +1,35 @@
+{
+  "name": "opencode-bonfire",
+  "version": "0.9.6",
+  "description": "Bonfire plugin for OpenCode - archive suggestions after PR merge",
+  "author": {
+    "name": "Vieko Franetovic",
+    "email": "hello@vieko.dev",
+    "url": "https://vieko.dev"
+  },
+  "homepage": "https://github.com/vieko/bonfire",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vieko/bonfire"
+  },
+  "license": "MIT",
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "bonfire",
+    "session",
+    "context",
+    "memory"
+  ],
+  "type": "module",
+  "main": "./plugin/bonfire-hooks.ts",
+  "exports": {
+    ".": "./plugin/bonfire-hooks.ts"
+  },
+  "files": [
+    "plugin"
+  ],
+  "peerDependencies": {
+    "@opencode-ai/plugin": "*"
+  }
+}
