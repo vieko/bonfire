@@ -1,6 +1,6 @@
 {
   "name": "bonfire",
-  "version": "0.9.9",
+  "version": "1.0.0",
   "description": "Claude Code forgets everything between sessions. Bonfire remembers.",
   "author": {
     "name": "Vieko Franetovic",

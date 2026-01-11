@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] - 2026-01-11
+
+### Added
+
+- **Full OpenCode support** - Bonfire now works with both Claude Code and OpenCode
+- **npm distribution** - Install OpenCode version via `bunx opencode-bonfire install`
+- **Custom tool for OpenCode** - `bonfire` tool provides structured JSON access to session data
+- **Plugin hooks for OpenCode** - Archive suggestions and context preservation during compaction
+
+### Changed
+
+- **Reorganized repository structure** - Separate `claude/` and `opencode/` directories
+- **Updated tagline** - Now leads with benefit: "Pick up exactly where you left off"
+- **Platform-neutral language** - Removed platform-specific terminology from descriptions
+
+### Fixed
+
+- **OpenCode model IDs** - Updated to use valid `anthropic/claude-haiku-4-5`
+- **Plugin initialization** - Fixed hang by removing blocking log calls
+- **Model inheritance** - Commands now properly inherit model from config
+
 ## [0.9.6] - 2026-01-08
 
 ### Changed

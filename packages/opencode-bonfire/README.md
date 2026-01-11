@@ -4,7 +4,7 @@
   <img src="https://raw.githubusercontent.com/vieko/bonfire/main/bonfire.gif" alt="Bonfire" width="256">
 </p>
 
-*A plugin that maintains a living context document—read at session start, updated at session end. Pick up exactly where you left off.*
+*Pick up exactly where you left off. Bonfire maintains a living context document across AI coding sessions—read at start, updated at end.*
 
 ## Installation
 
