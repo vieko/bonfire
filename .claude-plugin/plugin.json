@@ -1,0 +1,29 @@
+{
+  "name": "bonfire",
+  "version": "1.0.0",
+  "description": "Claude Code forgets everything between sessions. Bonfire remembers.",
+  "author": {
+    "name": "Vieko Franetovic",
+    "email": "hello@vieko.dev",
+    "url": "https://vieko.dev"
+  },
+  "homepage": "https://vieko.dev/bonfire",
+  "repository": "https://github.com/vieko/bonfire",
+  "license": "MIT",
+  "keywords": [
+    "bonfire",
+    "context",
+    "memory",
+    "workflow",
+    "documentation",
+    "subagents"
+  ],
+  "commands": "claude/commands/",
+  "skills": "claude/skills/",
+  "agents": [
+    "claude/agents/codebase-explorer.md",
+    "claude/agents/spec-writer.md",
+    "claude/agents/work-reviewer.md",
+    "claude/agents/doc-writer.md"
+  ]
+}
