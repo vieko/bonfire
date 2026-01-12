@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
 - **OpenCode model IDs** - Updated to use valid `anthropic/claude-haiku-4-5`
 - **Plugin initialization** - Fixed hang by removing blocking log calls
 - **Model inheritance** - Commands now properly inherit model from config
+- **Plugin manifest paths** - Added required `./` prefix to all paths per schema spec
 
 ## [0.9.6] - 2026-01-08
 

@@ -18,12 +18,12 @@
     "documentation",
     "subagents"
   ],
-  "commands": "claude/commands/",
-  "skills": "claude/skills/",
+  "commands": "./claude/commands",
+  "skills": "./claude/skills",
   "agents": [
-    "claude/agents/codebase-explorer.md",
-    "claude/agents/spec-writer.md",
-    "claude/agents/work-reviewer.md",
-    "claude/agents/doc-writer.md"
+    "./claude/agents/codebase-explorer.md",
+    "./claude/agents/spec-writer.md",
+    "./claude/agents/work-reviewer.md",
+    "./claude/agents/doc-writer.md"
   ]
 }
