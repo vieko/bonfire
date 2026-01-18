@@ -114,6 +114,19 @@ Check if `<git-root>/.bonfire/index.md` exists.
 
    ---
 
+   ## Codemap
+
+   **Entry Points** (user-curated):
+   - [Add main entry points here]
+
+   **Core Components** (user-curated):
+   - [Add key directories/modules here]
+
+   **This Session's Key Files** (auto-updated):
+   - [Files will be added by /bonfire:end]
+
+   ---
+
    ## Archived Sessions
 
    [Links to archived sessions will appear here]

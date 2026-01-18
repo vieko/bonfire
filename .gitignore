@@ -6,3 +6,4 @@ opencode.json
 packages/*/dist/
 packages/*/files/
 packages/*/node_modules/
+.claude/

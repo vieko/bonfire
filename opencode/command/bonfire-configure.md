@@ -94,3 +94,4 @@ Report:
 - Settings updated
 - Any manual steps needed (git cleanup)
 - New configuration summary
+- Note: Context preservation during compaction is automatic (handled by Bonfire plugin hooks)

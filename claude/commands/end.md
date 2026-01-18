@@ -31,7 +31,46 @@ Update `<git-root>/.bonfire/index.md`:
 
 3. Update "Current State" to reflect new status
 
-## Step 4: Commit Changes (if tracked)
+## Step 4: Update Codemap
+
+Update the "Codemap" section in `index.md` with files referenced this session:
+
+1. **Identify key files** from this session:
+   - Files you read or edited
+   - Files mentioned in commits
+   - Files central to the work done
+
+2. **Update "This Session's Key Files"**:
+   - List up to 10 most relevant files
+   - Include brief description of what each does
+   - Format: `- \`path/to/file.ts\` - Brief description`
+
+3. **Preserve user-curated sections**:
+   - Keep "Entry Points" as-is (user maintains these)
+   - Keep "Core Components" as-is (user maintains these)
+
+4. **Keep it concise**:
+   - Only include files directly relevant to session work
+   - Remove stale entries from previous sessions
+   - Max 10 files in "This Session's Key Files"
+
+Example:
+```markdown
+## Codemap
+
+**Entry Points** (user-curated):
+- `src/index.ts` - Main entry
+
+**Core Components** (user-curated):
+- `src/commands/` - CLI commands
+
+**This Session's Key Files** (auto-updated):
+- `claude/commands/configure.md` - Added PreCompact hook setup
+- `claude/commands/end.md` - Added Codemap update step
+- `.bonfire/specs/codemap-feature.md` - Feature specification
+```
+
+## Step 5: Commit Changes (if tracked)
 
 Read `<git-root>/.bonfire/config.json` to check `gitStrategy`.
 
@@ -54,7 +93,7 @@ Read `<git-root>/.bonfire/config.json` to check `gitStrategy`.
 
 If the commit fails due to hooks, help resolve the issue (but never bypass hooks with `--no-verify`).
 
-## Step 5: Confirm
+## Step 6: Confirm
 
 Summarize:
 - What was documented

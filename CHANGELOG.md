@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-01-18
+
+### Added
+
+- **PreCompact hook setup (experimental)** - Claude Code users can opt-in to context preservation during compaction
+  - New option in `/bonfire:configure`: "Set up context preservation hook?"
+  - Creates `.claude/settings.json` with PreCompact hook that outputs index.md before compaction
+  - Note: Hook fires before compaction but behavior may vary; OpenCode's plugin hooks are more reliable
+
+- **Codemap section** - Track key files across sessions to reduce exploration burn
+  - New section in `index.md` template: Entry Points, Core Components, This Session's Key Files
+  - `/bonfire:end` updates "This Session's Key Files" with files referenced during session
+  - User-curated Entry Points and Core Components are preserved
+
+- **Review verdict system** - Clearer "ship it" vs "needs work" signals from `/bonfire:review`
+  - Output now starts with `## Verdict: APPROVE | CONDITIONAL | BLOCK`
+  - Severity counts in summary (Critical, Important, Moderate, Minor)
+  - Verdict rationale section explains decision
+  - Severity tiers map to verdicts: Critical/Important → BLOCK, Moderate → CONDITIONAL, Minor → APPROVE
+
+### Changed
+
+- `/bonfire:configure` now has 9 steps (was 7) with hook check and setup
+- `/bonfire:end` now has 6 steps (was 5) with Codemap update step
+- work-reviewer agent output format updated with verdict header
+
 ## [1.0.1] - 2026-01-12
 
 ### Added
