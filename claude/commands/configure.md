@@ -121,7 +121,7 @@ If switching FROM commit/hybrid TO ignore:
         "hooks": [
           {
             "type": "command",
-            "command": "echo '## Session Context (preserved before compaction)' && head -100 .bonfire/index.md 2>/dev/null || echo 'No session context found'"
+            "command": "echo '## Session Context (preserved before compaction)' && head -100 \"$(git rev-parse --show-toplevel)/.bonfire/index.md\" 2>/dev/null || echo 'No session context found'"
           }
         ]
       }

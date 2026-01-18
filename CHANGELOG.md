@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2026-01-18
+
+### Fixed
+
+- **PreCompact hook path resolution** - Hook now uses absolute path via `git rev-parse --show-toplevel`
+  - Previously used relative path `.bonfire/index.md` which failed when running from subdirectories
+  - Fixes "No session context found" error during `/compact` when not at git root
+
 ## [1.1.0] - 2026-01-18
 
 ### Added
