@@ -55,21 +55,29 @@ You'll receive:
 
 ## Output Format
 
-Return findings as structured markdown, categorized by action:
+Return findings as structured markdown with a clear verdict at the top:
 
 ```markdown
+## Verdict: APPROVE | CONDITIONAL | BLOCK
+
+**Reason**: [One-line explanation of verdict]
+
+---
+
 ## Summary
 
 - **Total findings**: X
-- **Fix now (trivial)**: Y
-- **Needs spec**: Z
-- **Create issues**: W
+- **Critical**: N (blocks)
+- **Important**: N (blocks)
+- **Moderate**: N (conditional)
+- **Minor**: N (approve)
 
 ---
 
 ## Fix Now (trivial effort, do immediately)
 
 ### [Finding title]
+- **Severity**: Critical | Important | Moderate | Minor
 - **What**: [Description]
 - **Where**: `path/to/file.ts:123`
 - **Fix**: [Specific action]
@@ -80,6 +88,7 @@ Return findings as structured markdown, categorized by action:
 ## Needs Spec (important, needs planning)
 
 ### [Finding title]
+- **Severity**: Critical | Important | Moderate | Minor
 - **What**: [Description]
 - **Effort**: small | medium
 - **Impact**: [Why this matters]
@@ -90,6 +99,7 @@ Return findings as structured markdown, categorized by action:
 ## Create Issues (large effort or nice-to-have)
 
 ### [Finding title]
+- **Severity**: Moderate | Minor
 - **What**: [Description]
 - **Effort**: medium | large
 - **Priority**: important | nice-to-have
@@ -97,10 +107,34 @@ Return findings as structured markdown, categorized by action:
 
 ---
 
+## Verdict Rationale
+
+[Brief explanation of why this verdict was reached and key items to address]
+
+---
+
 ## No Issues Found In
 
 - [Area reviewed that looks good]
 ```
+
+## Verdict Rules
+
+Determine verdict based on highest severity finding:
+
+1. **BLOCK** - Any Critical or Important findings exist
+   - Must address before proceeding
+   - Work is not ready to ship
+
+2. **CONDITIONAL** - Only Moderate findings exist
+   - Proceed with awareness
+   - Should address soon but not blocking
+
+3. **APPROVE** - Only Minor findings (or none)
+   - Safe to proceed
+   - Minor items can be addressed later
+
+**Always state the verdict clearly at the top. Do not bury it.**
 
 ## Rules
 
@@ -113,12 +147,12 @@ Return findings as structured markdown, categorized by action:
 
 ## Severity Guide
 
-| Severity | Definition | Action |
-|----------|------------|--------|
-| Critical | Breaks functionality, security issue | Fix now |
-| Important | Significant gap, will cause problems | Fix now or spec |
-| Moderate | Should address, not urgent | Spec or issue |
-| Minor | Nice to have, low impact | Issue or skip |
+| Severity | Definition | Verdict Impact | Action |
+|----------|------------|----------------|--------|
+| **Critical** | Breaks functionality, security issue, data loss | BLOCK | Fix now |
+| **Important** | Significant gap, will cause problems later | BLOCK | Fix now or spec |
+| **Moderate** | Should address, not urgent | CONDITIONAL | Spec or issue |
+| **Minor** | Nice to have, low impact | APPROVE | Issue or skip |
 
 ## Effort Guide
 
