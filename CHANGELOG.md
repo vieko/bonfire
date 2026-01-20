@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-01-19
+
+### Added
+
+- **RFC command** (`/bonfire:rfc`, `/bonfire-rfc`) - Create Request for Comments documents
+  - Research-informed interview: problem definition, proposed solutions, logistics
+  - Vercel-style template: Abstract, Background, Problems, Proposed Solution, Alternatives
+  - Stored in docs location (configurable)
+
+- **PRD command** (`/bonfire:prd`, `/bonfire-prd`) - Create Product Requirements Documents
+  - Research-informed interview: problem, users, requirements, scope
+  - Vercel-style template: Overview, Problem, Audience, Goals, Requirements, Scope
+  - 4-round interview covering all PRD aspects
+
+- **POC command** (`/bonfire:poc`, `/bonfire-poc`) - Create Proof of Concept plans
+  - Research-informed interview: customer context, goals, timeline, risks
+  - Vercel-style template: Context, Goals, Success Criteria, Scope, Timeline
+  - Tailored for customer validation scenarios
+
 ## [1.1.1] - 2026-01-18
 
 ### Fixed

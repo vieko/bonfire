@@ -20,6 +20,9 @@ bonfire/
 │   │   ├── start.md
 │   │   ├── end.md
 │   │   ├── spec.md
+│   │   ├── rfc.md
+│   │   ├── prd.md
+│   │   ├── poc.md
 │   │   ├── document.md
 │   │   ├── review.md
 │   │   ├── archive.md
@@ -38,6 +41,9 @@ bonfire/
 │   │   ├── bonfire-start.md
 │   │   ├── bonfire-end.md
 │   │   ├── bonfire-spec.md
+│   │   ├── bonfire-rfc.md
+│   │   ├── bonfire-prd.md
+│   │   ├── bonfire-poc.md
 │   │   ├── bonfire-document.md
 │   │   ├── bonfire-review.md
 │   │   ├── bonfire-archive.md

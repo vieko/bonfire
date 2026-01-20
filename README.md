@@ -67,6 +67,9 @@ Bonfire complements your issue tracker. Use GitHub Issues, Linear, or any other 
 | `/bonfire:start` | `/bonfire-start` | Read context, scaffold on first run |
 | `/bonfire:end` | `/bonfire-end` | Update context, commit changes |
 | `/bonfire:spec <topic>` | `/bonfire-spec <topic>` | Create implementation spec |
+| `/bonfire:rfc <topic>` | `/bonfire-rfc <topic>` | Create RFC document |
+| `/bonfire:prd <feature>` | `/bonfire-prd <feature>` | Create product requirements doc |
+| `/bonfire:poc <customer>` | `/bonfire-poc <customer>` | Create proof of concept plan |
 | `/bonfire:document <topic>` | `/bonfire-document <topic>` | Document a codebase topic |
 | `/bonfire:review` | `/bonfire-review` | Find blindspots, gaps, quick wins |
 | `/bonfire:archive` | `/bonfire-archive` | Archive completed work |
