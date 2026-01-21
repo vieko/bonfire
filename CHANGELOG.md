@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.1] - 2026-01-21
+
+### Added
+
+- **Size warning on start** - Warns when `.bonfire/index.md` exceeds ~20K tokens
+  - Displays prominent `=== SESSION CONTEXT TOO LARGE ===` message
+  - Prompts user to run `/bonfire:archive` to clean up old sessions
+  - Prevents read errors from oversized context files
+
 ## [1.2.0] - 2026-01-19
 
 ### Added

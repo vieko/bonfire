@@ -1,6 +1,6 @@
 {
   "name": "opencode-bonfire",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "OpenCode forgets everything between sessions. Bonfire remembers.",
   "type": "module",
   "bin": {
