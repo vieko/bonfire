@@ -12,9 +12,47 @@ Always runs interactively - asks all configuration questions regardless of argum
 
 Run `git rev-parse --show-toplevel` to locate the repository root.
 
-## Step 2: Check for Bonfire Directory
+## Step 2: Ensure Bonfire Directory Exists
 
-If `<git-root>/.bonfire/` does not exist, tell the user to run `/bonfire:start` first.
+If `<git-root>/.bonfire/` does not exist, create it.
+
+If `<git-root>/.bonfire/index.md` does not exist, create a minimal version:
+
+```markdown
+# Session Context: [PROJECT_NAME]
+
+**Date**: [CURRENT_DATE]
+**Status**: Active
+**Branch**: [CURRENT_BRANCH]
+
+---
+
+## Current State
+
+[Created via /bonfire:configure - run /bonfire:start for full setup]
+
+---
+
+## Recent Sessions
+
+_No sessions recorded yet._
+
+---
+
+## Next Session Priorities
+
+1. [Define your priorities]
+
+---
+
+## Notes
+
+[Add notes here]
+```
+
+Detect project name from: package.json name → git remote → directory name.
+
+This ensures configure can be run as the first entry point without leaving the project in an incomplete state.
 
 ## Step 3: Read Current Config
 

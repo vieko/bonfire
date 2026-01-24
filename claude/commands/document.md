@@ -5,175 +5,102 @@ allowed-tools: Read, Write, Bash(git:*), Task
 
 # Document Topic
 
-Create reference documentation using subagent for research, preserving main context.
+Create reference documentation for **$ARGUMENTS**.
 
-## Step 1: Find Git Root
+---
 
-Run `git rev-parse --show-toplevel` to locate the repository root.
+## Outcome
 
-## Step 2: Check Config
+Complete reference documentation that helps developers understand a system, feature, or pattern in the codebase. The doc should enable someone unfamiliar with the code to:
+- Understand what it does and why it exists
+- Find the relevant files quickly
+- Understand how it works at a conceptual level
+- Avoid common pitfalls
 
-Read `<git-root>/.bonfire/config.json` if it exists.
+---
 
-**Docs location**: Read `docsLocation` from config. Default to `.bonfire/docs/` if not set.
+## Acceptance Criteria
 
-## Step 3: Understand the Topic
+The doc file must contain these sections:
 
-The topic to document is: $ARGUMENTS
+| Section | Purpose |
+|---------|---------|
+| `## Overview` | What this is and why it matters |
+| `## Key Files` | Important files with their roles |
+| `## How It Works` | Conceptual explanation of flow/behavior |
+| `## Gotchas` | Edge cases, pitfalls, things to watch out for |
 
-If no topic provided, ask the user what they want documented.
+Additional sections are welcome (Architecture, Examples, Related Topics) but these four are required.
 
-## Step 4: Explore the Codebase (Subagent)
+**Quality signals:**
+- File paths are accurate and exist in the codebase
+- Explanations match actual code behavior
+- Gotchas reflect real issues (not hypothetical concerns)
 
-**Progress**: Tell the user "Exploring codebase for [TOPIC]..."
+---
 
-Use the Task tool to invoke the **codebase-explorer** subagent for research.
+## Constraints
 
-Provide a research directive:
+### Context Isolation
 
-```
-Research the codebase to document: [TOPIC]
+Research happens in an isolated subagent context to preserve main context.
 
-Find:
-1. **Architecture**: How this system/feature is structured, key components
-2. **Key Files**: Important files and their roles
-3. **Flow**: How data/control flows through the system
-4. **Patterns**: Design patterns and conventions used
-5. **Gotchas**: Important details, edge cases, things to watch out for
+| Phase | Agent | Model | Why |
+|-------|-------|-------|-----|
+| Research | `codebase-explorer` | haiku | Fast exploration without polluting main context |
+| Writing | `doc-writer` | inherit | Synthesis in isolation with full research context |
 
-Return structured findings with file paths and brief descriptions.
-```
+### No Interview Required
 
-**Wait for the subagent to return findings** before proceeding.
+Unlike specs, documentation is based purely on codebase research. The code is the source of truth.
 
-The subagent runs in isolated context (haiku model, fast), preserving main context for writing.
+### File Locations
 
-### Exploration Validation
+- **Config**: `<git-root>/.bonfire/config.json` contains `docsLocation`
+- **Default**: `.bonfire/docs/` if not configured
+- **Naming**: `<topic>.md` (kebab-case, e.g., `authentication-flow.md`)
 
-After the subagent returns, validate the response:
+### Verification
 
-**Valid response contains at least one of:**
-- `## Architecture` or `## Patterns Found` with content
-- `## Key Files` with entries
-- `## Flow` or `## Gotchas` with items
+After writing, verify the doc contains all 4 required sections. If incomplete:
+- Warn user what's missing
+- Offer: proceed / retry / abort
 
-**On valid response**: Proceed to Step 5.
+### Session Context
 
-**On invalid/empty response**:
-1. Warn user: "Codebase exploration returned limited results. I'll research directly."
-2. Fall back to in-context research:
-   - `Glob("**/*[topic-related]*")` to find relevant files
-   - `Grep("topic-keywords")` to find implementations
-   - Read identified files
-3. Continue to Step 5 with in-context findings.
+After writing, add a reference to the doc in `<git-root>/.bonfire/index.md` under Key Resources.
 
-**On subagent failure** (timeout, error):
-1. Warn user: "Subagent exploration failed. Continuing with direct research."
-2. Perform in-context research as above.
-3. Continue to Step 5.
+### Completion
 
-### Resumable Exploration (Large Codebases)
+After verification, confirm doc creation and offer options:
+- Add more detail to any section
+- Document related topics
+- Proceed with other work
 
-For very large codebases, exploration may need multiple passes. The Task tool returns an `agentId` you can use to resume.
+---
 
-**When to offer resume:**
-- Subagent returns with "X additional items omitted" notes
-- Findings cover only part of the topic (e.g., found architecture but not flows)
-- User asks for deeper exploration of a specific aspect
+## Guidance (Not Rules)
 
-**To resume exploration:**
-1. Tell user: "Exploration found [X] but there's more to document. Continue exploring [specific aspect]?"
-2. If yes, re-invoke codebase-explorer with the `resume` parameter:
-   - Pass the agentId from the previous invocation
-   - Provide a refined directive: "Continue exploring: [specific aspect]. Focus on [what to find]."
-3. Merge findings from resumed exploration with previous findings.
-4. Repeat if needed, up to 3 passes maximum.
+These patterns tend to work well, but adapt as needed:
 
-**Example multi-pass scenario:**
-- Pass 1: "Document payment system" → finds payment service, stripe integration
-- Pass 2 (resume): "Continue exploring: refund handling" → finds refund logic, webhooks
-- Merge: Combined findings produce more complete documentation
+**Research before writing** - Let the codebase inform the structure.
 
-## Step 5: Write Documentation (Subagent)
+**Show your work** - Tell user what you're doing: "Exploring codebase...", "Writing documentation..."
 
-**Progress**: Tell the user "Writing documentation..."
+**Fallback gracefully** - If subagent fails, do the work in main context. Warn user but don't stop.
 
-**Naming convention**: `<topic>.md` (kebab-case)
+**Large codebases** - Explorer may need multiple passes. Offer to continue if findings seem incomplete for the topic.
 
-Examples:
-- `inbound-agent-architecture.md`
-- `sampling-strategies.md`
-- `authentication-flow.md`
+**Follow the code** - Document what the code actually does, not what comments claim or what you assume.
 
-Use the Task tool to invoke the **doc-writer** subagent.
+---
 
-Provide the prompt in this exact format:
+## Anti-Patterns
 
-```
-## Research Findings
+**Don't document assumptions** - If you can't find it in the code, don't write about it.
 
-<paste structured findings from Step 4>
+**Don't over-abstract** - Concrete file paths and function names are more useful than vague descriptions.
 
-## Doc Metadata
+**Don't skip verification** - Subagents can produce partial output. Always check.
 
-- **Topic**: <topic name>
-- **Output Path**: <git-root>/<docsLocation>/<topic>.md
-- **Date**: <YYYY-MM-DD>
-```
-
-The subagent will write the doc file directly to the Output Path.
-
-### Doc Verification
-
-After the doc-writer subagent returns, verify the doc is complete.
-
-**Key sections to check** (lenient - only these 4):
-- `## Overview`
-- `## Key Files`
-- `## How It Works`
-- `## Gotchas`
-
-**Verification steps:**
-
-1. **Read the doc file** at `<git-root>/<docsLocation>/<topic>.md`
-
-2. **If file missing or empty**:
-   - Warn user: "Doc file wasn't written. Writing directly..."
-   - Write the doc yourself using the Write tool
-   - Run verification again on the written file
-
-3. **If file exists, check for key sections**:
-   - Scan content for the 4 section headers above
-   - Track which sections are present/missing
-
-4. **If all 4 sections present**:
-   - Tell user: "Doc written and verified (4/4 key sections present)."
-   - Proceed to Step 6.
-
-5. **If 1-3 sections missing** (partial write):
-   - Warn user: "Doc appears incomplete. Missing sections: [list missing]"
-   - Show which sections ARE present
-   - Ask: "Proceed with partial doc, retry write, or abort?"
-   - **Proceed**: Continue to Step 6
-   - **Retry**: Re-invoke doc-writer subagent with same input, then verify again
-   - **Abort**: Stop and inform user the incomplete doc file remains at path
-
-6. **If all sections missing but has content**:
-   - Treat as invalid format, trigger fallback write
-   - Write the doc yourself, then verify the written file
-
-**On subagent failure** (timeout, error):
-- Warn user: "Doc writer failed. Writing doc directly..."
-- Write the doc yourself using the Write tool
-- Run verification on the written file
-
-## Step 5: Link to Session Context
-
-Add a reference to the doc in `<git-root>/.bonfire/index.md` under Key Resources or Notes.
-
-## Step 6: Confirm
-
-Summarize what was documented and ask if the user wants:
-- More detail on any section
-- Related topics documented
-- To proceed with other work
+**Don't write tutorials** - This is reference documentation (how it works), not a guide (how to use it).

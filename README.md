@@ -170,6 +170,18 @@ Change anytime with the configure command.
 | **hybrid** | docs/, specs/ only | Teams wanting shared docs |
 | **commit-all** | Everything | Full transparency |
 
+### Data Protection Warning
+
+When uninstalling bonfire via `claude plugin remove`, your `.bonfire/` directory **may be deleted**. Claude Code does not currently support plugin uninstall hooks to prompt for data retention.
+
+**To protect your session data:**
+
+1. Use `hybrid` or `commit-all` git strategy (ensures data is in version control)
+2. Or manually backup `.bonfire/` before removing the plugin
+3. Or check `~/.Trash` immediately if data is lost (macOS)
+
+This is a [known limitation](https://github.com/anthropics/claude-code/issues/11240) in Claude Code's plugin system.
+
 ## Linear Integration
 
 If you use Linear for issue tracking:
