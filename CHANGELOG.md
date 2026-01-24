@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2026-01-24
+
+### Changed
+
+- **Outcome-oriented commands** - Refactored `/bonfire:spec` and `/bonfire:document` to use outcome-oriented design
+  - Inspired by [Chris Tate's autonomous agent patterns](https://x.com/ctate)
+  - Commands define outcomes + acceptance criteria + constraints (not step-by-step procedures)
+  - Agent decides execution order and adapts to context
+  - 51% reduction in command size (spec: 274→115 lines, document: 180→106 lines)
+  - Testing showed better output quality with fewer tool calls
+
+- **Configure creates index.md** - `/bonfire:configure` now creates `.bonfire/` and `index.md` if missing
+  - Prevents incomplete state when configure runs before start
+  - Any entry point leaves project in usable state
+
+### Added
+
+- **Data protection warning** - README now warns about plugin removal data loss risk
+  - Documents that `claude plugin remove` may delete `.bonfire/` directory
+  - Recommends `hybrid` or `commit-all` git strategy for important projects
+
+- **Known limitations section** - CLAUDE.md documents design decisions
+  - Plugin uninstall data loss (waiting for Claude Code lifecycle hooks)
+  - Outcome-oriented command design philosophy
+
 ## [1.4.0] - 2026-01-22
 
 ### Added
