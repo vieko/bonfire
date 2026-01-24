@@ -166,6 +166,28 @@ Main Context (user interaction)
 3. Run `/bonfire-start` to verify scaffolding
 4. Test other commands
 
+## Known Limitations
+
+### Plugin Uninstall Data Loss
+
+Claude Code does not support `PreUninstall` / `PostUninstall` hooks ([feature request](https://github.com/anthropics/claude-code/issues/11240)). When users run `claude plugin remove bonfire`, their `.bonfire/` directory may be deleted without warning.
+
+**Mitigation for users:**
+- Recommend `hybrid` or `commit-all` git strategy for important projects
+- Document the risk in README
+
+**Future fix:**
+When Claude Code implements lifecycle hooks, add `PreUninstall` hook to prompt: "Keep .bonfire/ data? (Y/n)"
+
+### Outcome-Oriented Commands
+
+The `spec` and `document` commands use an outcome-oriented design (inspired by [Chris Tate's patterns](https://x.com/ctate)). This means:
+- Commands define **what** to achieve, not step-by-step **how**
+- Agent decides execution order and can adapt to context
+- Constraints ensure critical behavior (subagent isolation, verification)
+
+If agent behavior seems unpredictable, check that constraints are explicit enough. Add missing constraints rather than adding procedural steps.
+
 ## Related
 
 - Blog post: https://vieko.dev/bonfire
