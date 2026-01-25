@@ -2,7 +2,6 @@
 name: strategic
 description: Create strategic documents (RFC, PRD, POC)
 argument-hint: <rfc|prd|poc> <topic>
-disable-model-invocation: true
 allowed-tools: Read, Write, Bash(git:*), AskUserQuestion, Task
 ---
 

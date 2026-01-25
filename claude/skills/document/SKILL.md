@@ -2,7 +2,6 @@
 name: document
 description: Create documentation about a topic in the codebase
 argument-hint: <topic>
-disable-model-invocation: true
 allowed-tools: Read, Write, Bash(git:*), Task
 ---
 

@@ -2,7 +2,6 @@
 name: spec
 description: Create an implementation spec for a feature or task
 argument-hint: <topic>
-disable-model-invocation: true
 allowed-tools: Read, Write, Bash(git:*), AskUserQuestion, Task
 ---
 

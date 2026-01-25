@@ -1,7 +1,6 @@
 ---
 name: end
 description: End session - update context and sync to Tasks
-disable-model-invocation: true
 allowed-tools: Bash(git:*), Read, Write, Glob, AskUserQuestion
 ---
 

@@ -2,7 +2,6 @@
 name: configure
 description: Change project settings (locations, git strategy, Linear, hooks)
 argument-hint: [git | linear | hooks]
-disable-model-invocation: true
 allowed-tools: Bash(git:*), Read, Write, AskUserQuestion
 ---
 

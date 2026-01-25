@@ -1,7 +1,6 @@
 ---
 name: archive
 description: Archive completed session work
-disable-model-invocation: true
 allowed-tools: Bash(git:*), Bash(linear:*), Read, Write, Glob
 ---
 

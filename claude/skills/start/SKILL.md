@@ -1,7 +1,6 @@
 ---
 name: start
 description: Start a new session - reads context, sets up Tasks
-disable-model-invocation: true
 allowed-tools: Bash(git:*), Bash(gh:*), Bash(mkdir:*), Bash(linear:*), Read, Write, Glob, AskUserQuestion
 ---
 

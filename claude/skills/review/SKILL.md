@@ -2,7 +2,6 @@
 name: review
 description: Review work for blindspots, gaps, and improvements
 argument-hint: [--session | <topic>]
-disable-model-invocation: true
 allowed-tools: Bash(git:*), Bash(gh:*), Bash(linear:*), Read, Write, Task
 ---
 

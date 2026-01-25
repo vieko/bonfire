@@ -2,7 +2,6 @@
 name: review-pr
 description: Review a GitHub pull request and post inline comments
 argument-hint: <pr-number>
-disable-model-invocation: true
 allowed-tools: Bash(git:*), Bash(gh:*), Read, Write, Task, AskUserQuestion
 ---
 
