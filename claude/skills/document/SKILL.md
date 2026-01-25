@@ -49,8 +49,8 @@ Research happens in an isolated subagent context to preserve main context.
 
 | Phase | Agent | Model | Why |
 |-------|-------|-------|-----|
-| Research | `bonfire:codebase-explorer` | haiku | Fast exploration without polluting main context |
-| Writing | `bonfire:writer` | inherit | Synthesis in isolation with full research context |
+| Research | `codebase-explorer` | inherit | Fast exploration without polluting main context |
+| Writing | `writer` | inherit | Synthesis in isolation with full research context |
 
 Use the Task tool with the appropriate agent. The subagents have `user-invocable: false` so they're only accessible via Task.
 

@@ -1,8 +1,6 @@
 ---
 name: codebase-explorer
 description: Fast codebase exploration for patterns, architecture, and constraints
-user-invocable: false
-model: haiku
 allowed-tools: Read, Glob, Grep
 ---
 

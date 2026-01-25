@@ -11,8 +11,12 @@ bonfire/
 ├── claude/                   # Claude Code plugin
 │   ├── .claude-plugin/
 │   │   └── plugin.json       # Plugin manifest
-│   └── skills/               # All skills (v2.0 unified format)
-│       ├── start/            # User-facing skills
+│   ├── agents/               # Subagents (invoked via Task tool)
+│   │   ├── codebase-explorer.md
+│   │   ├── writer.md
+│   │   └── work-reviewer.md
+│   └── skills/               # User-facing skills
+│       ├── start/
 │       ├── end/
 │       ├── spec/
 │       ├── strategic/        # Replaces rfc, prd, poc
@@ -21,9 +25,6 @@ bonfire/
 │       ├── review-pr/
 │       ├── archive/
 │       ├── configure/        # Absorbs git-strategy
-│       ├── codebase-explorer/ # Hidden agent
-│       ├── writer/           # Hidden agent (merged spec-writer + doc-writer)
-│       ├── work-reviewer/    # Hidden agent
 │       ├── bonfire-context/  # Passive trigger
 │       └── archive-bonfire/  # Passive trigger
 ├── opencode/                 # OpenCode plugin
@@ -113,12 +114,15 @@ Main Context (user interaction)
     └─→ spec-writer (inherit, isolated) → writes file
 ```
 
-**Hidden Agents (v2.0):**
-| Agent | Model | Purpose |
-|-------|-------|---------|
-| `codebase-explorer` | haiku | Fast pattern/architecture research |
-| `writer` | inherit | Synthesize findings → specs, docs, RFCs, PRDs, POCs |
-| `work-reviewer` | sonnet | Strategic review, categorized findings |
+**Subagents (v2.1):**
+
+Subagents are defined in `claude/agents/` and invoked via the Task tool. They inherit the parent model.
+
+| Agent | Purpose |
+|-------|---------|
+| `codebase-explorer` | Fast pattern/architecture research |
+| `writer` | Synthesize findings → specs, docs, RFCs, PRDs, POCs |
+| `work-reviewer` | Strategic review, categorized findings |
 
 ## Development Notes
 

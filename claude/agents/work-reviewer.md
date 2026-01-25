@@ -1,8 +1,6 @@
 ---
 name: work-reviewer
 description: Strategic code review for blindspots, gaps, and improvements
-user-invocable: false
-model: sonnet
 allowed-tools: Read, Glob, Grep, Bash(git:*)
 ---
 

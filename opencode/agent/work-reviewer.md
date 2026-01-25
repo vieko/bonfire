@@ -2,7 +2,6 @@
 description: Strategic code review for blindspots, gaps, and improvements
 mode: subagent
 hidden: true
-model: anthropic/claude-sonnet-4-20250514
 maxSteps: 30
 tools:
   write: false

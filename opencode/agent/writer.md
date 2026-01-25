@@ -1,7 +1,6 @@
 ---
 name: writer
 description: Synthesize research and interview findings into documents
-model: anthropic/claude-sonnet-4-20250514
 hidden: true
 tools: [Read, Write]
 permission:

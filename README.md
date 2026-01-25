@@ -209,7 +209,8 @@ Both platforms use **`CLAUDE.md`** for project rules and **`.bonfire/`** for ses
 bonfire/
 ├── claude/           # Claude Code plugin
 │   ├── .claude-plugin/
-│   └── skills/       # All skills (user-facing + hidden agents)
+│   ├── agents/       # Subagents (codebase-explorer, writer, work-reviewer)
+│   └── skills/       # User-facing skills
 ├── opencode/         # OpenCode plugin
 │   ├── command/
 │   ├── agent/

@@ -2,7 +2,6 @@
 description: Fast codebase exploration for patterns, architecture, and constraints
 mode: subagent
 hidden: true
-model: anthropic/claude-haiku-4-5
 maxSteps: 15
 tools:
   write: false

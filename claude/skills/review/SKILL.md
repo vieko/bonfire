@@ -29,7 +29,7 @@ Based on $ARGUMENTS:
 
 **Progress**: Tell the user "Reviewing work for blindspots and gaps..."
 
-Use the Task tool to invoke the **bonfire:work-reviewer** subagent.
+Use the Task tool to invoke the **work-reviewer** agent.
 
 Provide the review context:
 

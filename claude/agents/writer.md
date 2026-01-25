@@ -1,7 +1,6 @@
 ---
 name: writer
 description: Synthesize research and interview findings into documents
-user-invocable: false
 allowed-tools: Read, Write
 ---
 
