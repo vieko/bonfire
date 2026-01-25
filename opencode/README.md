@@ -20,9 +20,9 @@ bunx opencode-bonfire install --global
 
 | Component | Description |
 |-----------|-------------|
-| **8 Commands** | `/bonfire-start`, `/bonfire-end`, `/bonfire-spec`, etc. |
-| **4 Agents** | `codebase-explorer`, `spec-writer`, `doc-writer`, `work-reviewer` |
-| **1 Skill** | `bonfire-context` for loading session context |
+| **9 Commands** | `/bonfire-start`, `/bonfire-end`, `/bonfire-spec`, `/bonfire-strategic`, etc. |
+| **3 Agents** | `codebase-explorer`, `writer`, `work-reviewer` |
+| **2 Skills** | `bonfire-context`, `archive-bonfire-awareness` |
 | **1 Plugin** | Archive suggestions + compaction context preservation |
 | **1 Tool** | `bonfire` for structured session data |
 
@@ -59,13 +59,15 @@ Plugins and tools are auto-discovered from `.opencode/plugin/` and `.opencode/to
 ## Usage
 
 ```
-/bonfire-start              # Start session, scaffold if needed
-/bonfire-end                # Update context, commit changes
-/bonfire-spec <topic>       # Create implementation spec
-/bonfire-document <topic>   # Document a codebase topic
-/bonfire-review             # Find blindspots and gaps
-/bonfire-archive            # Archive completed work
-/bonfire-configure          # Change project settings
+/bonfire-start                      # Start session, scaffold if needed
+/bonfire-end                        # Update context, commit changes
+/bonfire-spec <topic>               # Create implementation spec
+/bonfire-strategic <type> <topic>   # Create RFC, PRD, or POC
+/bonfire-document <topic>           # Document a codebase topic
+/bonfire-review                     # Find blindspots and gaps
+/bonfire-review-pr <number>         # Review a GitHub PR
+/bonfire-archive                    # Archive completed work
+/bonfire-configure                  # Change project settings (git, linear)
 ```
 
 ## Compatibility

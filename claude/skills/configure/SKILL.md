@@ -65,9 +65,9 @@ This ensures configure can be run as the first entry point without leaving the p
 
 Read `<git-root>/.bonfire/config.json` if it exists to see current settings.
 
-## Step 4: Check Existing Hook
+## Step 4: Check Existing Hooks
 
-Check if `<git-root>/.claude/settings.json` exists and already has a PreCompact hook configured. Store this for later.
+Check if `<git-root>/.claude/settings.json` exists and already has bonfire hooks configured (PreCompact and/or PostToolUse with bonfire-related commands). Store this for later.
 
 ## Step 5: Configuration Mode
 
@@ -94,11 +94,11 @@ Use AskUserQuestion to ask configuration questions (4 questions, one round):
 
 **Then ask a second round (1 question):**
 
-5. "Set up context preservation hook?" (Header: "Hooks")
+5. "Set up bonfire hooks?" (Header: "Hooks")
    - No (Default) - Skip hook setup
-   - Yes - Preserve session context during compaction
+   - Yes - Enable context preservation + archive suggestions
 
-   **Note**: If hook already exists, show: "Yes (already configured)" as first option with description "Hook is already set up"
+   **Note**: If hooks already exist, show: "Yes (already configured)" as first option with description "Hooks are already set up"
 
 ### Quick Mode: Git Strategy Only (`git`)
 
@@ -142,11 +142,11 @@ Then update linearEnabled only, preserve other config values.
 
 Use AskUserQuestion:
 
-"Set up context preservation hook?" (Header: "Hooks")
+"Set up bonfire hooks?" (Header: "Hooks")
 - No - Skip hook setup
-- Yes - Preserve session context during compaction
+- Yes - Enable context preservation + archive suggestions
 
-If hook already exists, note it's already configured.
+If hooks already exist, note they're already configured.
 
 ## Step 6: Update Config
 
@@ -200,15 +200,15 @@ If switching FROM commit/hybrid TO ignore:
 - Warn user that existing tracked files will remain tracked
 - Offer to run: `git rm -r --cached .bonfire/`
 
-## Step 8: Set Up Context Preservation Hook
+## Step 8: Set Up Bonfire Hooks
 
-**If user answered "Yes" to hook setup AND hook doesn't already exist:**
+**If user answered "Yes" to hook setup AND hooks don't already exist:**
 
 1. Create `<git-root>/.claude/` directory if it doesn't exist
 
 2. Read existing `<git-root>/.claude/settings.json` if it exists (to preserve other settings)
 
-3. Add or merge the PreCompact hook:
+3. Add or merge the bonfire hooks:
 
 ```json
 {
@@ -223,18 +223,33 @@ If switching FROM commit/hybrid TO ignore:
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$TOOL_INPUT\" | grep -qE 'gh pr (merge|close)'; then echo 'PR merged/closed! Run /bonfire:archive to archive this session.'; fi"
+          }
+        ]
+      }
     ]
   }
 }
 ```
 
+**Hook purposes:**
+- **PreCompact**: Preserves session context when Claude compacts conversation history
+- **PostToolUse**: Suggests running `/bonfire:archive` after PR merge/close
+
 4. If settings.json already has other hooks, merge carefully:
-   - Preserve existing PreToolUse, PostToolUse, Stop hooks
-   - Add PreCompact array (or append to existing PreCompact if present)
+   - Preserve existing hooks (PreToolUse, PostToolUse, Stop, etc.)
+   - Add/append PreCompact and PostToolUse arrays
 
 5. Write the merged settings to `<git-root>/.claude/settings.json`
 
-**If hook already exists**: Skip this step, mention it's already configured.
+**If hooks already exist**: Skip this step, mention they're already configured.
 
 ## Step 9: Confirm
 

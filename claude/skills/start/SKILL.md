@@ -36,6 +36,12 @@ Check if `<git-root>/.bonfire/index.md` exists.
       - No (Default) - Skip Linear integration
       - Yes - Fetch/create Linear issues (requires linear-cli)
 
+   **Then ask a second round (1 question):**
+
+   5. "Set up bonfire hooks?" (Header: "Hooks")
+      - Yes (Recommended) - Context preservation + archive suggestions
+      - No - Skip hook setup
+
 3. Create the directory structure based on user choices:
 
    **Always create in .bonfire/**:
@@ -166,6 +172,43 @@ Check if `<git-root>/.bonfire/index.md` exists.
    data/
    scratch/
    ```
+
+8. **If user answered "Yes" to hooks**, set up bonfire hooks:
+
+   Create `<git-root>/.claude/` directory if it doesn't exist.
+
+   Create or merge into `<git-root>/.claude/settings.json`:
+
+   ```json
+   {
+     "hooks": {
+       "PreCompact": [
+         {
+           "matcher": "*",
+           "hooks": [
+             {
+               "type": "command",
+               "command": "echo '## Session Context (preserved before compaction)' && head -100 \"$(git rev-parse --show-toplevel)/.bonfire/index.md\" 2>/dev/null || echo 'No session context found'"
+             }
+           ]
+         }
+       ],
+       "PostToolUse": [
+         {
+           "matcher": "Bash",
+           "hooks": [
+             {
+               "type": "command",
+               "command": "if echo \"$TOOL_INPUT\" | grep -qE 'gh pr (merge|close)'; then echo 'PR merged/closed! Run /bonfire:archive to archive this session.'; fi"
+             }
+           ]
+         }
+       ]
+     }
+   }
+   ```
+
+   If settings.json already exists, merge hooks carefully (preserve existing hooks).
 
 **If .bonfire/ EXISTS**, proceed to Step 2.
 
