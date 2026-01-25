@@ -1,23 +1,22 @@
 ---
+name: archive
 description: Archive completed session work
+disable-model-invocation: true
 allowed-tools: Bash(git:*), Bash(linear:*), Read, Write, Glob
-model: haiku
 ---
 
 # Archive Session
 
-## Step 1: Find Git Root
+Git root: !`git rev-parse --show-toplevel`
 
-Run `git rev-parse --show-toplevel` to locate the repository root.
-
-## Step 2: Review Completed Work
+## Step 1: Review Completed Work
 
 Read `<git-root>/.bonfire/index.md` and identify completed work:
 - Sessions with merged PRs
 - Completed features/tasks
 - Work that's no longer active
 
-## Step 3: Create Archive Entry
+## Step 2: Create Archive Entry
 
 Move completed session content to `<git-root>/.bonfire/archive/`.
 
@@ -60,7 +59,7 @@ Use this template:
 - [Links to related docs, specs, or code]
 ```
 
-## Step 4: Clean Up Index
+## Step 3: Clean Up Index
 
 Update `<git-root>/.bonfire/index.md`:
 - Remove archived session entries from Recent Sessions
@@ -73,7 +72,7 @@ Update `<git-root>/.bonfire/index.md`:
   - [YYYY-MM-DD - Topic](archive/YYYY-MM-DD-issue-topic.md)
   ```
 
-## Step 5: Clean Up Specs (if applicable)
+## Step 4: Clean Up Specs (if applicable)
 
 Read `specsLocation` from `<git-root>/.bonfire/config.json` (default `.bonfire/specs/`).
 
@@ -81,7 +80,7 @@ Check if any specs in the configured location are now complete:
 - If the spec was fully implemented, delete the spec file (archive has the record)
 - If the spec has reusable reference material, move that content to `docs/` first
 
-## Step 6: Update Linear Issue (if applicable)
+## Step 5: Update Linear Issue (if applicable)
 
 Read `<git-root>/.bonfire/config.json` and check `linearEnabled`.
 
@@ -100,9 +99,14 @@ Read `<git-root>/.bonfire/config.json` and check `linearEnabled`.
      ```
 4. On failure: Warn user - "Couldn't update Linear issue. You may need to update it manually."
 
-Note: Run `linear issue update --help` to see available options.
-
 **If `linearEnabled` is false or not set**: Skip this step.
+
+## Step 6: Sync Tasks
+
+Update the Tasks list to reflect archived work:
+- Mark completed tasks as done
+- Remove tasks that are no longer relevant
+- Keep active tasks for ongoing work
 
 ## Step 7: Commit Archive (if tracked)
 
@@ -126,5 +130,6 @@ Read `gitStrategy` from `<git-root>/.bonfire/config.json`.
 Report:
 - What was archived
 - Any specs cleaned up
+- Tasks updated
 - Current state of index.md
 - Ready for next session

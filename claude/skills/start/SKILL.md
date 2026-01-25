@@ -1,16 +1,16 @@
 ---
-description: Start a new session - reads context and scaffolds .bonfire/ if needed
+name: start
+description: Start a new session - reads context, sets up Tasks
+disable-model-invocation: true
 allowed-tools: Bash(git:*), Bash(gh:*), Bash(mkdir:*), Bash(linear:*), Read, Write, Glob, AskUserQuestion
-model: haiku
 ---
 
 # Start Session
 
-## Step 1: Find Git Root
+Git root: !`git rev-parse --show-toplevel`
+Current branch: !`git branch --show-current`
 
-Run `git rev-parse --show-toplevel` to locate the repository root. All session files live at `<git-root>/.bonfire/`.
-
-## Step 2: Check for Bonfire Directory
+## Step 1: Check for Bonfire Directory
 
 Check if `<git-root>/.bonfire/index.md` exists.
 
@@ -168,9 +168,9 @@ Check if `<git-root>/.bonfire/index.md` exists.
    scratch/
    ```
 
-**If .bonfire/ EXISTS**, proceed to Step 3.
+**If .bonfire/ EXISTS**, proceed to Step 2.
 
-## Step 3: Check/Update CLAUDE.md
+## Step 2: Check/Update CLAUDE.md
 
 Check if `<git-root>/CLAUDE.md` exists.
 
@@ -201,27 +201,20 @@ Read `.bonfire/index.md` for current project state, recent work, and priorities.
 Read `.bonfire/index.md` for current project state, recent work, and priorities.
 ```
 
-## Step 3.5: Check for Handoff Continuation
+## Step 3: Tasks Integration
 
-Check if `<git-root>/.bonfire/handoff/context.md` exists.
+Set up the project task list for cross-session persistence:
 
-**If it exists**: This session is continuing from a handoff. Acknowledge it:
+1. **Determine project name**: Use package.json name, git remote, or directory name
+2. **Task list ID**: `bonfire-<project-name>` (e.g., `bonfire-my-app`)
+3. **Check for existing tasks**:
+   - If tasks exist in this list, display: "Continuing work from previous session. Active tasks: [summary]"
+   - If no tasks, proceed normally
+4. **Set environment context**: The task list will persist work items across sessions
 
-> "Detected handoff context from previous session. Loading continuation state..."
-
-Read the handoff context file and note:
-- What task was in progress
-- Immediate next steps
-- Key context
-
-Then clean up the handoff files:
-```bash
-rm -rf <git-root>/.bonfire/handoff/
-```
-
-The handoff context provides quick orientation, but the full history is in `index.md` (read in Step 4).
-
-**If handoff context doesn't exist**: Continue normally.
+**Note**: Tasks are complementary to index.md:
+- Tasks = active checklist (what to do)
+- index.md = narrative context (why, decisions, history)
 
 ## Step 4: Read Session Context
 
@@ -231,8 +224,6 @@ Summarize:
 - Current state
 - Recent work
 - Next priorities
-
-Then ask: "What do you want to work on this session?"
 
 ## Step 4.5: Size Warning
 
@@ -286,8 +277,6 @@ First, read `<git-root>/.bonfire/config.json` and check `linearEnabled`.
 3. On success: Summarize the issue context
 4. On failure: Warn user - "Couldn't fetch Linear issue. Is linear-cli installed and authenticated? Continue without issue context?"
 
-Note: Run `linear issue view --help` to see available options.
-
 ### Update Session Context
 
 If issue was fetched successfully:
@@ -301,4 +290,4 @@ If no URL/issue ID provided (continuing work, ad-hoc task):
 - Proceed with existing session context
 - Session notes are the source of truth for ongoing work
 
-Confirm understanding and ask how to proceed.
+Then ask: "What do you want to work on this session?"

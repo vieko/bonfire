@@ -11,53 +11,39 @@ bonfire/
 ├── claude/                   # Claude Code plugin
 │   ├── .claude-plugin/
 │   │   └── plugin.json       # Plugin manifest
-│   ├── agents/               # Subagents
-│   │   ├── codebase-explorer.md
-│   │   ├── spec-writer.md
-│   │   ├── doc-writer.md
-│   │   └── work-reviewer.md
-│   ├── commands/             # Slash commands (/bonfire:*)
-│   │   ├── start.md
-│   │   ├── end.md
-│   │   ├── spec.md
-│   │   ├── rfc.md
-│   │   ├── prd.md
-│   │   ├── poc.md
-│   │   ├── document.md
-│   │   ├── review.md
-│   │   ├── review-pr.md
-│   │   ├── archive.md
-│   │   ├── handoff.md
-│   │   ├── configure.md
-│   │   └── git-strategy.md
-│   └── skills/               # Passive triggers
-│       ├── bonfire-context/
-│       ├── archive-bonfire/
-│       └── handoff-awareness/
+│   └── skills/               # All skills (v2.0 unified format)
+│       ├── start/            # User-facing skills
+│       ├── end/
+│       ├── spec/
+│       ├── strategic/        # Replaces rfc, prd, poc
+│       ├── document/
+│       ├── review/
+│       ├── review-pr/
+│       ├── archive/
+│       ├── configure/        # Absorbs git-strategy
+│       ├── codebase-explorer/ # Hidden agent
+│       ├── writer/           # Hidden agent (merged spec-writer + doc-writer)
+│       ├── work-reviewer/    # Hidden agent
+│       ├── bonfire-context/  # Passive trigger
+│       └── archive-bonfire/  # Passive trigger
 ├── opencode/                 # OpenCode plugin
 │   ├── agent/                # Subagents
 │   │   ├── codebase-explorer.md
-│   │   ├── spec-writer.md
-│   │   ├── doc-writer.md
+│   │   ├── writer.md         # Merged spec-writer + doc-writer
 │   │   └── work-reviewer.md
 │   ├── command/              # Slash commands (/bonfire-*)
 │   │   ├── bonfire-start.md
 │   │   ├── bonfire-end.md
 │   │   ├── bonfire-spec.md
-│   │   ├── bonfire-rfc.md
-│   │   ├── bonfire-prd.md
-│   │   ├── bonfire-poc.md
+│   │   ├── bonfire-strategic.md  # Replaces rfc, prd, poc
 │   │   ├── bonfire-document.md
 │   │   ├── bonfire-review.md
 │   │   ├── bonfire-review-pr.md
 │   │   ├── bonfire-archive.md
-│   │   ├── bonfire-handoff.md
-│   │   ├── bonfire-configure.md
-│   │   └── bonfire-git-strategy.md
+│   │   └── bonfire-configure.md  # Absorbs git-strategy
 │   ├── skill/                # On-demand skills
 │   │   ├── bonfire-context/
-│   │   ├── archive-bonfire-awareness/
-│   │   └── handoff-awareness/
+│   │   └── archive-bonfire-awareness/
 │   ├── plugin/               # TypeScript plugin
 │   │   └── bonfire-hooks.ts
 │   └── opencode.json         # Config manifest
@@ -127,12 +113,11 @@ Main Context (user interaction)
     └─→ spec-writer (inherit, isolated) → writes file
 ```
 
-**Subagents:**
+**Hidden Agents (v2.0):**
 | Agent | Model | Purpose |
 |-------|-------|---------|
 | `codebase-explorer` | haiku | Fast pattern/architecture research |
-| `spec-writer` | inherit | Synthesize findings + interview → spec |
-| `doc-writer` | inherit | Synthesize findings → documentation |
+| `writer` | inherit | Synthesize findings → specs, docs, RFCs, PRDs, POCs |
 | `work-reviewer` | sonnet | Strategic review, categorized findings |
 
 ## Development Notes

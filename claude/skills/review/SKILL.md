@@ -1,11 +1,16 @@
 ---
+name: review
 description: Review work for blindspots, gaps, and improvements
+argument-hint: [--session | <topic>]
+disable-model-invocation: true
 allowed-tools: Bash(git:*), Bash(gh:*), Bash(linear:*), Read, Write, Task
 ---
 
 # Review Work
 
 Strategic review using subagent for analysis, preserving main context for action decisions.
+
+Git root: !`git rev-parse --show-toplevel`
 
 ## Step 1: Determine Scope
 
@@ -25,7 +30,7 @@ Based on $ARGUMENTS:
 
 **Progress**: Tell the user "Reviewing work for blindspots and gaps..."
 
-Use the Task tool to invoke the **work-reviewer** subagent.
+Use the Task tool to invoke the **bonfire:work-reviewer** subagent.
 
 Provide the review context:
 
@@ -93,11 +98,6 @@ For large changesets, review may need multiple passes. The Task tool returns an 
 3. Merge findings from resumed review with previous findings.
 4. Repeat if needed, up to 3 passes maximum.
 
-**Example multi-pass scenario:**
-- Pass 1: General review → finds 5 issues, notes "test coverage not analyzed"
-- Pass 2 (resume): "Continue review focusing on: test coverage" → finds 3 more test gaps
-- Merge: Combined findings give complete picture
-
 ## Step 4: Present Findings
 
 Present the subagent's findings grouped by recommended action:
@@ -144,8 +144,6 @@ gh issue create --title "Finding title" --body "Finding details"
    ```
 2. On success: Return issue URL/ID
 3. On failure: Warn user, offer to create GitHub issue instead
-
-Note: Run `linear issue create --help` to see available options (team, priority, labels, etc.).
 
 **For each created issue:**
 - Record the issue ID and URL

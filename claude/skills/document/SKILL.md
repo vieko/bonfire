@@ -1,5 +1,8 @@
 ---
+name: document
 description: Create documentation about a topic in the codebase
+argument-hint: <topic>
+disable-model-invocation: true
 allowed-tools: Read, Write, Bash(git:*), Task
 ---
 
@@ -47,8 +50,10 @@ Research happens in an isolated subagent context to preserve main context.
 
 | Phase | Agent | Model | Why |
 |-------|-------|-------|-----|
-| Research | `codebase-explorer` | haiku | Fast exploration without polluting main context |
-| Writing | `doc-writer` | inherit | Synthesis in isolation with full research context |
+| Research | `bonfire:codebase-explorer` | haiku | Fast exploration without polluting main context |
+| Writing | `bonfire:writer` | inherit | Synthesis in isolation with full research context |
+
+Use the Task tool with the appropriate agent. The subagents have `user-invocable: false` so they're only accessible via Task.
 
 ### No Interview Required
 
@@ -92,6 +97,8 @@ These patterns tend to work well, but adapt as needed:
 **Large codebases** - Explorer may need multiple passes. Offer to continue if findings seem incomplete for the topic.
 
 **Follow the code** - Document what the code actually does, not what comments claim or what you assume.
+
+**Writer context** - When invoking the writer agent, specify document type as "doc" so it uses the correct format.
 
 ---
 

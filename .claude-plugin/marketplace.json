@@ -6,23 +6,23 @@
   },
   "metadata": {
     "description": "Claude Code plugins by Vieko",
-    "version": "1.0.1"
+    "version": "2.0.0"
   },
   "plugins": [
     {
       "name": "bonfire",
       "source": "./",
       "description": "Claude Code forgets everything between sessions. Bonfire remembers.",
-      "version": "1.0.1",
+      "version": "2.0.0",
       "author": {
         "name": "Vieko Franetovic"
       },
       "homepage": "https://vieko.dev/bonfire",
       "repository": "https://github.com/vieko/bonfire",
       "license": "MIT",
-      "keywords": ["bonfire", "context", "memory", "workflow", "subagents"],
+      "keywords": ["bonfire", "context", "memory", "workflow", "tasks"],
       "category": "productivity",
-      "tags": ["bonfire", "context", "documentation", "subagents"]
+      "tags": ["bonfire", "context", "documentation", "tasks"]
     }
   ]
 }

@@ -1,5 +1,8 @@
 ---
+name: spec
 description: Create an implementation spec for a feature or task
+argument-hint: <topic>
+disable-model-invocation: true
 allowed-tools: Read, Write, Bash(git:*), AskUserQuestion, Task
 ---
 
@@ -48,8 +51,10 @@ Research and writing happen in isolated subagent contexts to preserve main conte
 
 | Phase | Agent | Model | Why |
 |-------|-------|-------|-----|
-| Research | `codebase-explorer` | haiku | Fast, cheap exploration without polluting main context |
-| Writing | `spec-writer` | inherit | Synthesis in isolation; has full research + interview context |
+| Research | `bonfire:codebase-explorer` | haiku | Fast, cheap exploration without polluting main context |
+| Writing | `bonfire:writer` | inherit | Synthesis in isolation; has full research + interview context |
+
+Use the Task tool with the appropriate agent. The subagents have `user-invocable: false` so they're only accessible via Task.
 
 ### User Interview Required
 
@@ -101,6 +106,8 @@ These patterns tend to work well, but adapt as needed:
 **Fallback gracefully** - If subagent fails, do the work in main context. Warn user but don't stop.
 
 **Large codebases** - Explorer may need multiple passes. Offer to continue if findings seem incomplete.
+
+**Writer context** - When invoking the writer agent, specify document type as "spec" so it uses the correct format.
 
 ---
 

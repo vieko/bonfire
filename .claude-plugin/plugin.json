@@ -1,6 +1,6 @@
 {
   "name": "bonfire",
-  "version": "1.5.0",
+  "version": "2.0.0",
   "description": "Claude Code forgets everything between sessions. Bonfire remembers.",
   "author": {
     "name": "Vieko Franetovic",
@@ -16,14 +16,22 @@
     "memory",
     "workflow",
     "documentation",
-    "subagents"
+    "tasks"
   ],
-  "commands": "./claude/commands",
-  "skills": "./claude/skills",
-  "agents": [
-    "./claude/agents/codebase-explorer.md",
-    "./claude/agents/spec-writer.md",
-    "./claude/agents/work-reviewer.md",
-    "./claude/agents/doc-writer.md"
+  "skills": [
+    "./claude/skills/start",
+    "./claude/skills/end",
+    "./claude/skills/spec",
+    "./claude/skills/document",
+    "./claude/skills/review",
+    "./claude/skills/review-pr",
+    "./claude/skills/archive",
+    "./claude/skills/configure",
+    "./claude/skills/strategic",
+    "./claude/skills/codebase-explorer",
+    "./claude/skills/writer",
+    "./claude/skills/work-reviewer",
+    "./claude/skills/bonfire-context",
+    "./claude/skills/archive-bonfire"
   ]
 }

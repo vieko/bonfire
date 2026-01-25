@@ -1,10 +1,17 @@
 ---
-description: Change project settings (locations, git strategy, Linear)
+description: Change project settings (locations, git strategy, Linear, hooks)
 ---
 
 # Configure Bonfire
 
-Always runs interactively - asks all configuration questions regardless of arguments.
+Change project settings. Supports targeted or full configuration.
+
+## Argument Handling
+
+Based on `$ARGUMENTS`:
+- Empty: Full interactive config (all settings)
+- `git`: Git strategy only (quick mode - replaces /bonfire-git-strategy)
+- `linear`: Linear integration only (quick mode)
 
 ## Step 1: Find Git Root
 

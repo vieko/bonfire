@@ -1,44 +1,22 @@
 ---
-description: End session - update context and commit changes
+name: end
+description: End session - update context and sync to Tasks
+disable-model-invocation: true
 allowed-tools: Bash(git:*), Read, Write, Glob, AskUserQuestion
-model: haiku
 ---
 
 # End Session
 
-## Step 1: Find Git Root
+Git root: !`git rev-parse --show-toplevel`
 
-Run `git rev-parse --show-toplevel` to locate the repository root.
-
-## Step 2: Check for Handoff
-
-Check if `<git-root>/.bonfire/handoff/handed-off` exists.
-
-**If it exists**: This session was handed off to a new session. Warn the user:
-
-> "This session was previously handed off. The new session may have already updated `index.md`.
-> Running `/bonfire:end` here could cause conflicts or overwrite the new session's changes."
-
-Use AskUserQuestion to ask:
-1. "Proceed anyway" - Continue with /bonfire:end (user takes responsibility)
-2. "Skip index.md update" - Only commit changes, don't update context
-3. "Cancel" - Abort /bonfire:end
-
-If user chooses to proceed or skip, delete the marker file after completion:
-```bash
-rm <git-root>/.bonfire/handoff/handed-off
-```
-
-**If marker doesn't exist**: Continue normally.
-
-## Step 3: Review Session Work
+## Step 1: Review Session Work
 
 Review what was accomplished this session by examining:
 - Recent git commits
 - Files changed
 - Conversation context
 
-## Step 4: Update Session Context
+## Step 2: Update Session Context
 
 Update `<git-root>/.bonfire/index.md`:
 
@@ -52,7 +30,7 @@ Update `<git-root>/.bonfire/index.md`:
 
 3. Update "Current State" to reflect new status
 
-## Step 5: Update Codemap
+## Step 3: Update Codemap
 
 Update the "Codemap" section in `index.md` with files referenced this session:
 
@@ -86,12 +64,33 @@ Example:
 - `src/commands/` - CLI commands
 
 **This Session's Key Files** (auto-updated):
-- `claude/commands/configure.md` - Added PreCompact hook setup
-- `claude/commands/end.md` - Added Codemap update step
-- `.bonfire/specs/codemap-feature.md` - Feature specification
+- `claude/skills/configure/SKILL.md` - Project configuration
+- `claude/skills/end/SKILL.md` - Session end workflow
+- `.bonfire/specs/feature.md` - Feature specification
 ```
 
-## Step 6: Commit Changes (if tracked)
+## Step 4: Sync to Tasks
+
+Sync "Next Session Priorities" to the Tasks system for cross-session persistence:
+
+1. **Convert priorities to tasks**:
+   - Each priority in index.md becomes a task
+   - Preserve task descriptions and context
+   - Mark completed items as done
+
+2. **Task list continuity**:
+   - Tasks persist automatically across sessions
+   - New session will see these without needing to read index.md
+   - index.md provides the "why", Tasks provide the "what"
+
+3. **Keep in sync**:
+   - If priority was completed this session, mark task done
+   - If new priority emerged, add as new task
+   - Don't duplicate existing tasks
+
+**Note**: Tasks complement index.md - they don't replace it. index.md captures decisions, context, and history. Tasks capture actionable work items.
+
+## Step 5: Commit Changes (if tracked)
 
 Read `<git-root>/.bonfire/config.json` to check `gitStrategy`.
 
@@ -114,10 +113,11 @@ Read `<git-root>/.bonfire/config.json` to check `gitStrategy`.
 
 If the commit fails due to hooks, help resolve the issue (but never bypass hooks with `--no-verify`).
 
-## Step 7: Confirm
+## Step 6: Confirm
 
 Summarize:
 - What was documented
+- Tasks synced for next session
 - Next priorities
 - Any follow-up needed
 

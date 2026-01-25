@@ -1,16 +1,24 @@
 ---
-description: Change project settings (locations, git strategy, Linear)
+name: configure
+description: Change project settings (locations, git strategy, Linear, hooks)
+argument-hint: [git | linear | hooks]
+disable-model-invocation: true
 allowed-tools: Bash(git:*), Read, Write, AskUserQuestion
-model: haiku
 ---
 
 # Configure Bonfire
 
-Always runs interactively - asks all configuration questions regardless of arguments.
+Change project settings. Supports targeted or full configuration.
 
-## Step 1: Find Git Root
+Git root: !`git rev-parse --show-toplevel`
 
-Run `git rev-parse --show-toplevel` to locate the repository root.
+## Step 1: Parse Arguments
+
+Based on `$ARGUMENTS`:
+- Empty: Full interactive config (all settings)
+- `git`: Git strategy only (quick mode)
+- `linear`: Linear integration only (quick mode)
+- `hooks`: Hooks setup only (quick mode)
 
 ## Step 2: Ensure Bonfire Directory Exists
 
@@ -60,9 +68,11 @@ Read `<git-root>/.bonfire/config.json` if it exists to see current settings.
 
 ## Step 4: Check Existing Hook
 
-Check if `<git-root>/.claude/settings.json` exists and already has a PreCompact hook configured. Store this for Step 5.
+Check if `<git-root>/.claude/settings.json` exists and already has a PreCompact hook configured. Store this for later.
 
-## Step 5: Ask All Configuration Questions
+## Step 5: Configuration Mode
+
+### Full Configuration (no arguments)
 
 Use AskUserQuestion to ask configuration questions (4 questions, one round):
 
@@ -91,10 +101,59 @@ Use AskUserQuestion to ask configuration questions (4 questions, one round):
 
    **Note**: If hook already exists, show: "Yes (already configured)" as first option with description "Hook is already set up"
 
+### Quick Mode: Git Strategy Only (`git`)
+
+Present the git strategy options:
+
+1. **Ignore all** - Keep sessions completely local
+   - Everything in .bonfire/ is gitignored
+   - Most private, nothing shared
+   - Good for: solo work, sensitive projects
+
+2. **Hybrid** - Commit docs/specs, keep notes private
+   - docs/ and specs/ are committed (if inside .bonfire/)
+   - index.md and archive/ stay local
+   - Good for: teams that want shared docs but private notes
+
+3. **Commit all** - Share everything with team
+   - All session content is committed
+   - Only data/ and scratch/ ignored
+   - Good for: full transparency, team continuity
+
+Use AskUserQuestion to ask which strategy:
+
+"Which git strategy for `.bonfire/`?" (Header: "Git")
+- ignore-all (Recommended) - Keep sessions private/local
+- hybrid - Commit docs/specs, keep notes private
+- commit-all - Share everything with team
+
+Then update gitStrategy only, preserve other config values.
+
+### Quick Mode: Linear Only (`linear`)
+
+Use AskUserQuestion:
+
+"Enable Linear integration?" (Header: "Linear")
+- No - Disable Linear integration
+- Yes - Enable Linear (requires linear-cli)
+
+Then update linearEnabled only, preserve other config values.
+
+### Quick Mode: Hooks Only (`hooks`)
+
+Use AskUserQuestion:
+
+"Set up context preservation hook?" (Header: "Hooks")
+- No - Skip hook setup
+- Yes - Preserve session context during compaction
+
+If hook already exists, note it's already configured.
+
 ## Step 6: Update Config
 
-**Completely overwrite** `<git-root>/.bonfire/config.json` with only these fields (do not preserve old fields like `models`):
+Update `<git-root>/.bonfire/config.json`:
 
+**Full config**: Overwrite with all fields:
 ```json
 {
   "specsLocation": "<user-answer>",
@@ -103,6 +162,8 @@ Use AskUserQuestion to ask configuration questions (4 questions, one round):
   "linearEnabled": <true-or-false>
 }
 ```
+
+**Quick mode**: Merge with existing config, only updating the changed field.
 
 ## Step 7: Update Git Strategy
 

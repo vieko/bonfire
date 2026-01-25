@@ -1,10 +1,16 @@
 ---
+name: review-pr
 description: Review a GitHub pull request and post inline comments
+argument-hint: <pr-number>
+disable-model-invocation: true
+allowed-tools: Bash(git:*), Bash(gh:*), Read, Write, Task, AskUserQuestion
 ---
 
 # Review Pull Request
 
 Review a GitHub PR in an isolated worktree, then post inline comments on findings.
+
+Git root: !`git rev-parse --show-toplevel`
 
 ## Step 1: Parse Arguments
 
@@ -12,12 +18,12 @@ Extract PR number from `$ARGUMENTS`:
 - `333` or `#333` → PR number 333
 - Empty → Show usage and abort
 
-**Usage**: `/bonfire-review-pr <pr-number>`
+**Usage**: `/bonfire:review-pr <pr-number>`
 
 If no PR number provided:
-> "Usage: `/bonfire-review-pr <pr-number>`
+> "Usage: `/bonfire:review-pr <pr-number>`
 >
-> Example: `/bonfire-review-pr 333`"
+> Example: `/bonfire:review-pr 333`"
 
 ## Step 2: Fetch PR Metadata
 
@@ -38,10 +44,6 @@ Extract and store:
 - `files` - Changed files list
 
 ## Step 3: Compute Worktree Path
-
-```bash
-git rev-parse --show-toplevel
-```
 
 Compute worktree path: `<git-root>/../<repo-name>-pr-<number>-review`
 
@@ -82,7 +84,7 @@ git -C <worktree-path> diff origin/<baseRefName>...HEAD --name-only
 
 **Progress**: Tell the user "Reviewing PR for blindspots and gaps..."
 
-Use the Task tool to invoke the **work-reviewer** agent.
+Use the Task tool to invoke the **bonfire:work-reviewer** subagent.
 
 Provide the review context:
 
@@ -104,6 +106,8 @@ Return categorized findings with severity, effort, and specific file:line refere
 ```
 
 **Wait for the subagent to return findings** before proceeding.
+
+The subagent runs in isolated context (sonnet model), preserving main context for comment posting.
 
 ### Review Validation
 
@@ -128,7 +132,7 @@ For each finding, show:
 
 Ask user: "Which findings should I post as PR comments?"
 
-Use the question tool with options:
+Use AskUserQuestion with options:
 1. "All" - post all findings
 2. "Select" - user will specify which ones (e.g., "1, 3, 5")
 3. "None" - skip commenting
