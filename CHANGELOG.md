@@ -2,6 +2,72 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2026-01-25
+
+### BREAKING CHANGES
+
+- **Commands migrated to skills** - All `commands/` moved to `skills/` format (SKILL.md)
+- **Handoff deprecated** - Use Claude Code Tasks for cross-session work persistence instead
+- **Commands consolidated**:
+  - `/bonfire:git-strategy` → merged into `/bonfire:configure git`
+  - `/bonfire:rfc`, `/bonfire:prd`, `/bonfire:poc` → merged into `/bonfire:strategic <type> <topic>`
+- **Agents consolidated**:
+  - `spec-writer` + `doc-writer` → merged into `writer`
+- **tmux removed** - `review-pr` no longer requires tmux; uses Task tool directly
+
+### Added
+
+- **Tasks integration** - Start and end commands integrate with Claude Code Tasks
+  - Tasks provide cross-session work persistence (what to do)
+  - index.md provides narrative context (why, decisions, history)
+  - Complementary model: use both together
+
+- **Strategic documents command** (`/bonfire:strategic`) - Create RFC, PRD, or POC documents
+  - Usage: `/bonfire:strategic rfc <topic>`, `/bonfire:strategic prd <feature>`, `/bonfire:strategic poc <customer>`
+  - Shares research → interview → write flow across all types
+  - Easy to extend with new document types
+
+- **Configure subcommands** - Quick access to specific settings
+  - `/bonfire:configure git` - Change git strategy only
+  - `/bonfire:configure linear` - Toggle Linear integration only
+  - `/bonfire:configure` - Full interactive config (unchanged)
+
+- **Writer agent** - Unified document writer replacing spec-writer and doc-writer
+  - Handles specs, docs, RFCs, PRDs, and POCs
+  - Document type passed as context parameter
+  - Hidden skill (`user-invocable: false`)
+
+### Changed
+
+- **Skills structure** - 9 user-facing + 3 hidden + 2 passive = 14 total skills
+  - User-facing: start, end, spec, document, review, review-pr, archive, configure, strategic
+  - Hidden agents: codebase-explorer, writer, work-reviewer
+  - Passive triggers: bonfire-context, archive-bonfire
+
+- **review-pr simplified** - No longer spawns tmux session
+  - Uses Task tool with work-reviewer directly
+  - Worktree still used for file isolation
+  - Cross-platform compatible (Windows support)
+
+- **Plugin manifest** - Now uses `skills` array instead of `commands` + `agents`
+
+### Removed
+
+- **Handoff command** - Tasks replaces this functionality
+- **git-strategy command** - Use `/bonfire:configure git` instead
+- **rfc, prd, poc commands** - Use `/bonfire:strategic <type>` instead
+- **spec-writer agent** - Merged into writer
+- **doc-writer agent** - Merged into writer
+- **handoff-awareness skill** - No longer needed
+
+### Migration from 1.x
+
+1. **Update plugin**: `claude plugin update bonfire`
+2. **Handoff users**: Start new sessions normally; Tasks handles work persistence
+3. **git-strategy users**: Use `/bonfire:configure git` instead
+4. **rfc/prd/poc users**: Use `/bonfire:strategic rfc|prd|poc <topic>` instead
+5. **No data migration needed** - `.bonfire/` directory structure unchanged
+
 ## [1.5.0] - 2026-01-24
 
 ### Changed

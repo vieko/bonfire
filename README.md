@@ -65,17 +65,16 @@ Bonfire complements your issue tracker. Use GitHub Issues, Linear, or any other 
 | Claude Code | OpenCode | What it does |
 |-------------|----------|--------------|
 | `/bonfire:start` | `/bonfire-start` | Read context, scaffold on first run |
-| `/bonfire:end` | `/bonfire-end` | Update context, commit changes |
+| `/bonfire:end` | `/bonfire-end` | Update context, sync to Tasks |
 | `/bonfire:spec <topic>` | `/bonfire-spec <topic>` | Create implementation spec |
-| `/bonfire:rfc <topic>` | `/bonfire-rfc <topic>` | Create RFC document |
-| `/bonfire:prd <feature>` | `/bonfire-prd <feature>` | Create product requirements doc |
-| `/bonfire:poc <customer>` | `/bonfire-poc <customer>` | Create proof of concept plan |
+| `/bonfire:strategic <type> <topic>` | `/bonfire-strategic <type> <topic>` | Create RFC, PRD, or POC document |
 | `/bonfire:document <topic>` | `/bonfire-document <topic>` | Document a codebase topic |
 | `/bonfire:review` | `/bonfire-review` | Find blindspots, gaps, quick wins |
 | `/bonfire:review-pr <number>` | `/bonfire-review-pr <number>` | Review PR in worktree, post comments |
 | `/bonfire:archive` | `/bonfire-archive` | Archive completed work |
-| `/bonfire:handoff` | `/bonfire-handoff` | Hand off to new session (tmux) |
-| `/bonfire:configure` | `/bonfire-configure` | Change project settings |
+| `/bonfire:configure [git\|linear]` | `/bonfire-configure [git\|linear]` | Change project settings |
+
+**Strategic documents**: `/bonfire:strategic rfc auth` creates an RFC, `/bonfire:strategic prd dark-mode` creates a PRD, `/bonfire:strategic poc acme` creates a POC plan.
 
 ## What Gets Created
 
@@ -131,23 +130,14 @@ Run /bonfire:archive to clean up old sessions.
 
 Run `/bonfire:archive` to move completed sessions to `.bonfire/archive/`. All content is preserved, nothing is lost.
 
-## Session Handoff
+## Tasks Integration (Claude Code)
 
-When your session approaches context limits, you can hand off to a fresh Claude instance without losing progress:
+Bonfire integrates with Claude Code's Tasks for cross-session work persistence:
 
-```bash
-/bonfire:handoff
-```
+- **Tasks** = Active checklist (what to do next)
+- **index.md** = Narrative context (why, decisions, history)
 
-This:
-1. Updates `index.md` with current state (what you were working on)
-2. Generates minimal handoff context (~1K tokens)
-3. Spawns a new Claude session in an adjacent tmux pane
-4. New session runs `/bonfire:start` to load full history
-
-**Requires tmux.** The new session opens in a split pane so you can see both sessions during transition.
-
-Bonfire also detects when you mention context concerns ("running out of context", "conversation is getting long") and suggests handoff.
+When you run `/bonfire:end`, your "Next Session Priorities" sync to Tasks. Next session, you'll see active tasks without needing to read the full context file.
 
 ## Configuration
 
@@ -211,14 +201,11 @@ Both platforms use **`CLAUDE.md`** for project rules and **`.bonfire/`** for ses
 bonfire/
 ├── claude/           # Claude Code plugin
 │   ├── .claude-plugin/
-│   ├── commands/
-│   ├── agents/
-│   └── skills/
-├── opencode/         # OpenCode plugin  
+│   └── skills/       # All skills (user-facing + hidden agents)
+├── opencode/         # OpenCode plugin
 │   ├── command/
 │   ├── agent/
 │   ├── skill/
-│   ├── plugin/
 │   └── opencode.json
 └── .bonfire/         # Shared context (dogfooding)
 ```
