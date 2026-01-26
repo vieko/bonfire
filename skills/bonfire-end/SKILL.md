@@ -2,7 +2,7 @@
 name: bonfire-end
 description: End session - update context and sync to Tasks
 license: MIT
-allowed-tools: Bash(git:*), Bash(gh pr view:*), Bash(gh issue view:*), Read, Write, Glob, Grep, AskUserQuestion
+allowed-tools: Bash(git:*), Bash(gh pr view:*), Bash(gh issue view:*), Bash(rm .bonfire/*), Read, Write, Edit, Glob, Grep, AskUserQuestion
 metadata:
   author: vieko
   version: "3.0.0"
@@ -116,72 +116,74 @@ Read `<git-root>/.bonfire/config.json` to check `gitStrategy`.
 
 If the commit fails due to hooks, help resolve the issue (but never bypass hooks with `--no-verify`).
 
-## Step 6: Context Health Check (Background)
+## Step 6: Context Health Check
 
-Run garbage detection to identify stale references. Do not block session completion.
+Run garbage detection and offer actionable cleanup.
 
 Tell user: "Running context health check..."
 
-### 6.1 Broken File References
+### 6.1 Detect Issues
 
-Scan all `.md` files in `.bonfire/` for internal file paths:
-- Markdown links: `[text](path/to/file.md)` (excluding http/https URLs)
-- Archive links in "Archived Sessions" section
-- Codemap entries
+Scan `.bonfire/` for four categories of issues:
 
-For each path found, verify the file exists relative to git root.
+**Broken File References**:
+- Extract markdown links from all `.md` files in `.bonfire/`
+- Filter to internal paths (exclude http/https)
+- Check each path exists relative to `.bonfire/`
 
-**Detection command**:
-```bash
-# Extract markdown links and check existence
-grep -ohE '\[.*?\]\(([^)]+)\)' .bonfire/*.md .bonfire/**/*.md 2>/dev/null | \
-  grep -oE '\(([^)]+)\)' | tr -d '()' | grep -v '^http' | sort -u
-```
+**Stale External Links**:
+- Find GitHub PR/issue URLs in `.bonfire/*.md` and `.bonfire/**/*.md`
+- Check status via `gh pr view [N] --json state,mergedAt,closedAt`
+- Stale = MERGED or CLOSED and older than 30 days
 
-Then check each path with file existence.
+**Orphaned Specs**:
+- List files in specs location (from config.json, default `.bonfire/specs/`)
+- Search for references in `index.md` and `archive/*.md`
+- Orphaned = not referenced AND older than 7 days
 
-### 6.2 Stale External Links
+**Archive Integrity**:
+- Extract archive links from "Archived Sessions" section of index.md
+- Verify each linked file exists
 
-Find GitHub PR/issue references and check their status:
+If `gh` CLI unavailable, skip external link checks and note: "PR status unavailable"
 
-```bash
-# Extract GitHub PR/issue URLs
-grep -ohE 'github\.com/[^/]+/[^/]+/(pull|issues)/[0-9]+' .bonfire/*.md .bonfire/**/*.md 2>/dev/null | sort -u
-```
+### 6.2 Build Smart Summaries
 
-For each PR/issue found:
-```bash
-gh pr view [NUMBER] --json state,mergedAt,closedAt 2>/dev/null
-gh issue view [NUMBER] --json state,closedAt 2>/dev/null
-```
+For each issue, extract context to help user decide:
 
-**Stale criteria**: State is MERGED or CLOSED AND older than 30 days.
+**For orphaned specs**:
+1. Read first 5 lines of file
+2. Extract title (first `#` heading or first non-empty line)
+3. Search content for PR references (`#[0-9]+` or `pull/[0-9]+`)
+4. If PR found, check if merged via `gh pr view`
+5. Calculate file age in days
 
-If `gh` command fails (not installed/authenticated), skip this check and note: "Skipped external link check (gh CLI unavailable)"
+**For stale links**:
+1. Get PR/issue title via `gh pr view [N] --json title`
+2. Calculate days since merged/closed
+3. Identify which section of index.md contains the reference
 
-### 6.3 Orphaned Specs
+### 6.3 Assign Confidence Levels
 
-Read `specsLocation` from `.bonfire/config.json` (default: `.bonfire/specs/`).
+Score each issue for cleanup confidence:
 
-List all spec files and check if each is referenced in `index.md` or `archive/*.md`.
+**HIGH confidence** (safe to delete):
+- Orphaned spec mentions a PR that is MERGED
+- File is > 90 days old AND has zero references
+- Broken link (file doesn't exist - always safe to remove reference)
 
-```bash
-# List specs
-ls -la .bonfire/specs/*.md 2>/dev/null
+**MEDIUM confidence** (likely safe):
+- Orphaned spec is 30-90 days old with no references
+- Stale link to merged PR > 60 days old
 
-# Search for references
-grep -l "specs/[filename]" .bonfire/index.md .bonfire/archive/*.md 2>/dev/null
-```
+**LOW confidence** (needs review):
+- Orphaned spec < 30 days old
+- No signals detected
+- Stale link to recently merged PR (30-60 days)
 
-**Orphaned criteria**: Spec file exists, is older than 30 days, and not referenced anywhere.
+### 6.4 Display Report
 
-### 6.4 Archive Integrity
-
-Extract archive links from index.md "Archived Sessions" section and verify each file exists.
-
-### 6.5 Report Results
-
-Display consolidated report:
+Show enhanced report with context:
 
 ```
 === CONTEXT HEALTH CHECK ===
@@ -192,26 +194,105 @@ Display consolidated report:
 ✓ Archive integrity: [N] checked, [N] issues
 
 [If issues found:]
-ISSUES FOUND:
 
-BROKEN REFERENCES:
-- index.md: Link to `archive/missing.md` (file not found)
+CLEANUP AVAILABLE:
 
-STALE EXTERNAL LINKS (closed 30+ days):
-- PR #29 (merged 72 days ago)
+HIGH CONFIDENCE (safe to delete):
+→ bonfire-rename.md (Jan 3, 5.7KB)
+  "Rename sessions to bonfire across codebase"
+  ✓ Related PR #23 merged
 
-ORPHANED SPECS:
-- .bonfire/specs/unused.md (created 45 days ago, never referenced)
+→ archive/missing.md in index.md
+  ✗ File not found (broken link)
 
-To fix: Review items above and update index.md manually,
-or run /bonfire-archive to clean up completed work.
+NEEDS REVIEW:
+→ partial-write-detection.md (Jan 3, 5.4KB)
+  "Detect and recover from partial file writes"
+  ⚠ No related PR found
+
+STALE LINKS:
+→ PR #23 in Key Resources section
+  "Rename sessions to bonfire" - merged 45 days ago
 ```
 
-If no issues found:
+If no issues: `✓ All clear - no garbage detected`
+
+### 6.5 Offer Cleanup Actions
+
+If issues were found, prompt user for cleanup using AskUserQuestion.
+
+**For HIGH confidence orphaned specs** (if any):
 ```
-=== CONTEXT HEALTH CHECK ===
-✓ All clear - no garbage detected
+Delete [N] orphaned specs? (high confidence - work completed)
+
+Options:
+- Yes - Delete all high confidence specs
+- Review each - Show details before deleting
+- Skip - Keep all files
 ```
+
+**For LOW confidence specs** (if any):
+```
+Review [N] specs that need attention?
+
+Options:
+- Yes - Review each one
+- Skip all - Keep all files
+```
+
+**For broken references** (if any):
+```
+Remove [N] broken links from index.md?
+
+Options:
+- Yes - Remove lines with broken links
+- No - Keep as-is
+```
+
+**For stale PR/issue links** (if any):
+```
+Remove [N] stale PR references from index.md?
+(These PRs were merged/closed 30+ days ago)
+
+Options:
+- Yes - Remove stale references
+- No - Keep as-is
+```
+
+### 6.6 Execute Cleanup
+
+Based on user choices:
+
+**Delete orphaned specs**:
+```bash
+rm .bonfire/specs/[filename].md
+```
+Report: "Deleted [filename]"
+
+**Remove broken/stale links from index.md**:
+1. Read index.md
+2. Find line containing the broken/stale reference
+3. Use Edit tool to remove that specific line
+4. Report: "Removed reference to [item] from index.md"
+
+**Important**:
+- Only delete files in `.bonfire/specs/` or `.bonfire/docs/`
+- Never delete files in `.bonfire/archive/` (historical record)
+- Only remove specific lines from index.md, don't rewrite sections
+- If deletion fails, report error and continue with remaining items
+
+### 6.7 Cleanup Summary
+
+After cleanup actions complete, summarize what was done:
+
+```
+CLEANUP COMPLETE:
+- Deleted 2 orphaned specs
+- Removed 1 broken link from index.md
+- Skipped 1 spec (user chose to review later)
+```
+
+If user skipped all cleanup: "No cleanup performed. Issues will resurface next session."
 
 ## Step 7: Confirm
 
