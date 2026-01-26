@@ -1,6 +1,6 @@
 ---
-name: archive-bonfire
-description: Suggest archiving completed work when PRs are merged or work is completed. Triggers when user asks to merge a PR ("merge it", "merge the PR"), after successful gh pr merge, or mentions completion ("shipped", "done with X", "merged to main"). Does NOT archive automatically - suggests running /bonfire:archive.
+name: bonfire-archive-suggest
+description: Suggest archiving completed work when PRs are merged or work is completed. Triggers when user asks to merge a PR ("merge it", "merge the PR"), after successful gh pr merge, or mentions completion ("shipped", "done with X", "merged to main"). Does NOT archive automatically - suggests running /bonfire-archive.
 license: MIT
 allowed-tools: Read, Glob, Bash(gh:*)
 metadata:
@@ -43,7 +43,7 @@ Trigger when:
 
 6. If work appears complete, suggest archiving:
    > "PR merged successfully. This session's work looks complete - want me to archive it?
-   > Run `/bonfire:archive` to move completed work to the archive."
+   > Run `/bonfire-archive` to move completed work to the archive."
 
 7. If there's more work in the session:
    > "PR merged. I see there's still [X, Y] in the session notes - want to continue
@@ -52,7 +52,7 @@ Trigger when:
 ## Important
 
 - This skill **suggests** archiving, it does NOT archive automatically
-- User must explicitly run `/bonfire:archive` to perform the archive
+- User must explicitly run `/bonfire-archive` to perform the archive
 - Trigger AFTER merge succeeds, not before
 - Multiple PRs may be part of one logical session - check context
 - If `.bonfire/` doesn't exist, don't suggest archiving

@@ -1,5 +1,5 @@
 ---
-name: document
+name: bonfire-document
 description: Create documentation about a topic in the codebase
 license: MIT
 argument-hint: <topic>

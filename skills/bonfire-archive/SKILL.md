@@ -1,5 +1,5 @@
 ---
-name: archive
+name: bonfire-archive
 description: Archive completed session work
 license: MIT
 allowed-tools: Bash(git:*), Bash(linear:*), Read, Write, Glob

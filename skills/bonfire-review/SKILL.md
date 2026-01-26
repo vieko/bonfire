@@ -1,5 +1,5 @@
 ---
-name: review
+name: bonfire-review
 description: Review work for blindspots, gaps, and improvements
 license: MIT
 argument-hint: "[--session | <topic>]"
@@ -124,7 +124,7 @@ Present the subagent's findings grouped by recommended action:
 
 Based on user choice:
 - **Fix now**: Make the changes directly
-- **Spec**: Run `/bonfire:spec` with findings
+- **Spec**: Run `/bonfire-spec` with findings
 - **Create issues**: See below
 
 ### Creating Issues

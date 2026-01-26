@@ -51,6 +51,6 @@ Read session context when the user:
 ## Important
 
 - This skill is for **reading** context, not updating it
-- Session updates happen via `/bonfire:end` command
+- Session updates happen via `/bonfire-end` command
 - Don't modify `.bonfire/index.md` unless explicitly asked
 - If `.bonfire/` doesn't exist, the project may not use this pattern

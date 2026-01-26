@@ -1,5 +1,5 @@
 ---
-name: configure
+name: bonfire-configure
 description: Change project settings (locations, git strategy, Linear, hooks)
 license: MIT
 argument-hint: "[git | linear | hooks]"
@@ -40,7 +40,7 @@ If `<git-root>/.bonfire/index.md` does not exist, create a minimal version:
 
 ## Current State
 
-[Created via /bonfire:configure - run /bonfire:start for full setup]
+[Created via /bonfire-configure - run /bonfire-start for full setup]
 
 ---
 
@@ -234,7 +234,7 @@ If switching FROM commit/hybrid TO ignore:
         "hooks": [
           {
             "type": "command",
-            "command": "if echo \"$TOOL_INPUT\" | grep -qE 'gh pr (merge|close)'; then echo 'PR merged/closed! Run /bonfire:archive to archive this session.'; fi"
+            "command": "if echo \"$TOOL_INPUT\" | grep -qE 'gh pr (merge|close)'; then echo 'PR merged/closed! Run /bonfire-archive to archive this session.'; fi"
           }
         ]
       }
@@ -245,7 +245,7 @@ If switching FROM commit/hybrid TO ignore:
 
 **Hook purposes:**
 - **PreCompact**: Preserves session context when Claude compacts conversation history
-- **PostToolUse**: Suggests running `/bonfire:archive` after PR merge/close
+- **PostToolUse**: Suggests running `/bonfire-archive` after PR merge/close
 
 4. If settings.json already has other hooks, merge carefully:
    - Preserve existing hooks (PreToolUse, PostToolUse, Stop, etc.)

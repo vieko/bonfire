@@ -1,5 +1,5 @@
 ---
-name: start
+name: bonfire-start
 description: Start a new session - reads context, sets up Tasks
 license: MIT
 allowed-tools: Bash(git:*), Bash(gh:*), Bash(mkdir:*), Bash(linear:*), Read, Write, Glob, AskUserQuestion
@@ -132,7 +132,7 @@ Check if `<git-root>/.bonfire/index.md` exists.
    - [Add key directories/modules here]
 
    **This Session's Key Files** (auto-updated):
-   - [Files will be added by /bonfire:end]
+   - [Files will be added by /bonfire-end]
 
    ---
 
@@ -203,7 +203,7 @@ Check if `<git-root>/.bonfire/index.md` exists.
            "hooks": [
              {
                "type": "command",
-               "command": "if echo \"$TOOL_INPUT\" | grep -qE 'gh pr (merge|close)'; then echo 'PR merged/closed! Run /bonfire:archive to archive this session.'; fi"
+               "command": "if echo \"$TOOL_INPUT\" | grep -qE 'gh pr (merge|close)'; then echo 'PR merged/closed! Run /bonfire-archive to archive this session.'; fi"
              }
            ]
          }
@@ -230,13 +230,13 @@ Read `.bonfire/index.md` for current project state, recent work, and priorities.
 
 ## Bonfire Commands
 
-- `/bonfire:start` - Start a session (reads context)
-- `/bonfire:end` - End session (updates context)
-- `/bonfire:spec` - Create implementation spec
-- `/bonfire:document <topic>` - Document a topic
-- `/bonfire:review` - Review work for blindspots and improvements
-- `/bonfire:archive` - Archive completed work
-- `/bonfire:configure` - Change project settings
+- `/bonfire-start` - Start a session (reads context)
+- `/bonfire-end` - End session (updates context)
+- `/bonfire-spec` - Create implementation spec
+- `/bonfire-document <topic>` - Document a topic
+- `/bonfire-review` - Review work for blindspots and improvements
+- `/bonfire-archive` - Archive completed work
+- `/bonfire-configure` - Change project settings
 ```
 
 **If CLAUDE.md EXISTS**, check if it references `.bonfire/index.md`. If not, append:
@@ -283,12 +283,12 @@ After reading `index.md`, estimate its size (rough token estimate: character cou
 
 Your `.bonfire/index.md` is ~[N]K tokens, which may cause read errors.
 
-**Run `/bonfire:archive` to clean up old sessions.**
+**Run `/bonfire-archive` to clean up old sessions.**
 
 ---
 
 Then use AskUserQuestion to confirm how to proceed:
-1. "I'll archive now" - User will run /bonfire:archive
+1. "I'll archive now" - User will run /bonfire-archive
 2. "Continue anyway" - Proceed with potentially truncated context
 
 **If estimated tokens <= 20,000:** Continue to Step 5 without warning.

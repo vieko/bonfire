@@ -1,5 +1,5 @@
 ---
-name: end
+name: bonfire-end
 description: End session - update context and sync to Tasks
 license: MIT
 allowed-tools: Bash(git:*), Read, Write, Glob, AskUserQuestion
@@ -124,4 +124,4 @@ Summarize:
 - Next priorities
 - Any follow-up needed
 
-Let the user know they can run `/bonfire:archive` when this work is merged and complete.
+Let the user know they can run `/bonfire-archive` when this work is merged and complete.

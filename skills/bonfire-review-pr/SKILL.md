@@ -1,5 +1,5 @@
 ---
-name: review-pr
+name: bonfire-review-pr
 description: Review a GitHub pull request and post inline comments
 license: MIT
 argument-hint: <pr-number>
@@ -21,12 +21,12 @@ Extract PR number from `$ARGUMENTS`:
 - `333` or `#333` → PR number 333
 - Empty → Show usage and abort
 
-**Usage**: `/bonfire:review-pr <pr-number>`
+**Usage**: `/bonfire-review-pr <pr-number>`
 
 If no PR number provided:
-> "Usage: `/bonfire:review-pr <pr-number>`
+> "Usage: `/bonfire-review-pr <pr-number>`
 >
-> Example: `/bonfire:review-pr 333`"
+> Example: `/bonfire-review-pr 333`"
 
 ## Step 2: Fetch PR Metadata
 

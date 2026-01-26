@@ -1,5 +1,5 @@
 ---
-name: spec
+name: bonfire-spec
 description: Create an implementation spec for a feature or task
 license: MIT
 argument-hint: <topic>
