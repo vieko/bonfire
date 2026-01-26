@@ -14,7 +14,7 @@ Available on [skills.sh](https://skills.sh). Follows the [Agent Skills](https://
 npx skills add vieko/bonfire --all
 ```
 
-The `--all` flag installs all 12 skills. They work together as a system.
+The `--all` flag installs all 9 skills. They work together as a system.
 
 Works with Claude Code, Cursor, Copilot, and other Agent Skills compatible tools.
 
@@ -27,7 +27,7 @@ AI agents are stateless. Every conversation starts from scratch. The agent doesn
 Bonfire maintains a living context document—read at session start, updated at session end.
 
 ```
-/bonfire-start → reads context → WORK → /bonfire-end → saves context
+/bonfire-start → reads context → WORK → /bonfire-end → saves & archives
 ```
 
 No complex setup. No external services. Just Markdown files in your repo.
@@ -45,12 +45,12 @@ Start a session. Reads context, scaffolds `.bonfire/` on first run.
 
 ### bonfire-end
 
-End a session. Updates context with accomplishments, decisions, and next priorities.
+End a session. Updates context, runs health check, and archives completed work.
 
 **Use when:**
 - Finishing a coding session
 - Before stepping away from work
-- After completing a milestone
+- After completing a milestone (auto-detects PR merges)
 
 ### bonfire-spec
 
@@ -93,15 +93,6 @@ Review a GitHub PR in an isolated worktree and post inline comments.
 **Use when:**
 - `/bonfire-review-pr 123` - Review PR #123
 
-### bonfire-archive
-
-Archive completed session work to history.
-
-**Use when:**
-- After merging a PR
-- When a milestone is complete
-- When context file grows too large
-
 ### bonfire-configure
 
 Change project settings.
@@ -116,7 +107,6 @@ Change project settings.
 These trigger automatically based on context:
 
 - **bonfire-context** - Reads session context when you ask about previous work
-- **bonfire-archive-suggest** - Suggests archiving after PR merge
 
 ## What Gets Created
 

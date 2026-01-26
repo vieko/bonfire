@@ -11,7 +11,7 @@ Bonfire provides session context persistence for AI coding - save your progress 
 npx skills add vieko/bonfire --all
 ```
 
-The `--all` flag is required to install all 12 skills.
+The `--all` flag is required to install all 9 skills.
 
 Works with Claude Code, OpenCode, Cursor, and other [Agent Skills](https://agentskills.io) compatible tools.
 
@@ -26,11 +26,9 @@ bonfire/
 │   ├── bonfire-document/SKILL.md
 │   ├── bonfire-review/SKILL.md
 │   ├── bonfire-review-pr/SKILL.md
-│   ├── bonfire-archive/SKILL.md
 │   ├── bonfire-configure/SKILL.md
 │   ├── bonfire-strategic/SKILL.md
-│   ├── bonfire-context/SKILL.md       # Passive trigger
-│   └── bonfire-archive-suggest/SKILL.md  # Passive trigger
+│   └── bonfire-context/SKILL.md       # Passive trigger
 ├── .bonfire/                        # Own session context (dogfooding)
 ├── AGENTS.md                        # This file
 ├── CLAUDE.md -> AGENTS.md           # Symlink for Claude discovery
@@ -42,18 +40,16 @@ bonfire/
 | Skill | Description |
 |-------|-------------|
 | `/bonfire-start` | Start session, read context, scaffold if needed |
-| `/bonfire-end` | End session, update context |
+| `/bonfire-end` | End session, update context, health check, and archive completed work |
 | `/bonfire-spec <topic>` | Create implementation spec |
 | `/bonfire-document <topic>` | Create reference documentation |
 | `/bonfire-review` | Review work for blindspots |
 | `/bonfire-review-pr <number>` | Review GitHub PR |
-| `/bonfire-archive` | Archive completed work |
 | `/bonfire-configure` | Change project settings |
 | `/bonfire-strategic <type> <topic>` | Create RFC, PRD, or POC |
 
 **Passive triggers** (auto-activate on context):
 - `bonfire-context` - Reads session context when user asks about previous work
-- `bonfire-archive-suggest` - Suggests archiving after PR merge
 
 ## Architecture
 
