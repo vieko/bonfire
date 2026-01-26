@@ -10,15 +10,14 @@ Available on [skills.sh](https://skills.sh). Follows the [Agent Skills](https://
 
 ## Installation
 
-**From skills.sh:**
 ```bash
-npx skills add vieko/bonfire
+npx skills add vieko/bonfire --all
 ```
 
-**From local clone:**
+Or from a local clone:
 ```bash
 git clone https://github.com/vieko/bonfire
-npx skills add ./bonfire
+npx skills add ./bonfire --all
 ```
 
 Works with Claude Code, Cursor, Copilot, and other Agent Skills compatible tools.

@@ -8,8 +8,8 @@ Bonfire provides session context persistence for AI coding - save your progress 
 
 **Installation:**
 ```bash
-npx skills add vieko/bonfire      # from skills.sh
-npx skills add ./bonfire          # from local clone
+npx skills add vieko/bonfire --all      # from skills.sh
+npx skills add ./bonfire --all          # from local clone
 ```
 
 Works with Claude Code, OpenCode, Cursor, and other [Agent Skills](https://agentskills.io) compatible tools.
