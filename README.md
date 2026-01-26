@@ -14,6 +14,8 @@ Available on [skills.sh](https://skills.sh). Follows the [Agent Skills](https://
 npx skills add vieko/bonfire --all
 ```
 
+The `--all` flag installs all 12 skills. They work together as a system.
+
 Works with Claude Code, Cursor, Copilot, and other Agent Skills compatible tools.
 
 ## The Problem

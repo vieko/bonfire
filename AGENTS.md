@@ -11,6 +11,8 @@ Bonfire provides session context persistence for AI coding - save your progress 
 npx skills add vieko/bonfire --all
 ```
 
+The `--all` flag is required to install all 12 skills.
+
 Works with Claude Code, OpenCode, Cursor, and other [Agent Skills](https://agentskills.io) compatible tools.
 
 ## Project Structure
