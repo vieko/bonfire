@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
   - `bonfire-review-pr` - Use `gh pr view` and ask for review
   - `bonfire-strategic` - Templates preserved for manual use
   - `bonfire-context` - Merged into main skill as passive trigger
+  - Hooks setup - Configure Claude Code hooks manually if needed
 
 ### Changed
 
@@ -51,6 +52,9 @@ All notable changes to this project will be documented in this file.
    - etc.
 3. For PR reviews: Use `gh pr view #123` then ask Claude to review
 4. For RFC/PRD/POC: Reference templates manually or use `/bonfire doc`
+5. Update hooks in `.claude/settings.json` if configured:
+   - Replace `/bonfire-archive` with `/bonfire end`
+   - Remove any bonfire-specific hooks (now manual)
 
 ## [2.0.0] - 2026-01-25
 

@@ -18,4 +18,5 @@ Session work is captured, context is healthy, completed work is archived.
 - Auto-archive if clear completion signals (all PRs merged, user said "done/shipped")
 - Prompt before archiving if mixed state
 - Skip archive if work is explicitly ongoing
+- Archive naming: `YYYY-MM-DD-<topic>.md` (e.g., `2026-01-26-auth-refactor.md`)
 - Commit changes only if `gitStrategy` is "hybrid" or "commit-all"
