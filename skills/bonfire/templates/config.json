@@ -1,0 +1,6 @@
+{
+  "specsLocation": ".bonfire/specs/",
+  "docsLocation": ".bonfire/docs/",
+  "gitStrategy": "ignore-all",
+  "linearEnabled": false
+}

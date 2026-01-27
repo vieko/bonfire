@@ -1,110 +1,61 @@
 # AGENTS.md
 
-This file provides guidance to AI coding agents (Claude Code, Cursor, Copilot, etc.) when working with code in this repository.
+Guidance for AI coding agents working with this repository.
 
-## Repository Overview
+## Overview
 
 Bonfire provides session context persistence for AI coding - save your progress at the bonfire.
 
 **Installation:**
 ```bash
-npx skills add vieko/bonfire --all
+npx skills add vieko/bonfire
 ```
 
-The `--all` flag is required to install all 9 skills.
+## Commands
 
-Works with Claude Code, OpenCode, Cursor, and other [Agent Skills](https://agentskills.io) compatible tools.
+| Command | Outcome |
+|---------|---------|
+| `/bonfire start` | Session started, context loaded, ready to work |
+| `/bonfire end` | Work captured, context healthy, completed work archived |
+| `/bonfire config` | Settings updated to user preferences |
+| `/bonfire spec <topic>` | Implementation spec that enables building the feature |
+| `/bonfire doc <topic>` | Reference documentation for a system or feature |
+| `/bonfire review` | Blindspots identified, actionable improvements offered |
 
-## Project Structure
+## Skill Structure
 
 ```
-bonfire/
-├── skills/                          # Agent Skills (universal)
-│   ├── bonfire-start/SKILL.md
-│   ├── bonfire-end/SKILL.md
-│   ├── bonfire-spec/SKILL.md
-│   ├── bonfire-document/SKILL.md
-│   ├── bonfire-review/SKILL.md
-│   ├── bonfire-review-pr/SKILL.md
-│   ├── bonfire-configure/SKILL.md
-│   ├── bonfire-strategic/SKILL.md
-│   └── bonfire-context/SKILL.md       # Passive trigger
-├── .bonfire/                        # Own session context (dogfooding)
-├── AGENTS.md                        # This file
-├── CLAUDE.md -> AGENTS.md           # Symlink for Claude discovery
-└── README.md
+skills/bonfire/
+├── SKILL.md              # Command routing
+├── commands/             # Outcome definitions
+│   ├── start.md
+│   ├── end.md
+│   ├── config.md
+│   ├── spec.md
+│   ├── doc.md
+│   └── review.md
+└── templates/            # Default files
+    ├── index.md
+    ├── config.json
+    ├── rfc.md
+    ├── prd.md
+    └── poc.md
 ```
 
-## Skills
+## Design Principles
 
-| Skill | Description |
-|-------|-------------|
-| `/bonfire-start` | Start session, read context, scaffold if needed |
-| `/bonfire-end` | End session, update context, health check, and archive completed work |
-| `/bonfire-spec <topic>` | Create implementation spec |
-| `/bonfire-document <topic>` | Create reference documentation |
-| `/bonfire-review` | Review work for blindspots |
-| `/bonfire-review-pr <number>` | Review GitHub PR |
-| `/bonfire-configure` | Change project settings |
-| `/bonfire-strategic <type> <topic>` | Create RFC, PRD, or POC |
+Commands define **outcomes, not procedures**:
+- What success looks like
+- How to verify it worked
+- Boundaries and constraints
 
-**Passive triggers** (auto-activate on context):
-- `bonfire-context` - Reads session context when user asks about previous work
+The agent determines the procedure.
 
-## Architecture
+## Session Context
 
-Skills use built-in agents via Task tool:
+This repo uses bonfire. Context is in `.bonfire/index.md`.
 
-| Skill | Agent | Purpose |
-|-------|-------|---------|
-| bonfire-spec, bonfire-document | Explore | Codebase research |
-| bonfire-spec, bonfire-document | general-purpose | Document writing |
-| bonfire-review, bonfire-review-pr | general-purpose | Code review |
+## Links
 
-## Contributing
-
-### Skill Naming
-
-- All skills use `bonfire-` prefix to avoid collisions
-- Directory name must match the `name:` field in SKILL.md frontmatter
-- Use kebab-case: `bonfire-my-skill`
-
-### SKILL.md Format
-
-```yaml
----
-name: bonfire-example
-description: Brief description of when to use this skill
-license: MIT
-allowed-tools: Read, Write, Bash(git:*)
-metadata:
-  author: vieko
-  version: "3.0.0"
----
-
-# Skill Title
-
-Instructions for the skill...
-```
-
-### Testing Skills
-
-1. Install locally: skills are in `skills/` directory
-2. Run the skill: `/bonfire-start`, `/bonfire-end`, etc.
-3. Verify behavior matches SKILL.md instructions
-
-## Session Context (.bonfire/)
-
-This repo dogfoods bonfire. Session context is in `.bonfire/index.md`.
-
-Read it to understand:
-- Current project state
-- Recent work and decisions
-- Next priorities
-
-## Related
-
-- [Blog](https://vieko.dev/bonfire)
-- [GitHub](https://github.com/vieko/bonfire)
-- [skills.sh](https://skills.sh) - Skills directory and installation
-- [agentskills.io](https://agentskills.io) - Agent Skills specification
+- [skills.sh](https://skills.sh) - Installation
+- [agentskills.io](https://agentskills.io) - Specification

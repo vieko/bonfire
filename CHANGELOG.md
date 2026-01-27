@@ -2,6 +2,60 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.0] - 2026-01-26
+
+### BREAKING CHANGES
+
+- **Consolidated to single skill** - 9 skills merged into 1
+  - `/bonfire-start` → `/bonfire start`
+  - `/bonfire-end` → `/bonfire end`
+  - `/bonfire-spec` → `/bonfire spec`
+  - `/bonfire-document` → `/bonfire doc`
+  - `/bonfire-review` → `/bonfire review`
+  - `/bonfire-configure` → `/bonfire config`
+- **Commands removed**:
+  - `bonfire-review-pr` - Use `gh pr view` and ask for review
+  - `bonfire-strategic` - Templates preserved for manual use
+  - `bonfire-context` - Merged into main skill as passive trigger
+  - Hooks setup - Configure Claude Code hooks manually if needed
+
+### Changed
+
+- **Outcome-based design** - Commands define outcomes, not procedures
+  - Inspired by [ctate's patterns for autonomous agents](https://ctate.com)
+  - Each command specifies: outcome, acceptance criteria, constraints
+  - Agent determines the procedure
+  - 88% reduction in instruction size (~1,300 → ~160 lines)
+
+- **Progressive disclosure** - Modular file structure
+  - `SKILL.md` - Command routing (~95 lines)
+  - `commands/*.md` - Outcome definitions (~20-30 lines each)
+  - `templates/` - Default files and document templates
+
+- **Simplified installation** - No `--all` flag needed
+  ```bash
+  npx skills add vieko/bonfire
+  ```
+
+### Added
+
+- **Templates preserved** - RFC, PRD, POC templates in `templates/`
+  - Available for manual use or reference
+  - Can be used with `/bonfire doc` or `/bonfire spec`
+
+### Migration from 3.x
+
+1. Reinstall: `npx skills add vieko/bonfire`
+2. Update command usage:
+   - `/bonfire-start` → `/bonfire start`
+   - `/bonfire-end` → `/bonfire end`
+   - etc.
+3. For PR reviews: Use `gh pr view #123` then ask Claude to review
+4. For RFC/PRD/POC: Reference templates manually or use `/bonfire doc`
+5. Update hooks in `.claude/settings.json` if configured:
+   - Replace `/bonfire-archive` with `/bonfire end`
+   - Remove any bonfire-specific hooks (now manual)
+
 ## [2.0.0] - 2026-01-25
 
 ### BREAKING CHANGES
