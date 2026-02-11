@@ -1,8 +1,8 @@
-# Create Implementation Spec
+# Create Outcome Spec
 
 ## Outcome
 
-A complete implementation spec that enables building the feature.
+A complete outcome spec that defines what to build and how to verify it — the agent determines the procedure.
 
 ## Acceptance Criteria
 

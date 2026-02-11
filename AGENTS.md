@@ -18,7 +18,7 @@ npx skills add vieko/bonfire
 | `/bonfire start` | Session started, context loaded, ready to work |
 | `/bonfire end` | Work captured, context healthy |
 | `/bonfire config` | Settings updated to user preferences |
-| `/bonfire spec <topic>` | Implementation spec that enables building the feature |
+| `/bonfire spec <topic>` | Outcome spec — defines what to build, agent determines how |
 | `/bonfire doc <topic>` | Reference documentation for a system or feature |
 | `/bonfire review` | Blindspots identified, actionable improvements offered |
 

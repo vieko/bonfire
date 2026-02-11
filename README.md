@@ -35,7 +35,7 @@ No complex setup. No external services. Just Markdown files in your repo.
 | `/bonfire start` | Session started, context loaded, ready to work |
 | `/bonfire end` | Work captured, context healthy |
 | `/bonfire config` | Settings updated to your preferences |
-| `/bonfire spec <topic>` | Implementation spec that enables building the feature |
+| `/bonfire spec <topic>` | Outcome spec — defines what to build, agent determines how |
 | `/bonfire doc <topic>` | Reference documentation for a system or feature |
 | `/bonfire review` | Blindspots identified, actionable improvements offered |
 
@@ -44,7 +44,7 @@ No complex setup. No external services. Just Markdown files in your repo.
 ```
 .bonfire/
 ├── index.md      # Living context (with config in frontmatter)
-├── specs/        # Implementation specs
+├── specs/        # Outcome specs
 └── docs/         # Documentation
 ```
 
