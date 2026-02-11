@@ -16,11 +16,21 @@ Spec file contains:
 
 - Research codebase first (use Explore agent)
 - Interview user for decisions, edge cases, testing approach, scope
+- Assess scope: if the work has natural seams (independent components, sequential phases, separable concerns), recommend splitting into a parent spec with child specs
+  - **Parent spec**: Overview of the full feature, links to child specs, execution order if sequential
+  - **Child specs**: Each self-contained with its own Overview, Decisions, Steps, Edge Cases
+  - **Naming**: `<topic>.md` for single specs, `<topic>/index.md` + `<topic>/01-<part>.md` for split specs
+  - **User decides**: Present the split recommendation with rationale, user confirms or overrides
 - Write spec in isolated context (use general-purpose agent)
 - Verify all required sections exist before completing
 - Save to configured `specsLocation`
 - Reference actual codebase patterns, not generic advice
-- Add reference to spec in `index.md`
+- If `linear: true` or `gh` is available, create tracking issues after spec is written
+  - **Single spec**: One issue linking to the spec file
+  - **Split spec**: Parent issue with sub-issues for each child spec
+  - **Issue body**: Summary and link to spec — the spec is the source of truth, not the issue
+  - **Optional**: Skip issue creation if user declines or integrations aren't configured
+- Add reference to spec (and issue links if created) in `index.md`
 
 ## Quality Signals
 
