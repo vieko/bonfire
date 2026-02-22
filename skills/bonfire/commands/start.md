@@ -15,6 +15,7 @@ Session is started, context is loaded, user knows what to work on.
 ## Constraints
 
 - Scaffold new projects using [templates/](../templates/) with sensible defaults
+- If frontmatter contains `linear` key, rename it to `issues` (v5.0.0 migration)
 - Ask user for preferences on first run (specs location, docs location, git strategy, issue tracking)
 - Warn if context exceeds 20K tokens (suggest cleanup)
 - Fetch external context only if user provides a URL or issue ID — never proactively
