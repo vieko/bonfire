@@ -14,6 +14,7 @@ Doc file contains:
 
 ## Constraints
 
+- Sanitize topic for use as filename — strip path separators, special characters, and traversal patterns (`../`)
 - Research codebase first (use Explore agent)
 - No user interview needed - code is the source of truth
 - Write doc in isolated context (use general-purpose agent)

@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.0.0] - 2026-02-22
+
+### BREAKING CHANGES
+
+- **`linear` config renamed to `issues`** - Frontmatter setting is now `issues: true/false` instead of `linear: true/false`. Generic name supports any issue tracker (GitHub, Linear, Jira, etc.)
+
+### Removed
+
+- **`sessions-index.json` reading** - Removed all `~/.claude/projects/` path references from start and end commands. Bonfire's own `index.md` already captures session history; the external file was redundant
+- **`Bash(gh:*)` from allowed-tools** - The agent already has `gh` access when installed; bonfire doesn't need to declare it
+- **`Skill(linear-cli:*)` from allowed-tools** - Eliminates third-party dependency. The agent uses whatever issue tracker tools are available
+- **Explicit `MEMORY.md` path references** - Auto-memory is loaded automatically by Claude; the nudge now says "update auto-memory" without naming the file path
+- **Optional integrations section from README** - No longer lists specific tool install instructions
+
+### Added
+
+- **Topic parameter sanitization** - Spec, doc, and review commands now require stripping path separators, special characters, and traversal patterns (`../`) from topic parameters before using them as filenames
+- **Generic issue tracker language** - Commands reference "configured issue tracker" instead of naming specific tools
+
+### Why This Change
+
+Security audits from Gen Agent Trust Hub (FAIL) and Snyk (WARN) flagged: (1) data exfiltration via `~/.claude/projects/` access, (2) prompt injection via explicit third-party tool references, (3) command execution via `Bash(gh:*)`, (4) external downloads via `Skill(linear-cli:*)`. The fix: remove what bonfire doesn't need. Sessions-index.json was redundant with index.md. Auto-memory is already loaded by Claude. The agent already has `gh` and `linear-cli` if installed. Bonfire just needs to describe outcomes — the agent determines which tools to use.
+
+### Migration
+
+- Rename `linear: true/false` to `issues: true/false` in `.bonfire/index.md` frontmatter
+- No other changes needed — issue tracking still works, the agent uses available tools
+
 ## [4.3.3] - 2026-01-31
 
 ### Fixed
