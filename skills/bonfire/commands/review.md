@@ -13,13 +13,13 @@ Findings are categorized by action:
 
 ## Constraints
 
+- Sanitize topic (if provided) for safe use — strip path separators, special characters, and traversal patterns (`../`)
 - Gather context: branch diff, session notes, relevant specs
 - Run analysis in isolated context (use general-purpose agent)
 - Fall back to direct review if subagent fails
 - Present findings with severity and effort estimates
 - Execute chosen action: fix directly, create spec, or create issues
-- Support GitHub issues via `gh` (always), Linear issues via `Skill(linear-cli)` if enabled
-- Use `Skill(linear-cli)` for all Linear operations when `linear: true` in frontmatter
+- Create issues in the project's configured issue tracker if enabled
 - Update `index.md` with review outcomes
 
 ## Scope Options

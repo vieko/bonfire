@@ -66,7 +66,7 @@ Settings live in `index.md` frontmatter:
 specs: .bonfire/specs/
 docs: .bonfire/docs/
 git: ignore-all
-linear: false
+issues: false
 ---
 ```
 
@@ -75,18 +75,12 @@ linear: false
 | specs | `.bonfire/specs/` or `specs/` | `.bonfire/specs/` |
 | docs | `.bonfire/docs/` or `docs/` | `.bonfire/docs/` |
 | git | ignore-all, hybrid, commit-all | ignore-all |
-| linear | true or false | false |
+| issues | true or false | false |
 
 ## Requirements
 
 - Git repository
 - Agent Skills compatible tool
-
-**Optional integrations:**
-- GitHub: `gh` CLI ([install](https://cli.github.com/))
-- Linear: Requires both the CLI and skill
-  - CLI: `brew install schpet/tap/linear` ([docs](https://github.com/schpet/linear-cli#install))
-  - Skill: `claude plugin install linear-cli@linear-cli` ([docs](https://github.com/schpet/linear-cli#claude-code-skill))
 
 ## Links
 

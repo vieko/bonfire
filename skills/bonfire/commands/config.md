@@ -13,7 +13,7 @@ Project settings are updated to user's preferences.
 ## Constraints
 
 - Edit YAML frontmatter in `index.md` (not separate config.json)
-- Support targeted config: `config git`, `config linear` for quick changes
+- Support targeted config: `config git`, `config issues` for quick changes
 - Support full config: `config` with no args for all settings
 - Preserve existing frontmatter values when doing targeted changes
 - Warn if switching git strategy affects tracked files
@@ -27,7 +27,7 @@ Frontmatter format:
 specs: .bonfire/specs/
 docs: .bonfire/docs/
 git: ignore-all
-linear: false
+issues: false
 ---
 ```
 
@@ -36,4 +36,4 @@ linear: false
 | specs | `.bonfire/specs/` or `specs/` |
 | docs | `.bonfire/docs/` or `docs/` |
 | git | ignore-all, hybrid, commit-all |
-| linear | true or false |
+| issues | true or false — enable issue tracking in configured tracker (GitHub, Linear, etc.) |

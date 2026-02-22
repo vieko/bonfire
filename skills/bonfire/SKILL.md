@@ -2,10 +2,10 @@
 name: bonfire
 description: Session context persistence for AI coding. Start/end sessions, create outcome specs and docs, review work. Use for session management, "start session", "end session", outcome specs, documentation, code review, or questions about previous work, decisions, blockers, "last time", "what we decided".
 license: MIT
-allowed-tools: Bash(git:*), Bash(gh:*), Bash(mkdir:*), Bash(rm .bonfire/*), Read, Write, Edit, Glob, Grep, AskUserQuestion, Skill(linear-cli:*)
+allowed-tools: Bash(git:*), Bash(mkdir:*), Bash(rm .bonfire/*), Read, Write, Edit, Glob, Grep, AskUserQuestion
 metadata:
   author: vieko
-  version: "4.3.0"
+  version: "5.0.0"
 ---
 
 # Bonfire
@@ -53,7 +53,7 @@ Parse `$ARGUMENTS` to determine which command to run:
 ### Config
 - Set specs/docs locations
 - Choose git strategy (ignore-all, hybrid, commit-all)
-- Enable/disable Linear integration
+- Enable/disable issue tracking
 
 ### Spec
 - Research codebase (subagent)

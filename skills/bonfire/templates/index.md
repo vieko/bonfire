@@ -2,7 +2,7 @@
 specs: .bonfire/specs/
 docs: .bonfire/docs/
 git: ignore-all
-linear: false
+issues: false
 ---
 
 # Session Context: [PROJECT_NAME]
