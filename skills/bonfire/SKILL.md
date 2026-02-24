@@ -39,39 +39,6 @@ Parse `$ARGUMENTS` to determine which command to run:
 | `review` | Read [commands/review.md](commands/review.md) and execute |
 | Empty or context question | Read session context and answer |
 
-## Quick Reference
-
-### Start Session
-- Check/create `.bonfire/` directory
-- Read `index.md` for session context
-- Ask what to work on
-
-### End Session
-- Update `index.md` with accomplishments
-- Run health check (garbage detection)
-
-### Config
-- Set specs/docs locations
-- Choose git strategy (ignore-all, hybrid, commit-all)
-- Enable/disable issue tracking
-
-### Spec
-- Research codebase (subagent)
-- Interview user for decisions
-- Write spec (subagent)
-- Verify required sections
-
-### Doc
-- Research codebase (subagent)
-- Write documentation (subagent)
-- Verify required sections
-
-### Review
-- Gather context (branch diff, session notes)
-- Analyze for blindspots (subagent)
-- Present findings by severity
-- Offer to fix, spec, or create issues
-
 ## Passive Context
 
 When user asks about previous work, decisions, blockers, or references "last time", "previously", "what we decided":
