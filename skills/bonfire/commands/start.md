@@ -18,5 +18,5 @@ Session is started, context is loaded, user knows what to work on.
 - If frontmatter contains `linear` key, rename it to `issues` (v5.0.0 migration)
 - Ask user for preferences on first run (specs location, docs location, git strategy, issue tracking)
 - Warn if context exceeds 20K tokens (suggest cleanup)
-- Fetch external context only if user provides a URL or issue ID — never proactively
-- Use the project's configured issue tracker (GitHub, Linear, etc.) if enabled in frontmatter
+- Do not proactively access external services or URLs
+- Use the project's issue tracker if enabled in frontmatter

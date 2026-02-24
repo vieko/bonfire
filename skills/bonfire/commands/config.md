@@ -36,4 +36,4 @@ issues: false
 | specs | `.bonfire/specs/` or `specs/` |
 | docs | `.bonfire/docs/` or `docs/` |
 | git | ignore-all, hybrid, commit-all |
-| issues | true or false — enable issue tracking in configured tracker (GitHub, Linear, etc.) |
+| issues | true or false — enable issue tracking |
