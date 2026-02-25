@@ -47,7 +47,7 @@ issues: false
 - [Component/feature]: `path/to/file.ts`
 
 **External Links**:
-- [Issue Tracker](url)
+- [Relevant links](url)
 
 ---
 

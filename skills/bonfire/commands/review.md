@@ -19,7 +19,6 @@ Findings are categorized by action:
 - Fall back to direct review if subagent fails
 - Present findings with severity and effort estimates
 - Execute chosen action: fix directly, create spec, or create issues
-- Create issues in the project's configured issue tracker if enabled
 - Update `index.md` with review outcomes
 
 ## Scope Options

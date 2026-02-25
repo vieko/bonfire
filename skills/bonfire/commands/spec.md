@@ -26,12 +26,8 @@ Spec file contains:
 - Verify all required sections exist before completing
 - Save to configured `specsLocation`
 - Reference actual codebase patterns, not generic advice
-- Create tracking issues in the project's configured issue tracker after spec is written
-  - **Single spec**: One issue linking to the spec file
-  - **Split spec**: Parent issue with sub-issues for each child spec
-  - **Issue body**: Summary and link to spec — the spec is the source of truth, not the issue
-  - **Optional**: Skip issue creation if user declines or no issue tracker is configured
-- Add reference to spec (and issue links if created) in `index.md`
+- Create issues for tracking if `issues: true` in frontmatter — skip if user declines
+- Add reference to spec in `index.md`
 
 ## Quality Signals
 

@@ -19,4 +19,3 @@ Session is started, context is loaded, user knows what to work on.
 - Ask user for preferences on first run (specs location, docs location, git strategy, issue tracking)
 - Warn if context exceeds 20K tokens (suggest cleanup)
 - Do not proactively access external services or URLs
-- Use the project's issue tracker if enabled in frontmatter
