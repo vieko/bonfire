@@ -28,6 +28,7 @@ Spec file contains:
 - Reference actual codebase patterns, not generic advice
 - Create issues for tracking if `issues: true` in frontmatter — skip if user declines
 - Add reference to spec in `index.md`
+- After saving spec files, register them in the forge manifest: `forge specs --add <spec-path>` (with `-C` if targeting a different repo). This ensures `forge specs` shows them as `pending` immediately.
 
 ## Quality Signals
 
