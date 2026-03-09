@@ -2,28 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
-## [5.0.0] - 2026-02-22
+## [6.0.0] - 2026-03-09
 
 ### BREAKING CHANGES
 
-- **`linear` config renamed to `issues`** - Frontmatter setting is now `issues: true/false` instead of `linear: true/false`. Generic name supports any issue tracker.
-
-### Removed
-
-- **Redundant session data reading** - Bonfire's own `index.md` already captures session history; removed redundant external sources
-- **Unnecessary tool declarations from allowed-tools** - The agent already has access to its installed tools; bonfire doesn't need to re-declare them
-- **Explicit config path references** - Auto-memory is loaded automatically; no need to reference specific paths
-- **Optional integrations section from README** - No longer lists specific tool install instructions
-
-### Added
-
-- **Topic parameter sanitization** - Spec, doc, and review commands now require stripping path separators, special characters, and traversal patterns (`../`) from topic parameters before using them as filenames
-- **Generic issue tracker language** - Commands reference "configured issue tracker" instead of naming specific tools
+- **Simplified to start/end only** - Removed `config`, `spec`, `doc`, and `review` commands. Bonfire's identity is session persistence; spec creation and code review belong in tools like [Forge](https://github.com/vieko/forge).
+- **Removed frontmatter config** - No more `specs`, `docs`, `issues` settings. The `git` key is kept only if non-default.
+- **Removed `specs/` and `docs/` subdirectories** - `.bonfire/` now contains only `index.md` and `.gitignore`.
+- **Removed `AskUserQuestion` from allowed-tools** - No longer needed without interactive commands.
 
 ### Migration
 
-- Rename `linear: true/false` to `issues: true/false` in `.bonfire/index.md` frontmatter
-- No other changes needed — issue tracking still works, the agent uses available tools
+- Existing `.bonfire/index.md` files work as-is. Legacy frontmatter keys are silently removed on next `/bonfire start`.
+- Specs and docs in `.bonfire/specs/` and `.bonfire/docs/` are untouched — move them if desired.
+- See [vieko/forge#29](https://github.com/vieko/forge/issues/29) for the interactive spec command handoff.
+
+## [5.0.0] - 2026-02-22
+
+See git history for v5.0.0 changes (`linear` → `issues` rename, security audit fixes).
 
 ## [4.0.0 – 4.3.3]
 

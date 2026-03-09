@@ -26,7 +26,7 @@ Bonfire maintains a living context document—read at session start, updated at 
 /bonfire start → work → /bonfire end
 ```
 
-No complex setup. No external services. Just Markdown files in your repo.
+No complex setup. No external services. Just a Markdown file in your repo.
 
 ## Commands
 
@@ -34,18 +34,13 @@ No complex setup. No external services. Just Markdown files in your repo.
 |---------|---------|
 | `/bonfire start` | Session started, context loaded, ready to work |
 | `/bonfire end` | Work captured, context healthy |
-| `/bonfire config` | Settings updated to your preferences |
-| `/bonfire spec <topic>` | Outcome spec — defines what to build, agent determines how |
-| `/bonfire doc <topic>` | Reference documentation for a system or feature |
-| `/bonfire review` | Blindspots identified, actionable improvements offered |
 
 ## What Gets Created
 
 ```
 .bonfire/
-├── index.md      # Living context (with config in frontmatter)
-├── specs/        # Outcome specs
-└── docs/         # Documentation
+├── index.md      # Living context
+└── .gitignore    # Ignored by default
 ```
 
 ## Design
@@ -56,26 +51,6 @@ Commands define **outcomes, not procedures**. Each command specifies:
 - Boundaries and constraints
 
 The agent determines the procedure. This follows [ctate's patterns for autonomous agents](https://ctate.com).
-
-## Configuration
-
-Settings live in `index.md` frontmatter:
-
-```yaml
----
-specs: .bonfire/specs/
-docs: .bonfire/docs/
-git: ignore-all
-issues: false
----
-```
-
-| Setting | Options | Default |
-|---------|---------|---------|
-| specs | `.bonfire/specs/` or `specs/` | `.bonfire/specs/` |
-| docs | `.bonfire/docs/` or `docs/` | `.bonfire/docs/` |
-| git | ignore-all, hybrid, commit-all | ignore-all |
-| issues | true or false | false |
 
 ## Requirements
 
