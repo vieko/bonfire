@@ -1,10 +1,3 @@
----
-specs: .bonfire/specs/
-docs: .bonfire/docs/
-git: ignore-all
-issues: false
----
-
 # Session Context: [PROJECT_NAME]
 
 **Date**: [CURRENT_DATE]
