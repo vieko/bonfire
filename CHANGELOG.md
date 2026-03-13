@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.1.0] - 2026-03-13
+
+### Changed
+
+- **Consolidated SKILL.md routing** - Merged Commands, Command Routing, Passive Context, and File Structure sections into a single routing table. Reduces token overhead on every invocation (~150 tokens saved per call).
+
 ## [6.0.0] - 2026-03-09
 
 ### BREAKING CHANGES
