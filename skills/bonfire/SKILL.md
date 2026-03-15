@@ -1,6 +1,6 @@
 ---
 name: bonfire
-description: Session context persistence for AI coding. Start/end sessions to maintain context across conversations. Use for session management, "start session", "end session", or questions about previous work, decisions, blockers, "last time", "what we decided".
+description: Session context persistence for AI coding. Pick up exactly where you left off.
 license: MIT
 allowed-tools: Bash(git:*), Bash(mkdir:*), Bash(rm .bonfire/*), Read, Write, Edit, Glob, Grep
 metadata:
@@ -10,7 +10,7 @@ metadata:
 
 # Bonfire
 
-Session context persistence for AI coding - save your progress at the bonfire.
+Session context persistence for AI coding. Pick up exactly where you left off.
 
 Git root: !`git rev-parse --show-toplevel`
 

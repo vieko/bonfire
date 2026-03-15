@@ -4,7 +4,7 @@ Guidance for AI coding agents working with this repository.
 
 ## Overview
 
-Bonfire provides session context persistence for AI coding - save your progress at the bonfire.
+Bonfire provides session context persistence for AI coding. Pick up exactly where you left off.
 
 **Installation:**
 ```bash
