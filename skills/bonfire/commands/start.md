@@ -9,7 +9,7 @@ Session is started, context is loaded, user knows what to work on.
 - `.bonfire/` directory exists with valid structure
 - `index.md` exists with session context
 - Context is read and summarized to user
-- Recent Claude sessions on current branch are noted (if any)
+- Recent sessions on current branch are noted (if any)
 - User is asked what to work on this session
 
 ## Constraints
