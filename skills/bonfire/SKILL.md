@@ -5,7 +5,7 @@ license: MIT
 allowed-tools: Bash(git:*), Bash(mkdir:*), Bash(rm .bonfire/*), Read, Write, Edit, Glob, Grep
 metadata:
   author: vieko
-  version: "6.1.0"
+  version: "6.2.0"
 ---
 
 # Bonfire

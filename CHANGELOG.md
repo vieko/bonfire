@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.2.0] - 2026-05-08
+
+### Changed
+
+- **Sharpened command outcomes** - `start.md` and `end.md` outcomes are now single, verifiable statements. End-session outcome is "the next session can resume from the index alone — every line earns its keep."
+- **Tightened the bonfire/memory boundary** - End-session constraints now explicitly bound the index to in-flight state. Cross-session knowledge (patterns, conventions, gotchas) goes to memory; session state stays in the index. Prevents the index from drifting into a knowledge-repository role memory already covers.
+- **Added "don't mirror canonical sources" rule** - Issue trackers, git log, and deployment dashboards are authoritative — reference them, don't copy. Mirrored content goes stale.
+- **Added "no per-session prose accumulation" rule** - The most recent session's narrative is enough; older sessions collapse to a one-liner. Prevents indexes from growing unboundedly with per-session highlight blocks.
+- **Added "garbage acts or leaves" rule** - A "garbage detected" entry that survives 3+ sessions is itself the garbage.
+- **Added verify-before-trust rule to start-session** - Claims the index makes about external state (open PRs, in-review tickets, ticket assignments) are verified against canonical sources before being acted on. The previous session's narrator can be wrong.
+- **Simplified template** - Replaced "Current State / Recent Sessions / Next Priorities / Key Resources / Codemap" with three sections: `Last session`, `In flight`, `Sessions`. Default shape no longer invites per-session block accretion.
+
+### Removed
+
+- **Legacy v5→v6 frontmatter migration** from `start.md` (transitional cruft, no longer needed).
+- **Arbitrary 20K-token threshold** from `start.md`, replaced with shape-based health check ("rambling prose, mirrored content, stale sections").
+
 ## [6.1.0] - 2026-03-13
 
 ### Changed

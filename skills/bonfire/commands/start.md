@@ -2,19 +2,17 @@
 
 ## Outcome
 
-Session is started, context is loaded, user knows what to work on.
+The user has the context they need to resume work.
 
 ## Acceptance Criteria
 
-- `.bonfire/` directory exists with valid structure
-- `index.md` exists with session context
-- Context is read and summarized to user
-- Recent sessions on current branch are noted (if any)
+- `.bonfire/index.md` exists with session context (scaffold from [templates/](../templates/) if missing)
+- Context is summarized to the user
+- Claims the index makes about external state (open PRs, in-review tickets, ticket assignments) are verified against canonical sources before being trusted
 - User is asked what to work on this session
 
 ## Constraints
 
-- Scaffold new projects using [templates/](../templates/) with sensible defaults
-- If frontmatter exists with legacy keys (`linear`, `issues`, `specs`, `docs`), remove them — keep only `git` if not `ignore-all`
-- Warn if context exceeds 20K tokens (suggest cleanup)
-- Do not proactively access external services or URLs
+- Don't trust prior-session prose blindly. The previous session's narrator can be wrong; bot reviews lapse; tickets get reassigned. Verify before acting.
+- Don't proactively access external services except to verify claims the index makes
+- If the index has grown past its useful shape (rambling prose, mirrored content, stale sections), surface that and offer to trim

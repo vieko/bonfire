@@ -1,53 +1,15 @@
-# Session Context: [PROJECT_NAME]
+# [PROJECT_NAME]
 
-**Date**: [CURRENT_DATE]
-**Status**: Active
-**Branch**: main
+**Last session**: [CURRENT_DATE] — [headline]
 
 ---
 
-## Current State
+## In flight
 
-[Describe what you're working on]
-
----
-
-## Recent Sessions
-
-### Session 1 - [CURRENT_DATE]
-
-**Goal**: [What you want to accomplish]
-
-**Accomplished**:
-- [List completed items]
-
-**Decisions**:
-- [Key decisions made]
-
-**Blockers**: None
+[Open work, current branch, blockers, what to resume]
 
 ---
 
-## Next Session Priorities
+## Sessions
 
-1. [Priority items]
-
----
-
-## Key Resources
-
-**Code References**:
-- [Component/feature]: `path/to/file.ts`
-
-**External Links**:
-- [Relevant links](url)
-
----
-
-## Codemap
-
-**Entry Points**:
-- [Add main entry points here]
-
-**Core Components**:
-- [Add key directories/modules here]
+- [CURRENT_DATE] — [one-liner: what shipped + key decision]
