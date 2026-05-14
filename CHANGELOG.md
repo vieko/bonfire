@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.3.0] - 2026-05-14
+
+### Added
+
+- **`handoff` command** - Capture a focused, self-contained task brief for a fresh session to pick up. Writes to `~/.bonfire/handoffs/<slug>.md` (global, not repo-coupled) so the consuming session can be in any repo or no repo at all. One brief = one PR-sized effort; durable status lives in the PR or issue, not the file.
+- **Handoff surfacing in `start`** - `/bonfire start` now lists any queued handoffs under `~/.bonfire/handoffs/` so they're discoverable from any session.
+
 ## [6.2.0] - 2026-05-08
 
 ### Changed

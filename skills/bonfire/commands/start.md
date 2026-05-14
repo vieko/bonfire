@@ -9,6 +9,7 @@ The user has the context they need to resume work.
 - `.bonfire/index.md` exists with session context (scaffold from [templates/](../templates/) if missing)
 - Context is summarized to the user
 - Claims the index makes about external state (open PRs, in-review tickets, ticket assignments) are verified against canonical sources before being trusted
+- Queued handoffs under `~/.bonfire/handoffs/` are surfaced so the user can pick one to consume in a fresh session
 - User is asked what to work on this session
 
 ## Constraints

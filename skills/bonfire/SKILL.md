@@ -2,10 +2,10 @@
 name: bonfire
 description: Session context persistence for AI coding. Pick up exactly where you left off.
 license: MIT
-allowed-tools: Bash(git:*), Bash(mkdir:*), Bash(rm .bonfire/*), Read, Write, Edit, Glob, Grep
+allowed-tools: Bash(git:*), Bash(mkdir:*), Bash(ls:*), Bash(rm .bonfire/*), Read, Write, Edit, Glob, Grep
 metadata:
   author: vieko
-  version: "6.2.0"
+  version: "6.3.0"
 ---
 
 # Bonfire
@@ -22,6 +22,7 @@ Parse `$ARGUMENTS` to determine action:
 |-------|--------|
 | `start` | Read [commands/start.md](commands/start.md) and execute |
 | `end` | Read [commands/end.md](commands/end.md) and execute |
+| `handoff [description]` | Read [commands/handoff.md](commands/handoff.md) and execute |
 | Empty or context question | Read `<git-root>/.bonfire/index.md`, summarize relevant context, answer |
 
 ## Bootstrap
