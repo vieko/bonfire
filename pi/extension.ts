@@ -25,17 +25,18 @@ import * as path from "node:path";
 import {
 	bootstrapTemplate,
 	extractFenceContent,
-	extractFirstUserPrompt,
 	extractOneLiner,
 	findRowForKey,
+	hasEnoughSignal,
 	shortenSessionId,
 	INFLIGHT_END,
 	INFLIGHT_START,
 	isGarbageSummary,
-	renderFallbackInflight,
+	renderFallbackInflightFromEntries,
 	renderInflight,
 	replaceFence,
-	truncate,
+	rollupOneLiner,
+	summarizeSessionEntries,
 	upsertSessionRow,
 } from "./lib";
 
@@ -239,16 +240,20 @@ function getGitModifiedFiles(cwd: string): string[] {
 }
 
 /**
- * Session-end fallback: write a row from the first user prompt when Pi's
- * compaction didn't produce something useful for this session.
+ * Session-end fallback: write a structured rollup from session entries when
+ * Pi's compaction didn't produce something useful for this session.
+ *
+ * Robust to pi#4811 (no LLM in the loop) and to runtime teardown (no async
+ * provider calls). Surfaces goal + recent direction + file activity + the
+ * last assistant text block (often a PR/Linear wrap-up).
  *
  * Conditions for writing:
  *   - .bonfire/ exists (opt-in gate)
  *   - config.json doesn't have { auto: false }
  *   - sessionManager has a valid sessionId
- *   - First user prompt is non-empty
+ *   - Session has enough signal (substantive goal or >=3 tool events)
  *   - Either no row exists for this session, or the existing row/in-flight
- *     is garbage (Pi compaction bug output).
+ *     is garbage (Pi compaction bug output) / stale (different session).
  */
 async function maybeWriteFallback(ctx: ExtensionContext): Promise<void> {
 	const gitRoot = findGitRoot(ctx.cwd);
@@ -295,14 +300,13 @@ async function maybeWriteFallback(ctx: ExtensionContext): Promise<void> {
 
 	if (!rowNeedsFallback && !inflightNeedsFallback) return;
 
-	const firstPrompt = extractFirstUserPrompt(ctx.sessionManager.getEntries());
-	if (!firstPrompt) return;
+	const rollup = summarizeSessionEntries(ctx.sessionManager.getEntries());
+	if (!hasEnoughSignal(rollup)) return;
 
 	const branch = getGitBranch(gitRoot) ?? "(detached)";
 	const modifiedFiles = getGitModifiedFiles(gitRoot);
 	const date = new Date().toISOString().slice(0, 10);
-	const oneLiner = truncate(firstPrompt, 200);
-	const row = `- ${date} [pi:${shortId}] ${branch} — ${oneLiner}`;
+	const meta = { date, host: HOST, shortId, branch };
 
 	// Bootstrap if file is missing (first ever bonfire write for this repo).
 	await ensureBonfireFile(indexPath, path.basename(gitRoot));
@@ -311,18 +315,22 @@ async function maybeWriteFallback(ctx: ExtensionContext): Promise<void> {
 	let next = content;
 
 	if (inflightNeedsFallback) {
-		const inflightMd = renderFallbackInflight(
-			firstPrompt,
-			{ date, host: HOST, shortId, branch },
-			modifiedFiles,
-		);
+		const inflightMd = renderFallbackInflightFromEntries(rollup, meta, modifiedFiles, gitRoot);
 		const updated = replaceFence(next, INFLIGHT_START, INFLIGHT_END, inflightMd);
 		if (updated !== null) next = updated;
 	}
 
 	if (rowNeedsFallback) {
-		const updated = upsertSessionRow(next, `[pi:${shortId}]`, row);
-		if (updated !== null) next = updated;
+		// Prefer the rollup's cleaned goal as the one-liner. Bail on the row
+		// when the goal is too low-signal to write (hasEnoughSignal may still
+		// be true from tool events alone, in which case we keep in-flight but
+		// don't pollute the sessions cap).
+		const oneLiner = rollupOneLiner(rollup);
+		if (oneLiner) {
+			const row = `- ${date} [pi:${shortId}] ${branch} — ${oneLiner}`;
+			const updated = upsertSessionRow(next, `[pi:${shortId}]`, row);
+			if (updated !== null) next = updated;
+		}
 	}
 
 	if (next === content) return;

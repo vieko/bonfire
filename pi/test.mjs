@@ -13,16 +13,21 @@ import {
 	extractSection,
 	extractSubsection,
 	findRowForKey,
+	hasEnoughSignal,
 	INFLIGHT_END,
 	INFLIGHT_START,
 	isGarbageSummary,
+	isLowSignalPrompt,
 	MAX_SESSION_ROWS,
 	renderFallbackInflight,
+	renderFallbackInflightFromEntries,
 	renderInflight,
 	replaceFence,
+	rollupOneLiner,
 	SESSIONS_END,
 	SESSIONS_START,
 	shortenSessionId,
+	summarizeSessionEntries,
 	upsertSessionRow,
 } from "./lib.ts";
 
@@ -295,6 +300,228 @@ const withRows = `${SESSIONS_START}\n## Sessions\n\n- 2026-05-19 [pi:abc12345] m
 truthy(findRowForKey(withRows, "[pi:abc12345]")?.includes("first row"), "finds matching row");
 eq(findRowForKey(withRows, "[pi:zzzzzzzz]"), null, "missing key returns null");
 eq(findRowForKey("no fence here", "[pi:abc12345]"), null, "missing fence returns null");
+
+// ---------------------------------------------------------------------------
+// v0.2: entry-based fallback (renders without an LLM, robust to pi#4811)
+// ---------------------------------------------------------------------------
+
+console.log("\nisLowSignalPrompt");
+eq(isLowSignalPrompt("what's next?"), true, "detects what's next");
+eq(isLowSignalPrompt("what's next for this project?"), true, "detects what's next for this project");
+eq(isLowSignalPrompt("What Should I Do Next?"), true, "case insensitive");
+eq(isLowSignalPrompt("ok"), true, "detects ok");
+eq(isLowSignalPrompt("continue"), true, "detects continue");
+eq(isLowSignalPrompt("go on"), true, "detects go on");
+eq(isLowSignalPrompt("yes"), true, "detects yes");
+eq(isLowSignalPrompt("hi"), true, "detects greeting");
+eq(isLowSignalPrompt("hello"), true, "detects hello");
+eq(isLowSignalPrompt("short"), true, "length < 8 is low-signal");
+eq(isLowSignalPrompt("refactor the auth module"), false, "real prompt is not low-signal");
+eq(isLowSignalPrompt("investigate why BETTER_AUTH_URL defaults to wrong domain"), false, "substantive prompt passes");
+
+console.log("\nsummarizeSessionEntries");
+
+// Synthetic session matching real Pi JSONL shape
+const syntheticSession = [
+	{ type: "session", id: "..." },
+	{
+		type: "message",
+		message: { role: "user", content: [{ type: "text", text: "what's next?" }] },
+	},
+	{
+		type: "message",
+		message: { role: "assistant", content: [{ type: "text", text: "Here's what's queued up..." }] },
+	},
+	{
+		type: "message",
+		message: { role: "user", content: [{ type: "text", text: "refactor the auth module to support multi-tenant" }] },
+	},
+	{
+		type: "message",
+		message: {
+			role: "assistant",
+			content: [
+				{ type: "toolCall", name: "read", arguments: { path: "/repo/src/auth.ts" } },
+				{ type: "toolCall", name: "edit", arguments: { path: "/repo/src/auth.ts" } },
+				{ type: "toolCall", name: "write", arguments: { path: "/repo/src/auth-tenant.ts" } },
+				{ type: "toolCall", name: "edit", arguments: { path: "/repo/src/auth-tenant.ts" } },
+				{ type: "toolCall", name: "bash", arguments: { command: "npm test" } },
+				{ type: "toolCall", name: "bash", arguments: { command: "npm test" } },
+			],
+		},
+	},
+	{
+		type: "message",
+		message: { role: "user", content: [{ type: "text", text: "ship the PR" }] },
+	},
+	{
+		type: "message",
+		message: {
+			role: "assistant",
+			content: [{ type: "text", text: "PR #1234 opened: feat(auth): multi-tenant support" }],
+		},
+	},
+];
+
+const rollup = summarizeSessionEntries(syntheticSession);
+eq(rollup.goal, "refactor the auth module to support multi-tenant", "goal skips low-signal first prompt");
+eq(rollup.recentDirection, "ship the PR", "recentDirection picks most recent non-trivial that isn't goal");
+eq(rollup.edited.length, 1, "only edits on non-written files remain");
+eq(rollup.edited[0], "/repo/src/auth.ts", "edited-only file retained");
+eq(rollup.written.length, 1, "one file written");
+eq(rollup.written[0], "/repo/src/auth-tenant.ts", "correct written path");
+eq(rollup.bashCount, 2, "bash count");
+eq(rollup.readCount, 1, "read count");
+eq(rollup.lastAssistantText, "PR #1234 opened: feat(auth): multi-tenant support", "last assistant text captured");
+eq(rollup.promptCount, 3, "prompt count");
+eq(rollup.messageCount, 6, "message count (excludes session header)");
+
+const onlyLowSignalSession = [
+	{ type: "message", message: { role: "user", content: [{ type: "text", text: "what's next?" }] } },
+	{ type: "message", message: { role: "user", content: [{ type: "text", text: "ok" }] } },
+];
+const onlyLow = summarizeSessionEntries(onlyLowSignalSession);
+eq(onlyLow.goal, "what's next?", "falls back to first prompt when all are low-signal");
+eq(onlyLow.recentDirection, null, "no recentDirection when all are low-signal");
+
+const emptySession = summarizeSessionEntries([]);
+eq(emptySession.goal, null, "empty session has null goal");
+eq(emptySession.edited.length, 0, "empty session has no edits");
+eq(emptySession.lastAssistantText, null, "empty session has no assistant text");
+
+// Clipboard-paste filter (Pi inserts /var/folders/.../*.png paths as user msgs)
+const clipboardSession = [
+	{
+		type: "message",
+		message: {
+			role: "user",
+			content: [{ type: "text", text: "/var/folders/1s/abc/T/pi-clipboard-xyz.png" }],
+		},
+	},
+	{
+		type: "message",
+		message: { role: "user", content: [{ type: "text", text: "investigate this prod incident" }] },
+	},
+];
+const clip = summarizeSessionEntries(clipboardSession);
+eq(clip.goal, "investigate this prod incident", "clipboard-paste content excluded from prompts");
+eq(clip.promptCount, 1, "clipboard prompt not counted");
+
+// /tmp/ and /var/ paths filtered from edited/written
+const tmpSession = [
+	{
+		type: "message",
+		message: {
+			role: "assistant",
+			content: [
+				{ type: "toolCall", name: "write", arguments: { path: "/tmp/pr-body.md" } },
+				{ type: "toolCall", name: "write", arguments: { path: "/var/folders/x/y.txt" } },
+				{ type: "toolCall", name: "write", arguments: { path: "/repo/real.ts" } },
+			],
+		},
+	},
+];
+const tmpRollup = summarizeSessionEntries(tmpSession);
+eq(tmpRollup.written.length, 1, "only real path counted (tmp/var filtered)");
+eq(tmpRollup.written[0], "/repo/real.ts", "correct real path retained");
+
+console.log("\nhasEnoughSignal");
+eq(hasEnoughSignal(rollup), true, "substantive rollup has enough signal");
+eq(hasEnoughSignal(emptySession), false, "empty rollup has insufficient signal");
+eq(hasEnoughSignal(onlyLow), false, "only-low-signal rollup has insufficient signal");
+eq(
+	hasEnoughSignal({
+		goal: "what's next?",
+		recentDirection: null,
+		edited: [],
+		written: [],
+		bashCount: 5,
+		readCount: 10,
+		lastAssistantText: "some text",
+		promptCount: 1,
+		messageCount: 10,
+	}),
+	true,
+	"low-signal goal but >=3 tool events passes",
+);
+eq(
+	hasEnoughSignal({
+		goal: "what's next?",
+		recentDirection: null,
+		edited: [],
+		written: [],
+		bashCount: 2,
+		readCount: 5,
+		lastAssistantText: "some text",
+		promptCount: 1,
+		messageCount: 5,
+	}),
+	false,
+	"low-signal goal AND <3 tool events bails",
+);
+
+console.log("\nrollupOneLiner");
+eq(rollupOneLiner(rollup), "refactor the auth module to support multi-tenant", "goal becomes one-liner");
+eq(rollupOneLiner(onlyLow), null, "low-signal goal returns null (don't pollute sessions cap)");
+eq(rollupOneLiner(emptySession), null, "empty rollup returns null");
+
+// First-sentence trimming on a long multi-sentence prompt
+const longGoalRollup = summarizeSessionEntries([
+	{
+		type: "message",
+		message: {
+			role: "user",
+			content: [{ type: "text", text: "investigate the BETTER_AUTH_URL bug. it's affecting prod traffic." }],
+		},
+	},
+]);
+eq(
+	rollupOneLiner(longGoalRollup),
+	"investigate the BETTER_AUTH_URL bug.",
+	"trims to first sentence",
+);
+
+console.log("\nrenderFallbackInflightFromEntries");
+const renderedRollup = renderFallbackInflightFromEntries(rollup, META, ["src/auth.ts"], "/repo");
+contains(renderedRollup, "## In flight", "has top-level heading");
+contains(renderedRollup, "_Updated 2026-05-19 from pi:a1b2c3d4 on `main`_", "timestamp line");
+contains(renderedRollup, "### Goal", "Goal section");
+contains(renderedRollup, "refactor the auth module to support multi-tenant", "goal text");
+contains(renderedRollup, "### Recent direction", "Recent direction section");
+contains(renderedRollup, "ship the PR", "recent direction text");
+contains(renderedRollup, "### Done", "Done section");
+contains(renderedRollup, "- Wrote `src/auth-tenant.ts`", "written file with cwd-relative path");
+notContains(renderedRollup, "- Edited `src/auth-tenant.ts`", "no duplicate edit row for written file");
+contains(renderedRollup, "- Ran 2 shell commands, read 1 file", "shell + read summary");
+contains(renderedRollup, "### Where we left off", "Where we left off section");
+contains(renderedRollup, "PR #1234 opened", "last assistant text surfaced");
+contains(renderedRollup, "### Uncommitted", "Uncommitted section when modifiedFiles present");
+contains(renderedRollup, "- `src/auth.ts`", "uncommitted file listed");
+
+const renderedEmpty = renderFallbackInflightFromEntries(emptySession, META, [], "/repo");
+contains(renderedEmpty, "Resumed session on `main`", "empty rollup uses generic goal text");
+notContains(renderedEmpty, "### Done", "no Done section when no activity");
+notContains(renderedEmpty, "### Where we left off", "no Where we left off when no assistant text");
+notContains(renderedEmpty, "### Uncommitted", "no Uncommitted when no modified files");
+
+const renderedLowGoal = renderFallbackInflightFromEntries(
+	{
+		goal: "what's next?",
+		recentDirection: null,
+		edited: ["/repo/x.ts"],
+		written: [],
+		bashCount: 5,
+		readCount: 0,
+		lastAssistantText: null,
+		promptCount: 1,
+		messageCount: 5,
+	},
+	META,
+	[],
+	"/repo",
+);
+contains(renderedLowGoal, "Resumed session on `main`", "low-signal goal swapped for generic");
+notContains(renderedLowGoal, "what's next?", "low-signal goal text not surfaced");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

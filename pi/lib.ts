@@ -289,6 +289,260 @@ export function renderFallbackInflight(
 }
 
 /**
+ * Patterns the user types when *asking* bonfire what to do (rather than
+ * stating the goal of the session). The session's first prompt is often one
+ * of these because users open Pi to resume — using it as the goal pollutes
+ * bonfire with self-referential "what's next?" entries.
+ */
+const LOW_SIGNAL_PROMPT_PATTERNS: RegExp[] = [
+	/^what'?s next( for (this|the) project)?$/i,
+	/^what should i do( next)?$/i,
+	/^(continue|go on|ok(ay)?|next|proceed|carry on|go|yes|y|sure|done|thanks)$/i,
+	/^(hi|hey|hello|sup|yo)$/i,
+];
+
+export function isLowSignalPrompt(text: string): boolean {
+	const trimmed = text.trim().toLowerCase().replace(/[?!.]+$/, "");
+	if (trimmed.length < 8) return true;
+	return LOW_SIGNAL_PROMPT_PATTERNS.some((re) => re.test(trimmed));
+}
+
+/**
+ * Structured rollup of a session's entries. Computed without an LLM by
+ * walking `ctx.sessionManager.getEntries()` directly. Used by the fallback
+ * path so we get meaningful summaries even when Pi's compaction pipeline
+ * is broken or hasn't fired (short sessions).
+ */
+export interface SessionRollup {
+	/** First user prompt that wasn't "what's next?"-style. Null when no prompts. */
+	goal: string | null;
+	/** Most recent non-trivial prompt that isn't the goal. Null when only one prompt. */
+	recentDirection: string | null;
+	/** Edited file paths, /tmp filtered, deduped against `written`. */
+	edited: string[];
+	/** Written file paths, /tmp filtered. "Wrote" wins over "Edited" for new files. */
+	written: string[];
+	bashCount: number;
+	readCount: number;
+	/** Last assistant text block. Often contains PR/Linear wrap-up summaries. */
+	lastAssistantText: string | null;
+	promptCount: number;
+	messageCount: number;
+}
+
+/**
+ * Walk `ctx.sessionManager.getEntries()` and roll up the structured signals
+ * we can render from. Pure function over the SessionEntry shape; safe to
+ * unit-test with synthetic fixtures.
+ */
+export function summarizeSessionEntries(entries: readonly any[]): SessionRollup {
+	const prompts: string[] = [];
+	const edited: string[] = [];
+	const written: string[] = [];
+	let bashCount = 0;
+	let readCount = 0;
+	let lastAssistantText: string | null = null;
+	let messageCount = 0;
+
+	for (const entry of entries) {
+		if (entry?.type !== "message") continue;
+		messageCount++;
+		const msg = entry.message;
+		if (!msg) continue;
+
+		if (msg.role === "user") {
+			const text = extractContentText(msg.content);
+			// Skip clipboard/image-paste content (Pi inserts /var/folders/.../*.png).
+			if (text && !/^\/var\/folders\/.+\.(png|jpg|jpeg|gif|webp)/.test(text)) {
+				prompts.push(text);
+			}
+		} else if (msg.role === "assistant") {
+			for (const c of msg.content ?? []) {
+				if (!c || typeof c !== "object") continue;
+				if (c.type === "toolCall") {
+					const args = c.arguments ?? {};
+					if (c.name === "edit" && typeof args.path === "string") edited.push(args.path);
+					else if (c.name === "write" && typeof args.path === "string") written.push(args.path);
+					else if (c.name === "bash") bashCount++;
+					else if (c.name === "read") readCount++;
+				} else if (c.type === "text") {
+					const text = typeof c.text === "string" ? c.text : "";
+					if (text.trim()) lastAssistantText = text;
+				}
+			}
+		}
+	}
+
+	let goal: string | null = null;
+	for (const p of prompts) {
+		if (!isLowSignalPrompt(p)) {
+			goal = p;
+			break;
+		}
+	}
+	if (!goal && prompts.length) goal = prompts[0];
+
+	let recentDirection: string | null = null;
+	for (let i = prompts.length - 1; i >= 0; i--) {
+		const p = prompts[i];
+		if (isLowSignalPrompt(p)) continue;
+		if (p === goal) continue;
+		recentDirection = p;
+		break;
+	}
+
+	const editedClean = unique(edited).filter(isRealPath);
+	const writtenClean = unique(written).filter(isRealPath);
+	// A file written then edited shouldn't appear twice. Written wins because
+	// it's the stronger signal (brand-new file).
+	const writtenSet = new Set(writtenClean);
+	const editedOnly = editedClean.filter((p) => !writtenSet.has(p));
+
+	return {
+		goal,
+		recentDirection,
+		edited: editedOnly,
+		written: writtenClean,
+		bashCount,
+		readCount,
+		lastAssistantText,
+		promptCount: prompts.length,
+		messageCount,
+	};
+}
+
+/**
+ * Does the session have enough substance to write a bonfire entry from?
+ * Returns false when overwriting prior in-flight would lose more than we gain
+ * (user opened Pi, said "what's next?", read the summary, quit).
+ */
+export function hasEnoughSignal(rollup: SessionRollup): boolean {
+	const toolEvents = rollup.edited.length + rollup.written.length + rollup.bashCount;
+	const hasSubstantiveGoal = rollup.goal !== null && !isLowSignalPrompt(rollup.goal);
+	return toolEvents >= 3 || hasSubstantiveGoal;
+}
+
+/**
+ * Build the in-flight body from a structured SessionRollup (no LLM). This
+ * is the v0.2 fallback that replaces `renderFallbackInflight`: it surfaces
+ * the goal, recent direction, file activity, and the last assistant text
+ * block (often a PR/Linear wrap-up).
+ *
+ * Robust to pi#4811 (no LLM in the loop) and to runtime teardown (no async).
+ */
+export function renderFallbackInflightFromEntries(
+	rollup: SessionRollup,
+	meta: InflightMeta,
+	modifiedFiles: readonly string[],
+	cwd: string | null,
+): string {
+	const lines: string[] = [];
+	lines.push("");
+	lines.push("## In flight");
+	lines.push("");
+	lines.push(`_Updated ${meta.date} from ${meta.host}:${meta.shortId} on \`${meta.branch}\`_`);
+	lines.push("");
+
+	const goalText =
+		rollup.goal && !isLowSignalPrompt(rollup.goal)
+			? truncate(firstSentence(rollup.goal), 200)
+			: `Resumed session on \`${meta.branch}\``;
+	lines.push("### Goal");
+	lines.push(goalText);
+	lines.push("");
+
+	if (rollup.recentDirection) {
+		lines.push("### Recent direction");
+		lines.push(truncate(firstSentence(rollup.recentDirection), 200));
+		lines.push("");
+	}
+
+	const done: string[] = [];
+	for (const f of rollup.written.slice(0, 6)) done.push(`- Wrote \`${shortPath(f, cwd)}\``);
+	for (const f of rollup.edited.slice(0, 6)) done.push(`- Edited \`${shortPath(f, cwd)}\``);
+	if (rollup.bashCount > 0) {
+		let line = `- Ran ${rollup.bashCount} shell command${rollup.bashCount === 1 ? "" : "s"}`;
+		if (rollup.readCount > 0) {
+			line += `, read ${rollup.readCount} file${rollup.readCount === 1 ? "" : "s"}`;
+		}
+		done.push(line);
+	}
+	if (done.length) {
+		lines.push("### Done");
+		for (const l of done) lines.push(l);
+		lines.push("");
+	}
+
+	if (rollup.lastAssistantText) {
+		lines.push("### Where we left off");
+		lines.push(truncateLines(rollup.lastAssistantText, 12, 800));
+		lines.push("");
+	}
+
+	if (modifiedFiles.length > 0) {
+		lines.push("### Uncommitted");
+		for (const f of modifiedFiles.slice(0, 10)) lines.push(`- \`${f}\``);
+		if (modifiedFiles.length > 10) {
+			lines.push(`- _(…and ${modifiedFiles.length - 10} more)_`);
+		}
+		lines.push("");
+	}
+
+	return lines.join("\n").trimEnd();
+}
+
+/**
+ * Extract a candidate one-liner for the Sessions row from a SessionRollup.
+ * Returns null when the rollup has no substantive goal (caller should bail
+ * rather than write a "what's next?"-style row).
+ */
+export function rollupOneLiner(rollup: SessionRollup): string | null {
+	if (!rollup.goal) return null;
+	if (isLowSignalPrompt(rollup.goal)) return null;
+	return truncate(firstSentence(rollup.goal), ONE_LINER_MAX);
+}
+
+function extractContentText(content: unknown): string {
+	if (typeof content === "string") return content.trim();
+	if (!Array.isArray(content)) return "";
+	const parts: string[] = [];
+	for (const c of content) {
+		if (c && typeof c === "object" && (c as any).type === "text" && typeof (c as any).text === "string") {
+			parts.push((c as any).text);
+		}
+	}
+	return parts.join("\n").trim();
+}
+
+function unique<T>(arr: readonly T[]): T[] {
+	return [...new Set(arr.filter((x) => x))];
+}
+
+function isRealPath(p: string): boolean {
+	return !!p && !p.startsWith("/tmp/") && !p.startsWith("/var/");
+}
+
+function firstSentence(text: string): string {
+	// First sentence-ish boundary. Be conservative — don't break inside short
+	// tokens like "v0.2" or URLs.
+	const m = text.match(/^([^\n]+?[.!?])(\s|$)/);
+	return m ? m[1] : text;
+}
+
+function shortPath(p: string, cwd: string | null): string {
+	if (cwd && p.startsWith(cwd + "/")) return p.slice(cwd.length + 1);
+	return p.replace(/^\/Users\/[^/]+\/dev\/[^/]+\//, "");
+}
+
+function truncateLines(text: string, maxLines: number, maxChars: number): string {
+	const lines = text.trim().split("\n");
+	let out = lines.slice(0, maxLines).join("\n");
+	if (out.length > maxChars) out = out.slice(0, maxChars).trimEnd() + "…";
+	if (lines.length > maxLines) out += `\n\n_…(${lines.length - maxLines} more lines)_`;
+	return out;
+}
+
+/**
  * Read the content between two fence markers without modifying anything.
  * Returns null when fences are missing/malformed.
  */

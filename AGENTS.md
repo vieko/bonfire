@@ -11,7 +11,8 @@ bonfire/
 ├── pi/                  # Pi adapter package (TypeScript, jiti runtime)
 │   ├── extension.ts     # hooks session_compact + session_shutdown
 │   ├── lib.ts           # pure functions (extraction, rendering, fence ops)
-│   └── test.mjs         # 86 unit tests
+│   ├── test.mjs         # 147 unit tests
+│   └── smoke.mjs        # composition + file-IO smoke test
 ├── claude/              # Claude Code Stop hook (plain ESM JS, no deps)
 │   ├── update-bonfire.mjs
 │   └── test.mjs         # 18 unit + integration tests
@@ -37,7 +38,8 @@ bonfire/
 
 When changing adapter behavior:
 - Both adapters (`pi/`, `claude/`) must stay behaviorally compatible.
-- Run tests: `cd pi && node --import=tsx test.mjs`; `cd claude && node test.mjs`.
+- Run tests: `cd pi && tsx test.mjs && tsx smoke.mjs`; `cd claude && node test.mjs`.
+- `test.mjs` covers lib.ts pure functions; `smoke.mjs` exercises the composed flow that extension.ts uses (rollup + render + fence-replace + upsert + atomic write) against a tmpdir.
 - Update both READMEs and the top-level README if the user-visible behavior changes.
 - Update the fallback skill (`skills/bonfire/commands/end.md`) if the fence shape or short-id rule changes.
 

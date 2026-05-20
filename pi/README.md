@@ -5,7 +5,7 @@ Pi adapter for [Bonfire](../README.md).
 Auto-updates two managed regions of `<git-root>/.bonfire/index.md` from two sources, in priority order:
 
 1. **Pi's structured compaction summary** (when `session_compact` fires) — Goal / In Progress / Blocked / Next Steps. Best quality, only available when Pi actually compacts the session.
-2. **First user prompt + git context** (when `session_shutdown` fires) — used as a fallback when no compaction fired, or when compaction returned garbage (e.g. the upstream Pi bug that produces `(No conversation content was provided to summarize)`). Always available, zero LLM cost.
+2. **Structured rollup from session entries** (when `session_shutdown` fires) — walks `ctx.sessionManager.getEntries()` to extract Goal (skipping low-signal prompts like "what's next?"), Recent direction, edited/written files, shell/read counts, and the last assistant text block (often a PR/Linear wrap-up). Pure local computation. Robust to upstream compaction bugs and to runtime teardown. Zero LLM cost.
 
 Rows are keyed by session id (`[pi:<8-char-id>]`), so re-compactions of the same session update the same row rather than accumulating.
 
@@ -14,10 +14,10 @@ Zero ritual. Pi runs, the file stays current.
 ## Install
 
 ```bash
-pi install git:github.com/vieko/bonfire@v7.0.1
+pi install git:github.com/vieko/bonfire@v7.1.0
 ```
 
-Replace `v7.0.1` with `main` to follow the latest unreleased commits, or pin to any tagged version.
+Replace `v7.1.0` with `main` to follow the latest unreleased commits, or pin to any tagged version.
 
 For local development against a clone of this repo:
 
@@ -109,17 +109,27 @@ To opt an existing `index.md` into auto-management, add the fence markers wherev
 
 ## When the fallback fires
 
-At session end (`session_shutdown`), the adapter checks the existing row + in-flight for this session. If either is missing or matches the Pi compaction-bug pattern (`/no conversation (content|messages)/i`), the adapter writes a row from the first user prompt + branch + `git diff --name-only HEAD` for the modified files list.
+At session end (`session_shutdown`), the adapter checks the existing row + in-flight for this session. If either is missing, matches the Pi compaction-bug pattern (`/no conversation (content|messages)/i`), or belongs to a different (stale) session, the adapter synthesizes a structured rollup from session entries:
+
+- **Goal** — first user prompt that isn't "what's next?"-style. Filtered against a list of low-signal prompts because users open Pi to *resume* and their first prompt is often meta-conversation.
+- **Recent direction** — most recent non-trivial prompt that isn't the goal. Shows the trajectory in long sessions.
+- **Done** — written files (new), then edited files, then "Ran N shell commands, read M files". Write-then-edit on the same path is deduped (written wins).
+- **Where we left off** — last assistant text block. Often contains PR announcements, Linear filings, or status summaries.
+- **Uncommitted** — `git diff --name-only HEAD`.
+
+The rollup is computed by `summarizeSessionEntries()` and only written when `hasEnoughSignal()` is true (≥3 tool events OR a substantive goal). This protects against "user opened Pi, asked 'what's next?', read, quit" from wiping a meaningful prior in-flight.
 
 The fallback is *additive*: if Pi compaction worked, the structured summary wins. The fallback only takes over when the primary path failed or never fired.
 
 ## Why both paths
 
-The primary path (compaction) gives richer output (Goal, In Progress, Blocked, Next Steps) when Pi's pipeline is healthy. The fallback guarantees bonfire always reflects *something* useful for any session that completed work, including:
+The primary path (compaction) gives richer prose output when Pi's pipeline is healthy. The fallback guarantees bonfire always reflects *something* useful for any session that completed work, including:
 
 - Short sessions that never hit the compaction threshold
-- Sessions where Pi's compaction returns garbage due to upstream bugs (cf. `bonfire/.bonfire/pi-bug-draft.md`)
+- Sessions where Pi's compaction returns garbage due to upstream bugs (cf. [earendil-works/pi#4811](https://github.com/earendil-works/pi/issues/4811))
 - Hosts/configurations where compaction is disabled
+
+The entry-based fallback often produces a *better* summary than `ctx.compact()` would: it surfaces the last assistant message verbatim (PR links, Linear IDs, slack one-liners) and uses structured tool-call metadata rather than re-summarizing through an LLM.
 
 ## License
 

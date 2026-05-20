@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.1.0] - 2026-05-20
+
+Pi adapter fallback path now synthesizes a structured rollup from session entries instead of dumping the first user prompt. Fixes the "`what's next?`" pollution observed on `gtm` and `internal-agents` when [pi#4811](https://github.com/earendil-works/pi/issues/4811) prevents compaction from running.
+
+### Added
+
+- **`summarizeSessionEntries(entries)`** in `pi/lib.ts` — walks `ctx.sessionManager.getEntries()` and rolls up: goal (first non-low-signal prompt), recent direction (most recent non-trivial prompt), edited/written paths (deduped, /tmp-filtered), bash/read counts, and the last assistant text block.
+- **`isLowSignalPrompt(text)`** — detects "what's next?", "continue", "ok", etc. Users open Pi to *resume* and their first prompt is often meta-conversation; using it as the goal is structurally wrong.
+- **`hasEnoughSignal(rollup)`** — threshold (≥3 tool events OR a substantive goal) to avoid wiping a meaningful prior in-flight when the user just opened Pi, asked a question, and quit.
+- **`renderFallbackInflightFromEntries(rollup, meta, modifiedFiles, cwd)`** — builds the in-flight body with Goal / Recent direction / Done / Where we left off / Uncommitted sections. The "Where we left off" surfaces the last assistant message verbatim, which usually contains PR announcements, Linear filings, or status summaries.
+- **`rollupOneLiner(rollup)`** — produces the Sessions row text from the rollup's goal (first sentence, truncated). Returns null on low-signal goals to keep the sessions cap clean.
+- 61 new unit tests covering low-signal classification, write-then-edit dedup, signal threshold, and rendering across goal/recent-direction/done/where-we-left-off/uncommitted slots.
+
+### Changed
+
+- **`session_shutdown` fallback** now uses `summarizeSessionEntries` + `renderFallbackInflightFromEntries` instead of the previous `extractFirstUserPrompt` + `renderFallbackInflight` path. Robust to pi#4811 (no LLM in the loop) and to runtime teardown (no async provider calls).
+- **Sessions row one-liner** is now the rollup's goal (cleaned + first-sentence-trimmed) instead of the raw first user prompt. Fixes "what's next?" rows polluting the 5-row sessions cap.
+
+### Why not `ctx.compact()` in `session_shutdown`
+
+The original v0.2 plan was to call `ctx.compact()` from the shutdown hook so short sessions would get a real summary. Two problems killed that approach:
+
+1. `ctx.compact()` is fire-and-forget; the extension runtime tears down before the LLM round-trip completes.
+2. Even if it completed, it would hit [pi#4811](https://github.com/earendil-works/pi/issues/4811) and return empty `<conversation>` content.
+
+Synthesizing the rollup locally beats both: no async, no LLM dependency, and we get to use structured tool-call metadata directly (better fidelity than re-summarizing through an LLM, even if compaction were healthy).
+
 ## [7.0.0] - 2026-05-20
 
 Bonfire is no longer a workflow with rituals. It's a **file convention + per-host adapters + a fallback skill**. This release is a complete philosophical rewrite.

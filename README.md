@@ -47,7 +47,7 @@ Everything outside the fences is yours to curate. Anything inside is managed by 
 ### Pi
 
 ```bash
-pi install git:github.com/vieko/bonfire@v7.0.1
+pi install git:github.com/vieko/bonfire@v7.1.0
 ```
 
 (Use `@main` to follow latest, or pin to any tagged version.)
