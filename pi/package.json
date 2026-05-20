@@ -1,0 +1,19 @@
+{
+  "name": "@vieko/pi-bonfire",
+  "version": "0.1.0",
+  "description": "Pi adapter for Bonfire — auto-update .bonfire/index.md from Pi's compaction summaries.",
+  "keywords": ["pi-package", "bonfire"],
+  "license": "MIT",
+  "author": "Vieko Franetovic",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vieko/bonfire.git",
+    "directory": "pi"
+  },
+  "pi": {
+    "extensions": ["./extension.ts"]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": ">=0.1.0"
+  }
+}
