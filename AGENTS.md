@@ -54,4 +54,4 @@ This repo dogfoods bonfire. State is in `.bonfire/index.md`.
 - [Pi adapter README](pi/README.md)
 - [Claude adapter README](claude/README.md)
 - [Skill README](skills/bonfire/SKILL.md)
-- [Pi compaction bug draft (file when ready)](.bonfire/pi-bug-draft.md)
+- [Pi compaction bug (filed upstream)](https://github.com/earendil-works/pi/issues/4811)
