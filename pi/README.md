@@ -14,14 +14,18 @@ Zero ritual. Pi runs, the file stays current.
 ## Install
 
 ```bash
-pi install git:github.com/vieko/bonfire/pi@main
+pi install git:github.com/vieko/bonfire@v7.0.1
 ```
 
-Or local for development:
+Replace `v7.0.1` with `main` to follow the latest unreleased commits, or pin to any tagged version.
+
+For local development against a clone of this repo:
 
 ```bash
 pi install -l /path/to/bonfire/pi
 ```
+
+(The repo has two `pi-package` manifests: one at the root for git-URL installs, one inside `pi/` for local-path installs. They point at the same extension code.)
 
 ## Enable per repo
 

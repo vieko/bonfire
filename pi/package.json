@@ -1,6 +1,6 @@
 {
   "name": "@vieko/pi-bonfire",
-  "version": "0.1.0",
+  "version": "7.0.1",
   "description": "Pi adapter for Bonfire — auto-update .bonfire/index.md from Pi's compaction summaries.",
   "keywords": ["pi-package", "bonfire"],
   "license": "MIT",

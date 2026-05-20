@@ -47,8 +47,10 @@ Everything outside the fences is yours to curate. Anything inside is managed by 
 ### Pi
 
 ```bash
-pi install git:github.com/vieko/bonfire/pi@main
+pi install git:github.com/vieko/bonfire@v7.0.1
 ```
+
+(Use `@main` to follow latest, or pin to any tagged version.)
 
 Hooks `session_compact` (rich structured summary) + `session_shutdown` (first-user-prompt fallback). Footer status, collision-resistant session ids, opt-in per repo. See [pi/](pi/).
 
