@@ -304,5 +304,135 @@ assert(compactLabel === `${GLYPH} +IS`, "compact wrote both -> △ +IS");
 assert(formatNudge() === `${GLYPH} ?compact`, "nudge label = △ ?compact");
 assert(formatFallbackResult() === `${GLYPH} +F`, "fallback label = △ +F");
 
+// --- v7.2.1 smoke: turn_end self-heal repaints the diagnostic when
+// session_start didn't fire (long-lived session pre-dating extension
+// upgrade, async load race, silent error inside the handler).
+//
+// We drive the actual extension default-export through a fake ExtensionAPI
+// and a fake ExtensionContext so the test exercises the real handler-
+// registration + ownership-tracking + setStatus call sites end-to-end. The
+// alternative (importing internals) wouldn't catch wiring bugs.
+
+console.log("\nsmoke: turn_end self-heal");
+
+const { default: registerExtension } = await import("./extension.ts");
+
+function makeFakeApi() {
+	const handlers = new Map();
+	return {
+		api: {
+			on(event, handler) {
+				handlers.set(event, handler);
+			},
+		},
+		fire(event, payload, ctx) {
+			const h = handlers.get(event);
+			if (!h) return Promise.resolve();
+			return h(payload, ctx);
+		},
+	};
+}
+
+function makeFakeCtx({ cwd, sessionId, percent = 5 }) {
+	let lastStatus = null;
+	return {
+		ctx: {
+			hasUI: true,
+			cwd,
+			sessionManager: {
+				getSessionId: () => sessionId,
+				getEntries: () => [],
+			},
+			getContextUsage: () => ({ percent }),
+			ui: {
+				theme: { fg: (_color, text) => text },
+				setStatus: (_key, text) => {
+					lastStatus = text;
+				},
+				notify: () => {},
+			},
+		},
+		getLastStatus: () => lastStatus,
+	};
+}
+
+const tmpHeal = fs.mkdtempSync(path.join(os.tmpdir(), "bonfire-heal-"));
+try {
+	// Initialize as a git repo so findGitRoot succeeds.
+	const { execSync } = await import("node:child_process");
+	execSync("git init -q", { cwd: tmpHeal });
+	execSync("git commit --allow-empty -q -m init", {
+		cwd: tmpHeal,
+		env: { ...process.env, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@t", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@t" },
+	});
+
+	fs.mkdirSync(path.join(tmpHeal, ".bonfire"));
+	// Legacy hand-written index.md, no fences. Should produce △ !fences.
+	fs.writeFileSync(
+		path.join(tmpHeal, ".bonfire", "index.md"),
+		"# r\n\n## In flight\n\nlegacy free-form content, no fences\n",
+	);
+
+	const { api, fire } = makeFakeApi();
+	registerExtension(api);
+
+	const sessionId = "aabbccdd-eeff-1234-5678-9abcdef01234";
+	const { ctx, getLastStatus } = makeFakeCtx({ cwd: tmpHeal, sessionId });
+
+	// Simulate the bug: session_start never fired (extension loaded into a
+	// session that pre-dated this version). We jump straight to turn_end.
+	await fire("turn_end", { type: "turn_end" }, ctx);
+	assert(
+		getLastStatus() === `${GLYPH} !fences`,
+		"turn_end self-heal paints △ !fences when session_start was skipped",
+	);
+
+	// Subsequent turn_ends should keep the diagnostic painted (owner stays
+	// `diagnostic`, repaint is idempotent on stable content).
+	await fire("turn_end", { type: "turn_end" }, ctx);
+	assert(
+		getLastStatus() === `${GLYPH} !fences`,
+		"second turn_end keeps △ !fences",
+	);
+} finally {
+	fs.rmSync(tmpHeal, { recursive: true, force: true });
+}
+
+// Second self-heal case: when session_start DID fire normally, turn_end
+// is a harmless idempotent repaint (same owner, same label).
+const tmpHealNormal = fs.mkdtempSync(path.join(os.tmpdir(), "bonfire-heal-normal-"));
+try {
+	const { execSync } = await import("node:child_process");
+	execSync("git init -q", { cwd: tmpHealNormal });
+	execSync("git commit --allow-empty -q -m init", {
+		cwd: tmpHealNormal,
+		env: { ...process.env, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@t", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@t" },
+	});
+	fs.mkdirSync(path.join(tmpHealNormal, ".bonfire"));
+	fs.writeFileSync(
+		path.join(tmpHealNormal, ".bonfire", "index.md"),
+		"# r\n\n## In flight\n\nlegacy free-form content, no fences\n",
+	);
+
+	const { api, fire } = makeFakeApi();
+	registerExtension(api);
+
+	const sessionId = "aabbccdd-eeff-1234-5678-deadbeefcafe";
+	const { ctx, getLastStatus } = makeFakeCtx({ cwd: tmpHealNormal, sessionId });
+
+	await fire("session_start", { type: "session_start", reason: "new" }, ctx);
+	assert(
+		getLastStatus() === `${GLYPH} !fences`,
+		"session_start paints △ !fences normally",
+	);
+	await fire("turn_end", { type: "turn_end" }, ctx);
+	assert(
+		getLastStatus() === `${GLYPH} !fences`,
+		"turn_end after session_start is idempotent",
+	);
+} finally {
+	fs.rmSync(tmpHealNormal, { recursive: true, force: true });
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

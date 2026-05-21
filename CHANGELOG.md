@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.2.1] - 2026-05-21
+
+Pi adapter status diagnostic is now self-healing. Long-lived sessions that pre-date this extension version (or hit an async load race / silent error during `session_start`) now get the diagnostic painted on the next `turn_end` instead of staying invisible.
+
+### Fixed
+
+- **Status diagnostic now self-heals via `turn_end`.** Repro: a Pi session that was already running when `pi update` pulled a newer bonfire version never receives `session_start`, so v7.2.0's `△ !fences` / `△ !init` / `△ !7d` / `△ 1d` / `△` labels would never appear for the rest of that session's lifetime — even when `.bonfire/index.md` was missing fences entirely. The slot stayed blank, defeating the point of the diagnostic. `turn_end` now repaints the diagnostic when the bonfire status slot is unowned or already diagnostic-owned, with explicit ownership tracking to avoid clobbering legitimate `△ +IS` / `△ +F` / `△ ?compact` labels.
+- **`updateStartupStatus` now returns `boolean`** so the caller (both `session_start` and `turn_end`) can record ownership only on actual paint, not on early-return paths (no git root, no `.bonfire/`, `auto: false`).
+
+### Added
+
+- **New module-level `sessionStatusOwner: Map<sessionId, "diagnostic" | "compact" | "fallback" | "nudge">`** in `pi/extension.ts`. Every paint site records its owner; `turn_end` only repaints when the slot is `diagnostic` or unowned.
+- **4 new smoke assertions** exercising the self-heal: registering the extension against a fake `ExtensionAPI`, firing `turn_end` against a `.bonfire/index.md` with no fences, and asserting the slot ends up with `△ !fences`. Includes the idempotent-repaint case and the "`session_start` fired normally, `turn_end` doesn't fight it" case.
+
+### Notes
+
+No fence-format bump. No lib/pure-function changes; this is an extension-shaped fix. Pin via `git:github.com/vieko/bonfire@v7.2.1`.
+
 ## [7.2.0] - 2026-05-21
 
 Pi adapter footer status now follows Pi's own compact label vocabulary (`↑45 ↓26k R1.3M W107k`-style): single glyph `△` + sigil + letter, no English. The static `"bonfire: tracking"` label is replaced with a diagnostic resolver that surfaces stale in-flight, missing fences, and breadcrumb age at session_start — catching legacy / pre-7.0 index files (like forge's, just migrated today) the moment Pi opens them.

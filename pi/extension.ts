@@ -60,6 +60,21 @@ const compactedSessions = new Set<string>();
 // same status on every turn while waiting for the user to compact.
 const nudgedSessions = new Set<string>();
 
+/**
+ * Who last painted the bonfire status slot for a given session.
+ *
+ * The `turn_end` self-heal repaint is the reason this exists: we want to
+ * recover the diagnostic when `session_start` was missed (long-lived
+ * session pre-dating this extension version, async load race, error
+ * inside the handler) WITHOUT clobbering legitimate non-diagnostic
+ * labels (`△ +IS` / `△ +F` / `△ ?compact`) that other handlers paint.
+ *
+ * Rule: turn_end may repaint the diagnostic iff the current owner is
+ * undefined (nothing painted) or "diagnostic" (we own it).
+ */
+type StatusOwner = "diagnostic" | "compact" | "fallback" | "nudge";
+const sessionStatusOwner = new Map<string, StatusOwner>();
+
 export default function (pi: ExtensionAPI) {
 	// session_start: resolve a diagnostic startup status from the existing
 	// index.md so the user can see immediately whether the next compaction
@@ -68,7 +83,10 @@ export default function (pi: ExtensionAPI) {
 	pi.on("session_start", async (_event, ctx) => {
 		if (!ctx.hasUI) return;
 		try {
-			await updateStartupStatus(ctx);
+			if (await updateStartupStatus(ctx)) {
+				const sessionId = ctx.sessionManager.getSessionId();
+				if (sessionId) sessionStatusOwner.set(sessionId, "diagnostic");
+			}
 		} catch (err) {
 			if (process.env.BONFIRE_DEBUG === "1") {
 				const msg = err instanceof Error ? err.message : String(err);
@@ -80,11 +98,15 @@ export default function (pi: ExtensionAPI) {
 	pi.on("session_compact", async (event, ctx) => {
 		try {
 			const result = await updateBonfireIndex(event, ctx);
-			compactedSessions.add(ctx.sessionManager.getSessionId());
+			const sessionId = ctx.sessionManager.getSessionId();
+			compactedSessions.add(sessionId);
 			if (!result) return;
 			if (ctx.hasUI) {
 				const label = formatCompactResult(result.touchedInflight, result.touchedSessions);
-				if (label) ctx.ui.setStatus("bonfire", ctx.ui.theme.fg("dim", label));
+				if (label) {
+					ctx.ui.setStatus("bonfire", ctx.ui.theme.fg("dim", label));
+					if (sessionId) sessionStatusOwner.set(sessionId, "compact");
+				}
 			}
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
@@ -92,12 +114,32 @@ export default function (pi: ExtensionAPI) {
 		}
 	});
 
-	// turn_end: surface a compact-nudge when context is filling up but no
-	// compaction has fired this session yet. Once compaction (auto or
-	// manual) lands, the session_compact handler updates the status and the
-	// gate above suppresses further nudges.
+	// turn_end does two things:
+	//
+	//   1. Self-heal the diagnostic status when session_start didn't paint
+	//      (long-lived session that pre-dates this extension version, async
+	//      load race, silent failure inside the handler). We only repaint
+	//      when the slot is unowned or already diagnostic-owned, so we
+	//      never clobber a legitimate `△ +IS` / `△ +F` / `△ ?compact`.
+	//
+	//   2. Surface the compact-nudge when context is filling up but no
+	//      compaction has fired this session yet. Once compaction (auto
+	//      or manual) lands, the session_compact handler updates the
+	//      status and the gate inside maybeShowCompactNudge suppresses
+	//      further nudges.
 	pi.on("turn_end", async (_event, ctx) => {
 		try {
+			if (ctx.hasUI) {
+				const sessionId = ctx.sessionManager.getSessionId();
+				if (sessionId) {
+					const owner = sessionStatusOwner.get(sessionId);
+					if (owner === undefined || owner === "diagnostic") {
+						if (await updateStartupStatus(ctx)) {
+							sessionStatusOwner.set(sessionId, "diagnostic");
+						}
+					}
+				}
+			}
 			await maybeShowCompactNudge(ctx);
 		} catch (err) {
 			if (process.env.BONFIRE_DEBUG === "1") {
@@ -117,6 +159,8 @@ export default function (pi: ExtensionAPI) {
 			const wrote = await maybeWriteFallback(ctx);
 			if (wrote && ctx.hasUI) {
 				ctx.ui.setStatus("bonfire", ctx.ui.theme.fg("dim", formatFallbackResult()));
+				const sessionId = ctx.sessionManager.getSessionId();
+				if (sessionId) sessionStatusOwner.set(sessionId, "fallback");
 			}
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
@@ -135,20 +179,26 @@ interface CompactResult {
 	touchedSessions: boolean;
 }
 
-async function updateStartupStatus(ctx: ExtensionContext): Promise<void> {
+/**
+ * Resolve and paint the diagnostic status for the current repo. Returns
+ * true when a status was actually painted (so callers can record
+ * ownership), false on any early-return path (no git root, no
+ * .bonfire/, auto disabled). Throws are caught by the caller.
+ */
+async function updateStartupStatus(ctx: ExtensionContext): Promise<boolean> {
 	const gitRoot = findGitRoot(ctx.cwd);
-	if (!gitRoot) return;
+	if (!gitRoot) return false;
 
 	const bonfireDir = path.join(gitRoot, ".bonfire");
 	try {
 		const stat = await fs.stat(bonfireDir);
-		if (!stat.isDirectory()) return;
+		if (!stat.isDirectory()) return false;
 	} catch {
-		return; // silent: not an opted-in repo
+		return false; // silent: not an opted-in repo
 	}
 
 	const config = await readConfig(gitRoot);
-	if (config?.auto === false) return;
+	if (config?.auto === false) return false;
 
 	const indexPath = path.join(gitRoot, ".bonfire", "index.md");
 	let content: string | null = null;
@@ -164,6 +214,7 @@ async function updateStartupStatus(ctx: ExtensionContext): Promise<void> {
 
 	const color = status.severity === "warning" ? "yellow" : "dim";
 	ctx.ui.setStatus("bonfire", ctx.ui.theme.fg(color, status.label));
+	return true;
 }
 
 async function updateBonfireIndex(
@@ -262,6 +313,7 @@ async function maybeShowCompactNudge(ctx: ExtensionContext): Promise<void> {
 
 	ctx.ui.setStatus("bonfire", ctx.ui.theme.fg("dim", formatNudge()));
 	nudgedSessions.add(sessionId);
+	sessionStatusOwner.set(sessionId, "nudge");
 }
 
 function findGitRoot(cwd: string): string | null {
