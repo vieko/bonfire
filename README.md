@@ -42,6 +42,8 @@ PR #147 review prep + GTMENG-1182 calibration
 
 Everything outside the fences is yours to curate. Anything inside is managed by a bonfire adapter.
 
+The canonical curated heading is `## Notes` — the place for free-form context that complements the auto-managed `## In flight` block (open intents, project decisions, runbooks). Sessions are different: they cap at 5 newest rows inside the fence; older entries overflow to a sidecar (`log.md`), not to an in-file `## Session archive` heading. Bonfire is opinionated about not accumulating session prose in `index.md` — see [skills/bonfire/commands/migrate.md](skills/bonfire/commands/migrate.md) if you're upgrading a pre-v7 file with paragraph-shaped session entries.
+
 ## Install an adapter
 
 ### Pi
@@ -131,7 +133,7 @@ The adapter writes inside the fence markers and never touches anything else. You
 ├── index.md       # required; fence-managed by the adapter
 ├── BACKLOG.md     # optional; un-ticketed personal follow-ups
 ├── KNOWLEDGE.md   # optional; durable repo-specific notes (esp. on shared repos where the team's AGENTS.md is off-limits)
-├── log.md         # optional; older Sessions rows overflowed from the fence cap
+├── log.md         # optional; older Sessions rows overflowed from the fence cap, or pre-v7 session narratives written by the migrate command
 └── config.json    # optional; per-repo settings, e.g. { "auto": false }
 ```
 

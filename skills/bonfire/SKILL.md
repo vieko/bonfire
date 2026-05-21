@@ -6,7 +6,7 @@ disable-model-invocation: true
 allowed-tools: Bash(git:*), Bash(mkdir:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
 metadata:
   author: vieko
-  version: "7.1.0"
+  version: "7.3.0"
 ---
 
 # Bonfire (fallback skill)
@@ -38,6 +38,7 @@ Without `.bonfire/` present, this skill exits silently. That keeps it from pollu
 | Input | Action |
 |-------|--------|
 | `end` | Read [commands/end.md](commands/end.md) and execute |
+| `migrate` | Read [commands/migrate.md](commands/migrate.md) and execute. One-off migration for a pre-v7 `index.md` that lacks the v1 fence markers — wraps the file in fences without destroying hand-curated content. |
 
 Earlier versions of bonfire had `start` and `handoff` commands. Both are removed in 7.0:
 

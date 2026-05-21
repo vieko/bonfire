@@ -354,6 +354,7 @@ const KNOWN_THEME_COLORS = new Set([
 
 function makeFakeCtx({ cwd, sessionId, percent = 5 }) {
 	let lastStatus = null;
+	const notifies = [];
 	return {
 		ctx: {
 			hasUI: true,
@@ -377,10 +378,13 @@ function makeFakeCtx({ cwd, sessionId, percent = 5 }) {
 				setStatus: (_key, text) => {
 					lastStatus = text;
 				},
-				notify: () => {},
+				notify: (message, level) => {
+					notifies.push({ message, level });
+				},
 			},
 		},
 		getLastStatus: () => lastStatus,
+		getNotifies: () => notifies,
 	};
 }
 
@@ -405,7 +409,7 @@ try {
 	registerExtension(api);
 
 	const sessionId = "aabbccdd-eeff-1234-5678-9abcdef01234";
-	const { ctx, getLastStatus } = makeFakeCtx({ cwd: tmpHeal, sessionId });
+	const { ctx, getLastStatus, getNotifies } = makeFakeCtx({ cwd: tmpHeal, sessionId });
 
 	// Simulate the bug: session_start never fired (extension loaded into a
 	// session that pre-dated this version). We jump straight to turn_end.
@@ -414,13 +418,24 @@ try {
 		getLastStatus() === `${GLYPH} !fences`,
 		"turn_end self-heal paints △ !fences when session_start was skipped",
 	);
+	assert(
+		getNotifies().length === 1 &&
+			getNotifies()[0].level === "warning" &&
+			getNotifies()[0].message.includes("/skill:bonfire migrate"),
+		"first paint of !fences fires actionable notify exactly once",
+	);
 
 	// Subsequent turn_ends should keep the diagnostic painted (owner stays
-	// `diagnostic`, repaint is idempotent on stable content).
+	// `diagnostic`, repaint is idempotent on stable content) AND must not
+	// re-notify — the dedupe set should keep the count at 1.
 	await fire("turn_end", { type: "turn_end" }, ctx);
 	assert(
 		getLastStatus() === `${GLYPH} !fences`,
 		"second turn_end keeps △ !fences",
+	);
+	assert(
+		getNotifies().length === 1,
+		"second turn_end does NOT re-notify (deduped per session+kind)",
 	);
 } finally {
 	fs.rmSync(tmpHeal, { recursive: true, force: true });
@@ -446,7 +461,9 @@ try {
 	registerExtension(api);
 
 	const sessionId = "aabbccdd-eeff-1234-5678-deadbeefcafe";
-	const { ctx, getLastStatus } = makeFakeCtx({ cwd: tmpHealNormal, sessionId });
+	const { ctx, getLastStatus, getNotifies } = makeFakeCtx({ cwd: tmpHealNormal, sessionId });
+	// silence unused var lint without weakening the assertion path
+	void getNotifies;
 
 	await fire("session_start", { type: "session_start", reason: "new" }, ctx);
 	assert(

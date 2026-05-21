@@ -75,6 +75,20 @@ const nudgedSessions = new Set<string>();
 type StatusOwner = "diagnostic" | "compact" | "fallback" | "nudge";
 const sessionStatusOwner = new Map<string, StatusOwner>();
 
+/**
+ * Actionable hints surfaced via `ctx.ui.notify` when a diagnostic resolves
+ * to a warning state with a known remediation. The footer keeps the compact
+ * glyph (e.g. `△ !fences`); the notify carries the English command the user
+ * would otherwise have to discover from the README. Deduped per session per
+ * warning kind so the hint fires exactly once even though
+ * `updateStartupStatus` runs at both `session_start` and on every
+ * `turn_end` self-heal.
+ */
+const NOTIFY_FOR_WARNING: ReadonlyMap<string, string> = new Map([
+	["!fences", "bonfire: legacy index detected. Run `/skill:bonfire migrate` to upgrade."],
+]);
+const notifiedSessions = new Set<string>(); // key: `${sessionId}:${kind}`
+
 export default function (pi: ExtensionAPI) {
 	// session_start: resolve a diagnostic startup status from the existing
 	// index.md so the user can see immediately whether the next compaction
@@ -220,6 +234,24 @@ async function updateStartupStatus(ctx: ExtensionContext): Promise<boolean> {
 	// leaves the bonfire slot blank.
 	const color = status.severity === "warning" ? "warning" : "dim";
 	ctx.ui.setStatus("bonfire", ctx.ui.theme.fg(color, status.label));
+
+	// Surface a one-shot actionable hint when the warning has a known
+	// remediation. The footer keeps the compact glyph (e.g. "△ !fences");
+	// notify carries the English command the user would otherwise have to
+	// discover from the README. Deduped per session per kind so re-paints
+	// (turn_end self-heal) don't re-notify.
+	if (status.severity === "warning" && sessionId) {
+		for (const [kind, message] of NOTIFY_FOR_WARNING) {
+			if (!status.label.includes(kind)) continue;
+			const key = `${sessionId}:${kind}`;
+			if (!notifiedSessions.has(key)) {
+				ctx.ui.notify(message, "warning");
+				notifiedSessions.add(key);
+			}
+			break;
+		}
+	}
+
 	return true;
 }
 

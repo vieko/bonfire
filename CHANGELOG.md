@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.3.0] - 2026-05-21
+
+Migration support for pre-v7 `index.md` files, plus an actionable notify on the `△ !fences` diagnostic so users can discover the fix without reading the README.
+
+### Added
+
+- **`/skill:bonfire migrate` command** (`skills/bonfire/commands/migrate.md`) for upgrading pre-v7 `index.md` files to the v1 fence shape, preserving all curated content. Migration shape:
+  - Inserts the v1 fence pair right after the H1.
+  - Renames legacy `## In flight` → `## Notes` (the canonical curated heading).
+  - **Moves legacy `## Sessions` content to `<git-root>/.bonfire/log.md`** as a sidecar (the canonical destination for sessions overflow per the README), removing the `## Sessions` H2 from `index.md` entirely. Honors v6.2's "no per-session prose accumulation in the index" principle.
+  - Leaves all other H2 sections (runbooks, checklists, etc.) and free-form prose in their original positions, byte-for-byte.
+  - Atomic writes for both `index.md` and the sidecar. `.pre-migrate-*.bak` for `index.md`; `log-pre-migrate-*.md` for sidecar collisions. Never silently overwrites.
+- **Actionable notify on `△ !fences`** in the Pi adapter. When the startup diagnostic resolves to a warning state with a known remediation, `ctx.ui.notify(message, "warning")` surfaces the exact command (`bonfire: legacy index detected. Run \`/skill:bonfire migrate\` to upgrade.`). Deduped per session + warning kind via a new module-level `notifiedSessions: Set<string>` so re-paints (turn_end self-heal) don't re-notify. Self-extinguishing UX: once the migration runs, the next session resolves to healthy and the notify never fires again.
+- **`## Notes` documented as the canonical curated heading** in the root README. Pair with the existing `## In flight` (auto-managed inside fence) for symmetric vocabulary. The README also clarifies that the canonical destination for sessions overflow / migration is `.bonfire/log.md`, not an in-file `## Session archive` heading — explicitly to avoid sanctioning the v6.2 anti-pattern of accumulating session prose in `index.md`.
+- **2 new smoke assertions** verifying notify fires exactly once on the first `△ !fences` paint and is suppressed on subsequent re-paints in the same session.
+
+### Notes
+
+No fence-format bump. No lib changes. Pin via `git:github.com/vieko/bonfire@v7.3.0`. The migration command lives in the fallback skill, so any agent that can load skills can invoke it on any host — not Pi-specific.
+
 ## [7.2.2] - 2026-05-21
 
 Fixes the v7.2.0 startup diagnostic silently dying on themes that don't define the literal color `yellow`. The diagnostic now uses Pi's semantic `warning` color which is guaranteed across every theme.
