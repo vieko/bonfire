@@ -96,7 +96,7 @@ Messages go to stderr in the form `bonfire: <reason>` — you'll see them in Cla
 ## What doesn't trigger it
 
 - Non-git directories: skipped silently.
-- Sessions whose summary in `sessions-index.json` is empty or hasn't changed: hook computes new content, sees it matches existing file, no write.
+- Sessions whose `ai-title` in the JSONL hasn't changed since the last Stop: hook computes new content, sees it matches existing file, no write.
 - Files lacking the bonfire fence markers: hook never injects them. Bootstrap only happens when `.bonfire/index.md` is missing entirely.
 
 ## Why no install script

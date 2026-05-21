@@ -6,7 +6,7 @@ disable-model-invocation: true
 allowed-tools: Bash(git:*), Bash(mkdir:*), Bash(ls:*), Read, Write, Edit, Glob, Grep
 metadata:
   author: vieko
-  version: "7.0.0"
+  version: "7.1.0"
 ---
 
 # Bonfire (fallback skill)
