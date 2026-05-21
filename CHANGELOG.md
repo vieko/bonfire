@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.2.2] - 2026-05-21
+
+Fixes the v7.2.0 startup diagnostic silently dying on themes that don't define the literal color `yellow`. The diagnostic now uses Pi's semantic `warning` color which is guaranteed across every theme.
+
+### Fixed
+
+- **Status diagnostic now paints on non-default themes.** Repro: user has `"theme": "one-dark"` in `settings.json`. v7.2.0 passed `theme.fg("yellow", ...)` for warning-severity labels. Pi's theme system throws on unknown color names rather than falling back, so `updateStartupStatus` silently threw inside its caller's try/catch every time — leaving the bonfire status slot blank even when `△ !fences` / `△ !7d` / `△ !init` should have appeared. Replaced the literal `"yellow"` with the semantic `"warning"` color name, which every Pi theme is required to define (see `ThemeJsonSchema` in `pi-coding-agent/dist/modes/interactive/theme/theme.js`).
+- **Smoke test now mirrors Pi's strict theme behavior.** The previous stub accepted any color name without validating; the regression slipped past because of that. New `KNOWN_THEME_COLORS` set in `pi/smoke.mjs` enforces the same constraint the real Pi theme does, so the next time someone passes a non-schema color, the smoke test fails instead of production.
+
+### Notes
+
+No fence-format bump. No lib changes. v7.2.1's `turn_end` self-heal was correct in design but couldn't help here — the underlying paint call threw, so there was nothing for the self-heal to recover. Pin via `git:github.com/vieko/bonfire@v7.2.2`.
+
 ## [7.2.1] - 2026-05-21
 
 Pi adapter status diagnostic is now self-healing. Long-lived sessions that pre-date this extension version (or hit an async load race / silent error during `session_start`) now get the diagnostic painted on the next `turn_end` instead of staying invisible.

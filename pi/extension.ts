@@ -212,7 +212,13 @@ async function updateStartupStatus(ctx: ExtensionContext): Promise<boolean> {
 	const shortId = sessionId ? shortenSessionId(sessionId) : "";
 	const status = resolveStartupStatus(content, shortId, new Date());
 
-	const color = status.severity === "warning" ? "yellow" : "dim";
+	// Semantic theme color names ("warning", "dim") are required by every Pi
+	// theme's palette schema. Literal color names like "yellow" throw on
+	// themes that don't happen to define them (e.g. one-dark) — and Pi's
+	// theme.fg throws on unknown colors rather than falling back, which
+	// silently kills updateStartupStatus inside its caller's try/catch and
+	// leaves the bonfire slot blank.
+	const color = status.severity === "warning" ? "warning" : "dim";
 	ctx.ui.setStatus("bonfire", ctx.ui.theme.fg(color, status.label));
 	return true;
 }

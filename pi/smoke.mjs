@@ -333,6 +333,25 @@ function makeFakeApi() {
 	};
 }
 
+// Semantic color names every Pi theme is required to provide (see
+// dist/modes/interactive/theme/theme.js ThemeJsonSchema). Anything outside
+// this set will throw at runtime on themes that don't happen to include the
+// literal color. That's exactly how v7.2.0 silently broke on one-dark: it
+// requested "yellow", which the default theme defined but one-dark didn't.
+const KNOWN_THEME_COLORS = new Set([
+	"accent",
+	"border",
+	"borderAccent",
+	"borderMuted",
+	"success",
+	"error",
+	"warning",
+	"muted",
+	"dim",
+	"text",
+	"thinkingText",
+]);
+
 function makeFakeCtx({ cwd, sessionId, percent = 5 }) {
 	let lastStatus = null;
 	return {
@@ -345,7 +364,16 @@ function makeFakeCtx({ cwd, sessionId, percent = 5 }) {
 			},
 			getContextUsage: () => ({ percent }),
 			ui: {
-				theme: { fg: (_color, text) => text },
+				theme: {
+					fg: (color, text) => {
+						// Mirror Pi's strict behavior: unknown color names throw.
+						// Catches the v7.2.0 "yellow" regression at test time.
+						if (!KNOWN_THEME_COLORS.has(color)) {
+							throw new Error(`Unknown theme color: ${color}`);
+						}
+						return text;
+					},
+				},
 				setStatus: (_key, text) => {
 					lastStatus = text;
 				},
