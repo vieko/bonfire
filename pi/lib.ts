@@ -10,6 +10,32 @@ export const SESSIONS_END = "<!-- bonfire:auto-sessions:end -->";
 export const MAX_SESSION_ROWS = 5;
 export const ONE_LINER_MAX = 200;
 
+/**
+ * Pi-style status footer glyph for the bonfire slot. White triangle reads as
+ * flame silhouette in monospace, renders in every font, is not an emoji.
+ * State follows a compact vocabulary modeled on Pi's own labels
+ * (↑45 ↓26k R1.3M W107k $1.959 7.7%/1.0M (auto)) — single sigil + value, no
+ * English in the slot since the slot name already namespaces it.
+ *
+ * Sigils:
+ *   !  warning — something detected that the user should know
+ *   ?  nudge   — action the user could take, optional
+ *   +  result  — the adapter just wrote something
+ *
+ * Letters: I = In-flight, S = Sessions, F = Fallback. Combinable (+IS).
+ */
+export const GLYPH = "△";
+
+/** Default context-usage percent above which the compact nudge fires. */
+export const DEFAULT_NUDGE_THRESHOLD_PERCENT = 60;
+
+export type StatusSeverity = "dim" | "warning";
+
+export interface StartupStatus {
+	label: string;
+	severity: StatusSeverity;
+}
+
 export interface InflightMeta {
 	date: string;
 	host: string;
@@ -540,6 +566,172 @@ function truncateLines(text: string, maxLines: number, maxChars: number): string
 	if (out.length > maxChars) out = out.slice(0, maxChars).trimEnd() + "…";
 	if (lines.length > maxLines) out += `\n\n_…(${lines.length - maxLines} more lines)_`;
 	return out;
+}
+
+/**
+ * True when both managed fences are present in index.md content. Used by the
+ * startup-status resolver to differentiate legacy / hand-written index files
+ * (which the adapter can't update) from real v7.0+ files.
+ */
+export function hasFences(content: string): boolean {
+	return (
+		content.includes(INFLIGHT_START) &&
+		content.includes(INFLIGHT_END) &&
+		content.includes(SESSIONS_START) &&
+		content.includes(SESSIONS_END)
+	);
+}
+
+/**
+ * Parse the "_Updated YYYY-MM-DD from pi:<id> on `branch`_" header that
+ * `renderInflight` and `renderFallbackInflightFromEntries` emit. Returns the
+ * age of the in-flight section in whole days (UTC), or null when the header
+ * is missing/unparseable.
+ */
+export function extractInflightAge(content: string, now: Date): number | null {
+	const inflight = extractFenceContent(content, INFLIGHT_START, INFLIGHT_END);
+	if (!inflight) return null;
+	const m = inflight.match(/_Updated\s+(\d{4}-\d{2}-\d{2})/);
+	if (!m) return null;
+	const then = Date.parse(`${m[1]}T00:00:00Z`);
+	if (Number.isNaN(then)) return null;
+	const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+	const days = Math.floor((today - then) / 86_400_000);
+	return days < 0 ? 0 : days;
+}
+
+/**
+ * Extract the short session id from the in-flight "from pi:<id>" header.
+ * Used to detect stale in-flight content that belongs to a different
+ * session and should not be treated as the current user's context.
+ */
+export function extractInflightSessionShortId(content: string): string | null {
+	const inflight = extractFenceContent(content, INFLIGHT_START, INFLIGHT_END);
+	if (!inflight) return null;
+	const m = inflight.match(/from\s+pi:([a-f0-9]+)/i);
+	return m?.[1] ?? null;
+}
+
+/**
+ * Parse the newest sessions row. Returns the row date (ISO yyyy-mm-dd) or
+ * null when the sessions block is empty. We deliberately don't surface the
+ * row's one-liner in the status footer — too noisy at glyph density — but
+ * the date drives the breadcrumb age display.
+ */
+export function parseNewestSessionRow(content: string): { date: string } | null {
+	const block = extractFenceContent(content, SESSIONS_START, SESSIONS_END);
+	if (!block) return null;
+	for (const raw of block.split("\n")) {
+		const line = raw.trim();
+		if (!line.startsWith("- ")) continue;
+		const m = line.match(/^-\s+(\d{4}-\d{2}-\d{2})\b/);
+		if (m) return { date: m[1] };
+	}
+	return null;
+}
+
+/**
+ * Compact age formatter matching Pi's k/M units convention:
+ *   0 days  -> "today"
+ *   < 1 day -> unused (we round to whole days)
+ *   1-13d   -> "Nd"
+ *   14-59d  -> "Nw"
+ *   60d+    -> "Nmo"
+ *
+ * The breadcrumb and stale-warning paths both call this, so the same value
+ * appears in both `△ 2d` (breadcrumb) and `△ !7d` (warning) — visual
+ * vocabulary stays one-to-one.
+ */
+export function formatAge(daysAgo: number): string {
+	if (daysAgo <= 0) return "today";
+	if (daysAgo < 14) return `${daysAgo}d`;
+	if (daysAgo < 60) return `${Math.floor(daysAgo / 7)}w`;
+	return `${Math.floor(daysAgo / 30)}mo`;
+}
+
+/**
+ * Compose the startup status label for the bonfire slot. Pure function of
+ * (index.md content, current session short id, current time) so callers can
+ * unit-test every branch without booting Pi.
+ *
+ * Decision tree:
+ *   content === null            -> "△ !init"   warning  (no index.md yet)
+ *   no fences                   -> "△ !fences" warning  (legacy / hand-written)
+ *   in-flight from other session AND age > 1 day
+ *                               -> "△ !{age} {breadcrumb?}" warning
+ *   newest sessions row exists  -> "△ {age}"   dim     (breadcrumb only)
+ *   else                        -> "△"         dim     (bare tracking)
+ */
+export function resolveStartupStatus(
+	content: string | null,
+	currentShortId: string,
+	now: Date,
+): StartupStatus {
+	if (content === null) {
+		return { label: `${GLYPH} !init`, severity: "warning" };
+	}
+	if (!hasFences(content)) {
+		return { label: `${GLYPH} !fences`, severity: "warning" };
+	}
+
+	const inflightSession = extractInflightSessionShortId(content);
+	const inflightAge = extractInflightAge(content, now);
+	const inflightIsStale =
+		inflightSession !== null &&
+		inflightSession !== currentShortId &&
+		inflightAge !== null &&
+		inflightAge > 1;
+
+	const newest = parseNewestSessionRow(content);
+	const breadcrumbAge =
+		newest !== null
+			? daysBetween(Date.parse(`${newest.date}T00:00:00Z`), now)
+			: null;
+
+	if (inflightIsStale && inflightAge !== null) {
+		const stale = `!${formatAge(inflightAge)}`;
+		const showBreadcrumb =
+			breadcrumbAge !== null && breadcrumbAge < inflightAge;
+		const label = showBreadcrumb
+			? `${GLYPH} ${stale} ${formatAge(breadcrumbAge!)}`
+			: `${GLYPH} ${stale}`;
+		return { label, severity: "warning" };
+	}
+
+	if (breadcrumbAge !== null) {
+		return { label: `${GLYPH} ${formatAge(breadcrumbAge)}`, severity: "dim" };
+	}
+
+	return { label: GLYPH, severity: "dim" };
+}
+
+function daysBetween(then: number, now: Date): number {
+	if (Number.isNaN(then)) return 0;
+	const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+	return Math.max(0, Math.floor((today - then) / 86_400_000));
+}
+
+/**
+ * Compose the result label after a compaction successfully wrote to one or
+ * both fences. Returns null when nothing was touched (caller should leave
+ * the existing status alone in that case).
+ */
+export function formatCompactResult(touchedInflight: boolean, touchedSessions: boolean): string | null {
+	if (!touchedInflight && !touchedSessions) return null;
+	let letters = "";
+	if (touchedInflight) letters += "I";
+	if (touchedSessions) letters += "S";
+	return `${GLYPH} +${letters}`;
+}
+
+/** Status label for the session-shutdown fallback write. */
+export function formatFallbackResult(): string {
+	return `${GLYPH} +F`;
+}
+
+/** Status label for the compact-nudge (high context fill, no compaction yet). */
+export function formatNudge(): string {
+	return `${GLYPH} ?compact`;
 }
 
 /**

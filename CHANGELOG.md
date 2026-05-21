@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.2.0] - 2026-05-21
+
+Pi adapter footer status now follows Pi's own compact label vocabulary (`↑45 ↓26k R1.3M W107k`-style): single glyph `△` + sigil + letter, no English. The static `"bonfire: tracking"` label is replaced with a diagnostic resolver that surfaces stale in-flight, missing fences, and breadcrumb age at session_start — catching legacy / pre-7.0 index files (like forge's, just migrated today) the moment Pi opens them.
+
+### Added
+
+- **Startup status diagnostics** — `session_start` now reads `.bonfire/index.md` and resolves a state label via `resolveStartupStatus(content, currentShortId, now)`. Vocabulary:
+  - `△`          — tracking, nothing notable
+  - `△ 2d`       — last session breadcrumb age
+  - `△ !7d`      — in-flight is N days stale from another session (warning color)
+  - `△ !7d 2d`   — stale in-flight + fresher breadcrumb from yet another session
+  - `△ !fences`  — `index.md` exists but is missing the v7.0 fence markers (legacy / hand-written file)
+  - `△ !init`    — `.bonfire/` exists, no `index.md` yet
+- **Compact-result labels** — after `session_compact` writes, the footer shows `△ +IS`, `△ +I`, or `△ +S` based on which fences were touched. Drops the verbose `"bonfire: in-flight + sessions • 2026-05-21"` label.
+- **Shutdown fallback feedback** — when `session_shutdown`'s `maybeWriteFallback` writes a row, the footer flips to `△ +F`. Previously the fallback was invisible to the user (only `BONFIRE_DEBUG=1` stderr surfaced it).
+- **Compact nudge** — `turn_end` watches `ctx.getContextUsage()`. When context fills past `nudgeThresholdPercent` (default `60`) and no compaction has fired this session yet, the footer shows `△ ?compact` once. Self-clears when compaction lands (auto or manual). Pi auto-compacts via reserve-tokens (default 16384), which on a 1M-token context window is ~98% — plenty of headroom below for our nudge.
+- **New config key** — `.bonfire/config.json` accepts `nudgeThresholdPercent: number` to tune (or disable, by setting to 100) the nudge.
+- **New `lib.ts` exports**: `GLYPH`, `DEFAULT_NUDGE_THRESHOLD_PERCENT`, `StartupStatus`, `StatusSeverity`, `hasFences`, `extractInflightAge`, `extractInflightSessionShortId`, `parseNewestSessionRow`, `formatAge`, `resolveStartupStatus`, `formatCompactResult`, `formatFallbackResult`, `formatNudge`.
+- **44 new unit tests + 9 new smoke assertions** covering fence detection, age formatting (`today` / `Nd` / `Nw` / `Nmo`), the full `resolveStartupStatus` decision matrix, and label vocabulary.
+
+### Changed
+
+- **Dropped the post-compaction toast notification.** `ctx.ui.notify("bonfire: in-flight + sessions updated", "info")` is gone — the footer is the right surface for this signal, and toasts were intrusive for what is essentially ambient state.
+- **`updateBonfireIndex` now returns `{ touchedInflight, touchedSessions } | null`** instead of `void`, so the compaction handler can compose the result label without re-reading state.
+- **`maybeWriteFallback` now returns `boolean`** so `session_shutdown` knows whether to paint the `△ +F` label.
+
+### Notes
+
+All changes are additive. No fence-format bump (`v1` markers unchanged). Consumers on `v7.1.x` keep working; the new diagnostics activate as soon as Pi loads the v7.2 extension. To pin: update `~/.pi/agent/settings.json` `packages` entry to `git:github.com/vieko/bonfire@v7.2.0`.
+
 ## [7.1.0] - 2026-05-20
 
 Pi adapter fallback path now synthesizes a structured rollup from session entries instead of dumping the first user prompt. Fixes the "`what's next?`" pollution observed on `gtm` and `internal-agents` when [pi#4811](https://github.com/earendil-works/pi/issues/4811) prevents compaction from running.

@@ -15,6 +15,10 @@
  * fences are left untouched — users must add fences manually to opt in.
  * Bootstrap writes both fences when index.md is missing.
  *
+ * Status footer follows Pi's compact label convention (single glyph + sigil
+ * + letter, no English). See lib.ts GLYPH/format* exports for the full
+ * vocabulary.
+ *
  * Per-repo opt-out: .bonfire/config.json with { "auto": false }.
  */
 
@@ -24,9 +28,14 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import {
 	bootstrapTemplate,
+	DEFAULT_NUDGE_THRESHOLD_PERCENT,
 	extractFenceContent,
 	extractOneLiner,
 	findRowForKey,
+	formatCompactResult,
+	formatFallbackResult,
+	formatNudge,
+	GLYPH,
 	hasEnoughSignal,
 	shortenSessionId,
 	INFLIGHT_END,
@@ -35,6 +44,7 @@ import {
 	renderFallbackInflightFromEntries,
 	renderInflight,
 	replaceFence,
+	resolveStartupStatus,
 	rollupOneLiner,
 	summarizeSessionEntries,
 	upsertSessionRow,
@@ -42,40 +52,72 @@ import {
 
 const HOST = "pi";
 
+// Module-scoped: which sessions have compacted at least once during this
+// process. Used to gate the compact-nudge so it doesn't fire forever once
+// bonfire has already written for the current session.
+const compactedSessions = new Set<string>();
+// Sessions where we've already shown the nudge once. Avoids re-painting the
+// same status on every turn while waiting for the user to compact.
+const nudgedSessions = new Set<string>();
+
 export default function (pi: ExtensionAPI) {
-	// Indicate bonfire is active in opted-in repos. Silent in repos without
-	// .bonfire/ so the adapter stays invisible there. The compaction handler
-	// overwrites this status with the action result when it fires.
+	// session_start: resolve a diagnostic startup status from the existing
+	// index.md so the user can see immediately whether the next compaction
+	// will land somewhere useful (e.g. "△ !fences" for legacy files, "△ !7d"
+	// for stale in-flight from another session).
 	pi.on("session_start", async (_event, ctx) => {
 		if (!ctx.hasUI) return;
-		const gitRoot = findGitRoot(ctx.cwd);
-		if (!gitRoot) return;
 		try {
-			const stat = await fs.stat(path.join(gitRoot, ".bonfire"));
-			if (!stat.isDirectory()) return;
-		} catch {
-			return;
+			await updateStartupStatus(ctx);
+		} catch (err) {
+			if (process.env.BONFIRE_DEBUG === "1") {
+				const msg = err instanceof Error ? err.message : String(err);
+				process.stderr.write(`bonfire status: ${msg}\n`);
+			}
 		}
-		ctx.ui.setStatus("bonfire", ctx.ui.theme.fg("dim", "bonfire: tracking"));
 	});
 
 	pi.on("session_compact", async (event, ctx) => {
 		try {
-			await updateBonfireIndex(event, ctx);
+			const result = await updateBonfireIndex(event, ctx);
+			compactedSessions.add(ctx.sessionManager.getSessionId());
+			if (!result) return;
+			if (ctx.hasUI) {
+				const label = formatCompactResult(result.touchedInflight, result.touchedSessions);
+				if (label) ctx.ui.setStatus("bonfire", ctx.ui.theme.fg("dim", label));
+			}
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
 			ctx.ui.notify(`bonfire: ${msg}`, "warning");
 		}
 	});
 
+	// turn_end: surface a compact-nudge when context is filling up but no
+	// compaction has fired this session yet. Once compaction (auto or
+	// manual) lands, the session_compact handler updates the status and the
+	// gate above suppresses further nudges.
+	pi.on("turn_end", async (_event, ctx) => {
+		try {
+			await maybeShowCompactNudge(ctx);
+		} catch (err) {
+			if (process.env.BONFIRE_DEBUG === "1") {
+				const msg = err instanceof Error ? err.message : String(err);
+				process.stderr.write(`bonfire nudge: ${msg}\n`);
+			}
+		}
+	});
+
 	// Fallback path: when the session ends, if no compaction produced a usable
 	// row (either none fired, or Pi's compaction returned garbage), use the
-	// first user prompt + branch + uncommitted-file list to write a row.
+	// session entries to synthesize a structured rollup and write it.
 	// This makes bonfire useful even when Pi's compaction pipeline is broken or
 	// when sessions are too short to compact.
 	pi.on("session_shutdown", async (_event, ctx) => {
 		try {
-			await maybeWriteFallback(ctx);
+			const wrote = await maybeWriteFallback(ctx);
+			if (wrote && ctx.hasUI) {
+				ctx.ui.setStatus("bonfire", ctx.ui.theme.fg("dim", formatFallbackResult()));
+			}
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
 			if (process.env.BONFIRE_DEBUG === "1") process.stderr.write(`bonfire fallback: ${msg}\n`);
@@ -85,11 +127,51 @@ export default function (pi: ExtensionAPI) {
 
 interface BonfireConfig {
 	auto?: boolean;
+	nudgeThresholdPercent?: number;
 }
 
-async function updateBonfireIndex(event: SessionCompactEvent, ctx: ExtensionContext): Promise<void> {
+interface CompactResult {
+	touchedInflight: boolean;
+	touchedSessions: boolean;
+}
+
+async function updateStartupStatus(ctx: ExtensionContext): Promise<void> {
 	const gitRoot = findGitRoot(ctx.cwd);
 	if (!gitRoot) return;
+
+	const bonfireDir = path.join(gitRoot, ".bonfire");
+	try {
+		const stat = await fs.stat(bonfireDir);
+		if (!stat.isDirectory()) return;
+	} catch {
+		return; // silent: not an opted-in repo
+	}
+
+	const config = await readConfig(gitRoot);
+	if (config?.auto === false) return;
+
+	const indexPath = path.join(gitRoot, ".bonfire", "index.md");
+	let content: string | null = null;
+	try {
+		content = await fs.readFile(indexPath, "utf8");
+	} catch {
+		// fall through; resolveStartupStatus returns "△ !init" for null content
+	}
+
+	const sessionId = ctx.sessionManager.getSessionId();
+	const shortId = sessionId ? shortenSessionId(sessionId) : "";
+	const status = resolveStartupStatus(content, shortId, new Date());
+
+	const color = status.severity === "warning" ? "yellow" : "dim";
+	ctx.ui.setStatus("bonfire", ctx.ui.theme.fg(color, status.label));
+}
+
+async function updateBonfireIndex(
+	event: SessionCompactEvent,
+	ctx: ExtensionContext,
+): Promise<CompactResult | null> {
+	const gitRoot = findGitRoot(ctx.cwd);
+	if (!gitRoot) return null;
 
 	// Opt-in: only act when the user has created <git-root>/.bonfire/ themselves.
 	// We never auto-create the directory; that would pollute every repo where Pi
@@ -97,22 +179,22 @@ async function updateBonfireIndex(event: SessionCompactEvent, ctx: ExtensionCont
 	const bonfireDir = path.join(gitRoot, ".bonfire");
 	try {
 		const stat = await fs.stat(bonfireDir);
-		if (!stat.isDirectory()) return;
+		if (!stat.isDirectory()) return null;
 	} catch {
-		return;
+		return null;
 	}
 
 	const config = await readConfig(gitRoot);
-	if (config?.auto === false) return;
+	if (config?.auto === false) return null;
 
 	const summary = event.compactionEntry.summary;
 
 	// Skip writing when Pi's compaction returned garbage. The shutdown
-	// handler will fill in a fallback row from the first user prompt instead.
-	if (isGarbageSummary(summary)) return;
+	// handler will fill in a fallback row from session entries instead.
+	if (isGarbageSummary(summary)) return null;
 
 	const oneLiner = extractOneLiner(summary);
-	if (!oneLiner) return;
+	if (!oneLiner) return null;
 
 	// Key rows by session id (not compaction entry id) so re-compactions of
 	// the same session update the same row, and the shutdown fallback can
@@ -147,21 +229,39 @@ async function updateBonfireIndex(event: SessionCompactEvent, ctx: ExtensionCont
 		touchedSessions = true;
 	}
 
-	if (!touchedInflight && !touchedSessions) return;
+	if (!touchedInflight && !touchedSessions) return null;
 
 	await atomicWrite(indexPath, next);
+	return { touchedInflight, touchedSessions };
+}
 
-	const parts: string[] = [];
-	if (touchedInflight) parts.push("in-flight");
-	if (touchedSessions) parts.push("sessions");
+async function maybeShowCompactNudge(ctx: ExtensionContext): Promise<void> {
+	if (!ctx.hasUI) return;
 
-	// Persistent footer status (themed, can't be missed) plus a brief
-	// info-level notify (in case the user's terminal surfaces it).
-	if (ctx.hasUI) {
-		const label = `bonfire: ${parts.join(" + ")} • ${date}`;
-		ctx.ui.setStatus("bonfire", ctx.ui.theme.fg("dim", label));
-		ctx.ui.notify(`bonfire: ${parts.join(" + ")} updated`, "info");
+	const sessionId = ctx.sessionManager.getSessionId();
+	if (!sessionId) return;
+	if (compactedSessions.has(sessionId)) return; // already covered for this session
+	if (nudgedSessions.has(sessionId)) return; // already painted nudge once
+
+	const gitRoot = findGitRoot(ctx.cwd);
+	if (!gitRoot) return;
+	try {
+		const stat = await fs.stat(path.join(gitRoot, ".bonfire"));
+		if (!stat.isDirectory()) return;
+	} catch {
+		return;
 	}
+
+	const config = await readConfig(gitRoot);
+	if (config?.auto === false) return;
+	const threshold = config?.nudgeThresholdPercent ?? DEFAULT_NUDGE_THRESHOLD_PERCENT;
+
+	const usage = ctx.getContextUsage();
+	if (!usage || usage.percent === null) return;
+	if (usage.percent < threshold) return;
+
+	ctx.ui.setStatus("bonfire", ctx.ui.theme.fg("dim", formatNudge()));
+	nudgedSessions.add(sessionId);
 }
 
 function findGitRoot(cwd: string): string | null {
@@ -254,24 +354,27 @@ function getGitModifiedFiles(cwd: string): string[] {
  *   - Session has enough signal (substantive goal or >=3 tool events)
  *   - Either no row exists for this session, or the existing row/in-flight
  *     is garbage (Pi compaction bug output) / stale (different session).
+ *
+ * Returns true when something was written (caller updates status), false
+ * otherwise.
  */
-async function maybeWriteFallback(ctx: ExtensionContext): Promise<void> {
+async function maybeWriteFallback(ctx: ExtensionContext): Promise<boolean> {
 	const gitRoot = findGitRoot(ctx.cwd);
-	if (!gitRoot) return;
+	if (!gitRoot) return false;
 
 	const bonfireDir = path.join(gitRoot, ".bonfire");
 	try {
 		const stat = await fs.stat(bonfireDir);
-		if (!stat.isDirectory()) return;
+		if (!stat.isDirectory()) return false;
 	} catch {
-		return;
+		return false;
 	}
 
 	const config = await readConfig(gitRoot);
-	if (config?.auto === false) return;
+	if (config?.auto === false) return false;
 
 	const sessionId = ctx.sessionManager.getSessionId();
-	if (!sessionId) return;
+	if (!sessionId) return false;
 	const shortId = shortenSessionId(sessionId);
 
 	const indexPath = path.join(gitRoot, ".bonfire", "index.md");
@@ -298,10 +401,10 @@ async function maybeWriteFallback(ctx: ExtensionContext): Promise<void> {
 	const inflightNeedsFallback =
 		!existingInflight || isGarbageSummary(existingInflight) || inflightIsStale;
 
-	if (!rowNeedsFallback && !inflightNeedsFallback) return;
+	if (!rowNeedsFallback && !inflightNeedsFallback) return false;
 
 	const rollup = summarizeSessionEntries(ctx.sessionManager.getEntries());
-	if (!hasEnoughSignal(rollup)) return;
+	if (!hasEnoughSignal(rollup)) return false;
 
 	const branch = getGitBranch(gitRoot) ?? "(detached)";
 	const modifiedFiles = getGitModifiedFiles(gitRoot);
@@ -333,6 +436,7 @@ async function maybeWriteFallback(ctx: ExtensionContext): Promise<void> {
 		}
 	}
 
-	if (next === content) return;
+	if (next === content) return false;
 	await atomicWrite(indexPath, next);
+	return true;
 }

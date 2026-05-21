@@ -23,11 +23,16 @@ import * as os from "node:os";
 import * as path from "node:path";
 import {
 	extractFenceContent,
+	formatCompactResult,
+	formatFallbackResult,
+	formatNudge,
+	GLYPH,
 	hasEnoughSignal,
 	INFLIGHT_END,
 	INFLIGHT_START,
 	renderFallbackInflightFromEntries,
 	replaceFence,
+	resolveStartupStatus,
 	rollupOneLiner,
 	SESSIONS_END,
 	SESSIONS_START,
@@ -216,6 +221,88 @@ try {
 } finally {
 	fs.rmSync(tmp, { recursive: true, force: true });
 }
+
+// --- v7.2 smoke: startup status diagnostics against fixtures that mirror
+// the real-world states we want to catch. Each fixture asserts what the user
+// would actually see in Pi's footer at session_start time.
+
+console.log("\nsmoke: startup status against real fixtures");
+
+// Fixture 1: forge-style legacy file (no fences anywhere). This is exactly
+// the state forge was in before today's migration. The user starts a Pi
+// session and should see "△ !fences" so they know the adapter can't write.
+const LEGACY_FORGE = `---
+git: ignore-all
+---
+
+# Session Context: forge
+
+**Date**: 2026-05-14
+**Status**: Session 102 complete
+
+## Current State
+
+Hand-written content, never had fences.
+`;
+let status = resolveStartupStatus(LEGACY_FORGE, "abc12345", new Date("2026-05-21T12:00:00Z"));
+assert(status.label === `${GLYPH} !fences`, "legacy forge-style file -> △ !fences");
+assert(status.severity === "warning", "legacy file -> warning severity");
+
+// Fixture 2: stale in-flight from another session, exactly like what bonfire
+// itself ships when you return to a repo after a week. Should warn with the
+// in-flight age, dropping no information.
+const STALE_INFLIGHT_FROM_OTHER = `# r
+
+${INFLIGHT_START}
+## In flight
+
+_Updated 2026-05-14 from pi:deadbeef on \`main\`_
+
+### Goal
+ship the sandbox commit path
+${INFLIGHT_END}
+
+${SESSIONS_START}
+## Sessions
+
+- 2026-05-14 [pi:deadbeef] main — ship the sandbox commit path
+${SESSIONS_END}
+`;
+status = resolveStartupStatus(STALE_INFLIGHT_FROM_OTHER, "abc12345", new Date("2026-05-21T12:00:00Z"));
+assert(status.label === `${GLYPH} !7d`, "stale in-flight from another session -> △ !7d");
+assert(status.severity === "warning", "stale -> warning severity");
+
+// Fixture 3: healthy file from a recent session. Should give a breadcrumb-
+// only label, no warning sigil.
+const HEALTHY_RECENT = `# r
+
+${INFLIGHT_START}
+## In flight
+
+_Updated 2026-05-20 from pi:abc12345 on \`main\`_
+
+### Goal
+active work
+${INFLIGHT_END}
+
+${SESSIONS_START}
+## Sessions
+
+- 2026-05-20 [pi:abc12345] main — active work
+${SESSIONS_END}
+`;
+status = resolveStartupStatus(HEALTHY_RECENT, "abc12345", new Date("2026-05-21T12:00:00Z"));
+assert(status.label === `${GLYPH} 1d`, "healthy recent -> breadcrumb age");
+assert(status.severity === "dim", "healthy -> dim severity");
+
+// Fixture 4: compact-result label vocabulary against the actual composition
+// flow. After we wrote both fences above, formatCompactResult should give
+// "△ +IS" — the same label Pi's session_compact handler would set.
+const compactLabel = formatCompactResult(true, true);
+assert(compactLabel === `${GLYPH} +IS`, "compact wrote both -> △ +IS");
+
+assert(formatNudge() === `${GLYPH} ?compact`, "nudge label = △ ?compact");
+assert(formatFallbackResult() === `${GLYPH} +F`, "fallback label = △ +F");
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);
