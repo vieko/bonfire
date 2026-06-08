@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.3.1] - 2026-06-08
+
+Fixes the shutdown fallback clobbering manually-restored or hand-written in-flight content with sparse "Ran N commands" output.
+
+### Fixed
+
+- **Unattributed in-flight preserved on session shutdown** (`pi/extension.ts`). The fallback's stale-inflight check evaluated `null !== shortId` as `true` when the in-flight block had no `from pi:xxx` header, making every hand-written or manually-restored block appear stale. The fix adds the same null-guard that `resolveStartupStatus` already had: only overwrite in-flight that is *positively attributed to a different session*. Unattributed content is left alone.
+- **Regression test** added to `smoke.mjs`: manually-restored in-flight with `### Next Steps` survives a session with substantive activity unchanged.
+
 ## [7.3.0] - 2026-05-21
 
 Migration support for pre-v7 `index.md` files, plus an actionable notify on the `△ !fences` diagnostic so users can discover the fix without reading the README.
