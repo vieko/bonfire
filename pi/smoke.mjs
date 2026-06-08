@@ -479,5 +479,83 @@ try {
 	fs.rmSync(tmpHealNormal, { recursive: true, force: true });
 }
 
+// --- Regression: manually-restored in-flight (no "from pi:xxx" attribution)
+// must NOT be overwritten by the shutdown fallback.
+//
+// Root cause that prompted this test: the fallback checked
+//   existingInflightSessionId !== shortId
+// which evaluates to (null !== shortId) = true when the in-flight has no
+// session attribution, making every unattributed block look "stale" and
+// triggering a sparse overwrite. The fix adds a null-guard so that only
+// *positively attributed to a different session* content is treated as stale.
+
+console.log("\nsmoke: unattributed inflight preservation (regression)");
+
+const MANUALLY_RESTORED_INDEX = `# repo
+
+${INFLIGHT_START}
+
+## In flight
+
+### Goal
+implement the new auth flow with multi-tenant support
+
+### Next Steps
+- wire up the tenant resolver
+- add E2E tests
+
+${INFLIGHT_END}
+
+${SESSIONS_START}
+## Sessions
+${SESSIONS_END}
+`;
+
+const tmpPreserve = fs.mkdtempSync(path.join(os.tmpdir(), "bonfire-preserve-"));
+try {
+	const { execSync: exec2 } = await import("node:child_process");
+	exec2("git init -q", { cwd: tmpPreserve });
+	exec2("git commit --allow-empty -q -m init", {
+		cwd: tmpPreserve,
+		env: { ...process.env, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@t", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@t" },
+	});
+
+	fs.mkdirSync(path.join(tmpPreserve, ".bonfire"));
+	fs.writeFileSync(path.join(tmpPreserve, ".bonfire", "index.md"), MANUALLY_RESTORED_INDEX);
+
+	const { api: api2, fire: fire2 } = makeFakeApi();
+	registerExtension(api2);
+
+	const sessionId2 = "ccddee11-2233-4455-6677-8899aabbccdd";
+	const { ctx: ctx2 } = makeFakeCtx({ cwd: tmpPreserve, sessionId: sessionId2 });
+	// Override getEntries with substantive entries so hasEnoughSignal passes;
+	// without this the fallback bails early and the test would be vacuous.
+	ctx2.sessionManager.getEntries = () => SYNTHETIC_ENTRIES;
+
+	await fire2("session_shutdown", { type: "session_shutdown" }, ctx2);
+
+	const afterPreserve = fs.readFileSync(path.join(tmpPreserve, ".bonfire", "index.md"), "utf8");
+	const preservedInflight = extractFenceContent(afterPreserve, INFLIGHT_START, INFLIGHT_END);
+
+	assert(
+		preservedInflight !== null && preservedInflight.includes("implement the new auth flow"),
+		"manually-restored inflight Goal is preserved (not overwritten by fallback)",
+	);
+	assert(
+		preservedInflight !== null && preservedInflight.includes("### Next Steps"),
+		"manually-restored Next Steps section is preserved",
+	);
+	// The sparse fallback "Ran N commands" line must not appear inside the
+	// inflight fence — it's fine if it appears in the sessions row area.
+	const inflightEnd = afterPreserve.indexOf(INFLIGHT_END);
+	const ranIdx = afterPreserve.indexOf("- Ran ");
+	assert(
+		ranIdx === -1 || ranIdx > inflightEnd,
+		"'Ran N commands' output did NOT appear inside the inflight fence",
+	);
+} finally {
+	fs.rmSync(tmpPreserve, { recursive: true, force: true });
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

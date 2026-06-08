@@ -487,7 +487,14 @@ async function maybeWriteFallback(ctx: ExtensionContext): Promise<boolean> {
 	// meaningful).
 	const existingInflightSessionMatch = existingInflight?.match(/from\s+pi:([a-f0-9]+)/i);
 	const existingInflightSessionId = existingInflightSessionMatch?.[1] ?? null;
-	const inflightIsStale = existingInflight !== null && existingInflightSessionId !== shortId;
+	// Only treat in-flight as stale when it carries a session id that is
+	// definitively a *different* session. If there is no "from pi:xxx" header
+	// (e.g. user manually restored content) we cannot tell — leave it alone
+	// rather than clobbering it with the sparse fallback.
+	const inflightIsStale =
+		existingInflight !== null &&
+		existingInflightSessionId !== null &&
+		existingInflightSessionId !== shortId;
 	const inflightNeedsFallback =
 		!existingInflight || isGarbageSummary(existingInflight) || inflightIsStale;
 
