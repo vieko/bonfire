@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+Internal: a cross-producer conformance harness that enforces bonfire's headline invariant — every producer emits byte-identical fence shapes. No user-visible behavior change; no fence-format bump.
+
+### Added
+
+- **`conformance.mjs`** (repo root; `tsx conformance.mjs` or `npm test`). Imports the shared fence primitives from *both* code producers and asserts byte-identical output for `replaceFence` / `upsertSessionRow` / `shortenSessionId` / `truncate` across insert / dedupe / cap-5 / header-preservation / missing-fence cases. Pins one canonical grammar for the in-flight attribution header and the sessions row, checks the real Pi renderers emit it, and verifies the prose fallback skill (`end.md`, `templates/index.md`) documents that same grammar — the only way to cover a producer that can't be executed. The in-flight *body* is intentionally divergent across producers and is never asserted equal.
+- **Root `npm test` script** running all four suites (pi unit + smoke, claude, conformance) from one entrypoint.
+- **"Fence-contract sync contract" section in `AGENTS.md`** enumerating the three producers, the shared surface, and the deliberately-divergent in-flight body.
+
+### Changed
+
+- **Extracted `claude/lib.mjs`** from `claude/update-bonfire.mjs`. The shared fence primitives are now importable so the harness can exercise the Claude side without executing the Stop hook (which runs `main()` on import). Behavior-preserving: `claude/test.mjs` is unchanged and green; `HOST = "claude"` stays adapter-local.
+
 ## [7.3.1] - 2026-06-08
 
 Fixes the shutdown fallback clobbering manually-restored or hand-written in-flight content with sparse "Ran N commands" output.
