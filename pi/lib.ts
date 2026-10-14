@@ -639,7 +639,7 @@ export function parseNewestSessionRow(content: string): { date: string } | null 
  *   60d+    -> "Nmo"
  *
  * The breadcrumb and stale-warning paths both call this, so the same value
- * appears in both `△ 2d` (breadcrumb) and `△ !7d` (warning) — visual
+ * appears in both `△ 2d` (breadcrumb) and `△ 7d!` (warning) — visual
  * vocabulary stays one-to-one.
  */
 export function formatAge(daysAgo: number): string {
@@ -655,10 +655,10 @@ export function formatAge(daysAgo: number): string {
  * unit-test every branch without booting Pi.
  *
  * Decision tree:
- *   content === null            -> "△ !init"   warning  (no index.md yet)
- *   no fences                   -> "△ !fences" warning  (legacy / hand-written)
+ *   content === null            -> "△ init!"   warning  (no index.md yet)
+ *   no fences                   -> "△ fences!" warning  (legacy / hand-written)
  *   in-flight from other session AND age > 1 day
- *                               -> "△ !{age} {breadcrumb?}" warning
+ *                               -> "△ {age}! {breadcrumb?}" warning
  *   newest sessions row exists  -> "△ {age}"   dim     (breadcrumb only)
  *   else                        -> "△"         dim     (bare tracking)
  */
@@ -668,10 +668,10 @@ export function resolveStartupStatus(
 	now: Date,
 ): StartupStatus {
 	if (content === null) {
-		return { label: `${GLYPH} !init`, severity: "warning" };
+		return { label: `${GLYPH} init!`, severity: "warning" };
 	}
 	if (!hasFences(content)) {
-		return { label: `${GLYPH} !fences`, severity: "warning" };
+		return { label: `${GLYPH} fences!`, severity: "warning" };
 	}
 
 	const inflightSession = extractInflightSessionShortId(content);
@@ -689,7 +689,7 @@ export function resolveStartupStatus(
 			: null;
 
 	if (inflightIsStale && inflightAge !== null) {
-		const stale = `!${formatAge(inflightAge)}`;
+		const stale = `${formatAge(inflightAge)}!`;
 		const showBreadcrumb =
 			breadcrumbAge !== null && breadcrumbAge < inflightAge;
 		const label = showBreadcrumb
@@ -731,7 +731,7 @@ export function formatFallbackResult(): string {
 
 /** Status label for the compact-nudge (high context fill, no compaction yet). */
 export function formatNudge(): string {
-	return `${GLYPH} ?compact`;
+	return `${GLYPH} compact?`;
 }
 
 /**

@@ -585,19 +585,19 @@ eq(formatCompactResult(true, true), `${GLYPH} +IS`, "both -> +IS");
 eq(formatCompactResult(true, false), `${GLYPH} +I`, "inflight only -> +I");
 eq(formatCompactResult(false, true), `${GLYPH} +S`, "sessions only -> +S");
 eq(formatCompactResult(false, false), null, "neither -> null");
-eq(formatNudge(), `${GLYPH} ?compact`, "nudge label");
+eq(formatNudge(), `${GLYPH} compact?`, "nudge label");
 eq(formatFallbackResult(), `${GLYPH} +F`, "fallback label");
 
 console.log("\nresolveStartupStatus");
 
-// 1. No index.md at all -> !init
+// 1. No index.md at all -> init!
 let status = resolveStartupStatus(null, "abc12345", NOW);
-eq(status.label, `${GLYPH} !init`, "null content -> !init label");
+eq(status.label, `${GLYPH} init!`, "null content -> init! label");
 eq(status.severity, "warning", "null content -> warning");
 
-// 2. Legacy file without fences -> !fences (this is exactly the forge case)
+// 2. Legacy file without fences -> fences! (this is exactly the forge case)
 status = resolveStartupStatus(FENCES_NONE, "abc12345", NOW);
-eq(status.label, `${GLYPH} !fences`, "no fences -> !fences label");
+eq(status.label, `${GLYPH} fences!`, "no fences -> fences! label");
 eq(status.severity, "warning", "no fences -> warning");
 
 // 3. Healthy file, no in-flight content, no rows -> bare tracking
@@ -611,24 +611,24 @@ status = resolveStartupStatus(breadcrumbOnly, "abc12345", NOW);
 eq(status.label, `${GLYPH} 2d`, "breadcrumb only -> age label");
 eq(status.severity, "dim", "breadcrumb only -> dim");
 
-// 5. Stale in-flight from a different session, > 1d old -> "△ !Nd" warning
+// 5. Stale in-flight from a different session, > 1d old -> "△ Nd!" warning
 const staleOther = `# r\n${INFLIGHT_START}\n## In flight\n\n_Updated 2026-05-14 from pi:deadbeef on \`main\`_\n\n### Goal\nold\n${INFLIGHT_END}\n${SESSIONS_START}\n## Sessions\n\n- 2026-05-14 [pi:deadbeef] main \u2014 old\n${SESSIONS_END}\n`;
 status = resolveStartupStatus(staleOther, "abc12345", NOW);
-eq(status.label, `${GLYPH} !7d`, "stale other session -> warning label");
+eq(status.label, `${GLYPH} 7d!`, "stale other session -> warning label");
 eq(status.severity, "warning", "stale -> warning");
 
 // 6. Stale in-flight + a newer breadcrumb from a *different* session ->
-//    composed "△ !7d 2d" (in-flight stale, but newer session row exists)
+//    composed "△ 7d! 2d" (in-flight stale, but newer session row exists)
 const staleWithFresherBreadcrumb = `# r\n${INFLIGHT_START}\n## In flight\n\n_Updated 2026-05-14 from pi:deadbeef on \`main\`_\n\n### Goal\nold\n${INFLIGHT_END}\n${SESSIONS_START}\n## Sessions\n\n- 2026-05-19 [pi:cafe1234] main \u2014 newer\n- 2026-05-14 [pi:deadbeef] main \u2014 old\n${SESSIONS_END}\n`;
 status = resolveStartupStatus(staleWithFresherBreadcrumb, "abc12345", NOW);
-eq(status.label, `${GLYPH} !7d 2d`, "stale + fresher breadcrumb -> composed label");
+eq(status.label, `${GLYPH} 7d! 2d`, "stale + fresher breadcrumb -> composed label");
 eq(status.severity, "warning", "composed -> warning");
 
 // 7. In-flight from the *current* session (any age) is not stale
 const currentSessionInflight = `# r\n${INFLIGHT_START}\n## In flight\n\n_Updated 2026-05-14 from pi:abc12345 on \`main\`_\n\n### Goal\nmine\n${INFLIGHT_END}\n${SESSIONS_START}\n## Sessions\n\n- 2026-05-14 [pi:abc12345] main \u2014 mine\n${SESSIONS_END}\n`;
 status = resolveStartupStatus(currentSessionInflight, "abc12345", NOW);
 eq(status.severity, "dim", "current session in-flight -> dim (not stale)");
-truthy(!status.label.startsWith(`${GLYPH} !`), "current session in-flight -> no warning sigil");
+truthy(!status.label.includes("!"), "current session in-flight -> no warning sigil");
 
 // 8. Same-day in-flight from another session does NOT trigger stale warning
 // (age must be > 1 day to flag; same-day handoffs between sessions are
