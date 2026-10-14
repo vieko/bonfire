@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.6.0] - 2026-10-14
+
+### Changed
+
+- **Footer label is one `bonfire:<value>` token** in the Pi adapter, replacing the `△` glyph. Pi joins extension statuses with a single space, so a two-part item ran into its neighbours; every pi extension in the footer now uses one `name:value` token (`styles:ste redact:1 remind:2 canvas:gtm follow:#1234`). Labels: `bonfire:today`, `bonfire:2d`, `bonfire:7d!` (stale in-flight), `bonfire:7d!,2d` (with a fresher breadcrumb), `bonfire:init!`, `bonfire:fences!`, `bonfire:compact?`, `bonfire:+IS`, `bonfire:+F`, and a bare `bonfire` while tracking with no session row. Colors and the `fences!` migrate notify are unchanged. The `GLYPH` export is now `LABEL`.
+
 ## [7.5.1] - 2026-10-14
 
 ### Changed

@@ -16,8 +16,8 @@
  * fences are left untouched — users must add fences manually to opt in.
  * Bootstrap writes both fences when index.md is missing.
  *
- * Status footer follows Pi's compact label convention (single glyph + sigil
- * + letter, no English). See lib.ts GLYPH/format* exports for the full
+ * Status footer is one `bonfire:<value>` token with the marker after the
+ * value (`bonfire:today`, `bonfire:7d!`, `bonfire:+IS`). See lib.ts LABEL/format* exports for the full
  * vocabulary.
  *
  * Per-repo opt-out: .bonfire/config.json with { "auto": false }.
@@ -36,7 +36,7 @@ import {
 	formatCompactResult,
 	formatFallbackResult,
 	formatNudge,
-	GLYPH,
+	LABEL,
 	hasEnoughSignal,
 	shortenSessionId,
 	INFLIGHT_END,
@@ -68,7 +68,7 @@ const nudgedSessions = new Set<string>();
  * recover the diagnostic when `session_start` was missed (long-lived
  * session pre-dating this extension version, async load race, error
  * inside the handler) WITHOUT clobbering legitimate non-diagnostic
- * labels (`△ +IS` / `△ +F` / `△ compact?`) that other handlers paint.
+ * labels (`bonfire:+IS` / `bonfire:+F` / `bonfire:compact?`) that other handlers paint.
  *
  * Rule: turn_end may repaint the diagnostic iff the current owner is
  * undefined (nothing painted) or "diagnostic" (we own it).
@@ -79,7 +79,7 @@ const sessionStatusOwner = new Map<string, StatusOwner>();
 /**
  * Actionable hints surfaced via `ctx.ui.notify` when a diagnostic resolves
  * to a warning state with a known remediation. The footer keeps the compact
- * glyph (e.g. `△ fences!`); the notify carries the English command the user
+ * glyph (e.g. `bonfire:fences!`); the notify carries the English command the user
  * would otherwise have to discover from the README. Deduped per session per
  * warning kind so the hint fires exactly once even though
  * `updateStartupStatus` runs at both `session_start` and on every
@@ -98,7 +98,7 @@ const compactFailureNotified = new Set<string>();
 export default function (pi: ExtensionAPI) {
 	// session_start: resolve a diagnostic startup status from the existing
 	// index.md so the user can see immediately whether the next compaction
-	// will land somewhere useful (e.g. "△ fences!" for legacy files, "△ 7d!"
+	// will land somewhere useful (e.g. "bonfire:fences!" for legacy files, "bonfire:7d!"
 	// for stale in-flight from another session).
 	pi.on("session_start", async (_event, ctx) => {
 		if (!ctx.hasUI) return;
@@ -140,7 +140,7 @@ export default function (pi: ExtensionAPI) {
 	//      (long-lived session that pre-dates this extension version, async
 	//      load race, silent failure inside the handler). We only repaint
 	//      when the slot is unowned or already diagnostic-owned, so we
-	//      never clobber a legitimate `△ +IS` / `△ +F` / `△ compact?`.
+	//      never clobber a legitimate `bonfire:+IS` / `bonfire:+F` / `bonfire:compact?`.
 	//
 	//   2. Surface the compact-nudge when context is filling up but no
 	//      compaction has fired this session yet. Once compaction (auto
@@ -259,7 +259,7 @@ async function updateStartupStatus(ctx: ExtensionContext): Promise<boolean> {
 	try {
 		content = await fs.readFile(indexPath, "utf8");
 	} catch {
-		// fall through; resolveStartupStatus returns "△ init!" for null content
+		// fall through; resolveStartupStatus returns "bonfire:init!" for null content
 	}
 
 	const sessionId = ctx.sessionManager.getSessionId();
@@ -276,7 +276,7 @@ async function updateStartupStatus(ctx: ExtensionContext): Promise<boolean> {
 	ctx.ui.setStatus("bonfire", ctx.ui.theme.fg(color, status.label));
 
 	// Surface a one-shot actionable hint when the warning has a known
-	// remediation. The footer keeps the compact glyph (e.g. "△ fences!");
+	// remediation. The footer keeps the compact glyph (e.g. "bonfire:fences!");
 	// notify carries the English command the user would otherwise have to
 	// discover from the README. Deduped per session per kind so re-paints
 	// (turn_end self-heal) don't re-notify.

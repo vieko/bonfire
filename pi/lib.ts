@@ -11,20 +11,20 @@ export const MAX_SESSION_ROWS = 5;
 export const ONE_LINER_MAX = 200;
 
 /**
- * Pi-style status footer glyph for the bonfire slot. White triangle reads as
- * flame silhouette in monospace, renders in every font, is not an emoji.
- * State follows a compact vocabulary modeled on Pi's own labels
- * (↑45 ↓26k R1.3M W107k $1.959 7.7%/1.0M (auto)) — single sigil + value, no
- * English in the slot since the slot name already namespaces it.
+ * Name for the bonfire footer slot. Every label is one `bonfire:<value>`
+ * token, because Pi joins extension statuses with a single space and a
+ * multi-word item runs into its neighbours (shared convention across Vieko's
+ * pi extensions: `styles:ste redact:1 remind:2 ...`). Markers follow the
+ * value:
  *
- * Sigils:
- *   !  warning — something detected that the user should know
- *   ?  nudge   — action the user could take, optional
- *   +  result  — the adapter just wrote something
+ *   !  warning — something detected that the user should know (`init!`)
+ *   ?  nudge   — action the user could take, optional (`compact?`)
+ *   +  result  — the adapter just wrote something (`+IS`, before the letters)
  *
  * Letters: I = In-flight, S = Sessions, F = Fallback. Combinable (+IS).
+ * A bare `bonfire` means tracked, with no session row yet.
  */
-export const GLYPH = "△";
+export const LABEL = "bonfire";
 
 /** Default context-usage percent above which the compact nudge fires. */
 export const DEFAULT_NUDGE_THRESHOLD_PERCENT = 60;
@@ -639,7 +639,7 @@ export function parseNewestSessionRow(content: string): { date: string } | null 
  *   60d+    -> "Nmo"
  *
  * The breadcrumb and stale-warning paths both call this, so the same value
- * appears in both `△ 2d` (breadcrumb) and `△ 7d!` (warning) — visual
+ * appears in both `bonfire:2d` (breadcrumb) and `bonfire:7d!` (warning) — visual
  * vocabulary stays one-to-one.
  */
 export function formatAge(daysAgo: number): string {
@@ -655,12 +655,12 @@ export function formatAge(daysAgo: number): string {
  * unit-test every branch without booting Pi.
  *
  * Decision tree:
- *   content === null            -> "△ init!"   warning  (no index.md yet)
- *   no fences                   -> "△ fences!" warning  (legacy / hand-written)
+ *   content === null            -> "bonfire:init!"   warning  (no index.md yet)
+ *   no fences                   -> "bonfire:fences!" warning  (legacy / hand-written)
  *   in-flight from other session AND age > 1 day
- *                               -> "△ {age}! {breadcrumb?}" warning
- *   newest sessions row exists  -> "△ {age}"   dim     (breadcrumb only)
- *   else                        -> "△"         dim     (bare tracking)
+ *                               -> "bonfire:{age}!,{breadcrumb?}" warning
+ *   newest sessions row exists  -> "bonfire:{age}"   dim     (breadcrumb only)
+ *   else                        -> "bonfire"   dim     (bare tracking)
  */
 export function resolveStartupStatus(
 	content: string | null,
@@ -668,10 +668,10 @@ export function resolveStartupStatus(
 	now: Date,
 ): StartupStatus {
 	if (content === null) {
-		return { label: `${GLYPH} init!`, severity: "warning" };
+		return { label: `${LABEL}:init!`, severity: "warning" };
 	}
 	if (!hasFences(content)) {
-		return { label: `${GLYPH} fences!`, severity: "warning" };
+		return { label: `${LABEL}:fences!`, severity: "warning" };
 	}
 
 	const inflightSession = extractInflightSessionShortId(content);
@@ -693,16 +693,16 @@ export function resolveStartupStatus(
 		const showBreadcrumb =
 			breadcrumbAge !== null && breadcrumbAge < inflightAge;
 		const label = showBreadcrumb
-			? `${GLYPH} ${stale} ${formatAge(breadcrumbAge!)}`
-			: `${GLYPH} ${stale}`;
+			? `${LABEL}:${stale},${formatAge(breadcrumbAge!)}`
+			: `${LABEL}:${stale}`;
 		return { label, severity: "warning" };
 	}
 
 	if (breadcrumbAge !== null) {
-		return { label: `${GLYPH} ${formatAge(breadcrumbAge)}`, severity: "dim" };
+		return { label: `${LABEL}:${formatAge(breadcrumbAge)}`, severity: "dim" };
 	}
 
-	return { label: GLYPH, severity: "dim" };
+	return { label: LABEL, severity: "dim" };
 }
 
 function daysBetween(then: number, now: Date): number {
@@ -721,17 +721,17 @@ export function formatCompactResult(touchedInflight: boolean, touchedSessions: b
 	let letters = "";
 	if (touchedInflight) letters += "I";
 	if (touchedSessions) letters += "S";
-	return `${GLYPH} +${letters}`;
+	return `${LABEL}:+${letters}`;
 }
 
 /** Status label for the session-shutdown fallback write. */
 export function formatFallbackResult(): string {
-	return `${GLYPH} +F`;
+	return `${LABEL}:+F`;
 }
 
 /** Status label for the compact-nudge (high context fill, no compaction yet). */
 export function formatNudge(): string {
-	return `${GLYPH} compact?`;
+	return `${LABEL}:compact?`;
 }
 
 /**

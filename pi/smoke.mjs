@@ -26,7 +26,7 @@ import {
 	formatCompactResult,
 	formatFallbackResult,
 	formatNudge,
-	GLYPH,
+	LABEL,
 	hasEnoughSignal,
 	INFLIGHT_END,
 	INFLIGHT_START,
@@ -230,7 +230,7 @@ console.log("\nsmoke: startup status against real fixtures");
 
 // Fixture 1: forge-style legacy file (no fences anywhere). This is exactly
 // the state forge was in before today's migration. The user starts a Pi
-// session and should see "△ fences!" so they know the adapter can't write.
+// session and should see "bonfire:fences!" so they know the adapter can't write.
 const LEGACY_FORGE = `---
 git: ignore-all
 ---
@@ -245,7 +245,7 @@ git: ignore-all
 Hand-written content, never had fences.
 `;
 let status = resolveStartupStatus(LEGACY_FORGE, "abc12345", new Date("2026-05-21T12:00:00Z"));
-assert(status.label === `${GLYPH} fences!`, "legacy forge-style file -> △ fences!");
+assert(status.label === `${LABEL}:fences!`, "legacy forge-style file -> bonfire:fences!");
 assert(status.severity === "warning", "legacy file -> warning severity");
 
 // Fixture 2: stale in-flight from another session, exactly like what bonfire
@@ -269,7 +269,7 @@ ${SESSIONS_START}
 ${SESSIONS_END}
 `;
 status = resolveStartupStatus(STALE_INFLIGHT_FROM_OTHER, "abc12345", new Date("2026-05-21T12:00:00Z"));
-assert(status.label === `${GLYPH} 7d!`, "stale in-flight from another session -> △ 7d!");
+assert(status.label === `${LABEL}:7d!`, "stale in-flight from another session -> bonfire:7d!");
 assert(status.severity === "warning", "stale -> warning severity");
 
 // Fixture 3: healthy file from a recent session. Should give a breadcrumb-
@@ -292,17 +292,17 @@ ${SESSIONS_START}
 ${SESSIONS_END}
 `;
 status = resolveStartupStatus(HEALTHY_RECENT, "abc12345", new Date("2026-05-21T12:00:00Z"));
-assert(status.label === `${GLYPH} 1d`, "healthy recent -> breadcrumb age");
+assert(status.label === `${LABEL}:1d`, "healthy recent -> breadcrumb age");
 assert(status.severity === "dim", "healthy -> dim severity");
 
 // Fixture 4: compact-result label vocabulary against the actual composition
 // flow. After we wrote both fences above, formatCompactResult should give
-// "△ +IS" — the same label Pi's session_compact handler would set.
+// "bonfire:+IS" — the same label Pi's session_compact handler would set.
 const compactLabel = formatCompactResult(true, true);
-assert(compactLabel === `${GLYPH} +IS`, "compact wrote both -> △ +IS");
+assert(compactLabel === `${LABEL}:+IS`, "compact wrote both -> bonfire:+IS");
 
-assert(formatNudge() === `${GLYPH} compact?`, "nudge label = △ compact?");
-assert(formatFallbackResult() === `${GLYPH} +F`, "fallback label = △ +F");
+assert(formatNudge() === `${LABEL}:compact?`, "nudge label = bonfire:compact?");
+assert(formatFallbackResult() === `${LABEL}:+F`, "fallback label = bonfire:+F");
 
 // --- v7.2.1 smoke: turn_end self-heal repaints the diagnostic when
 // session_start didn't fire (long-lived session pre-dating extension
@@ -399,7 +399,7 @@ try {
 	});
 
 	fs.mkdirSync(path.join(tmpHeal, ".bonfire"));
-	// Legacy hand-written index.md, no fences. Should produce △ fences!.
+	// Legacy hand-written index.md, no fences. Should produce bonfire:fences!.
 	fs.writeFileSync(
 		path.join(tmpHeal, ".bonfire", "index.md"),
 		"# r\n\n## In flight\n\nlegacy free-form content, no fences\n",
@@ -415,8 +415,8 @@ try {
 	// session that pre-dated this version). We jump straight to turn_end.
 	await fire("turn_end", { type: "turn_end" }, ctx);
 	assert(
-		getLastStatus() === `${GLYPH} fences!`,
-		"turn_end self-heal paints △ fences! when session_start was skipped",
+		getLastStatus() === `${LABEL}:fences!`,
+		"turn_end self-heal paints bonfire:fences! when session_start was skipped",
 	);
 	assert(
 		getNotifies().length === 1 &&
@@ -430,8 +430,8 @@ try {
 	// re-notify — the dedupe set should keep the count at 1.
 	await fire("turn_end", { type: "turn_end" }, ctx);
 	assert(
-		getLastStatus() === `${GLYPH} fences!`,
-		"second turn_end keeps △ fences!",
+		getLastStatus() === `${LABEL}:fences!`,
+		"second turn_end keeps bonfire:fences!",
 	);
 	assert(
 		getNotifies().length === 1,
@@ -467,12 +467,12 @@ try {
 
 	await fire("session_start", { type: "session_start", reason: "new" }, ctx);
 	assert(
-		getLastStatus() === `${GLYPH} fences!`,
-		"session_start paints △ fences! normally",
+		getLastStatus() === `${LABEL}:fences!`,
+		"session_start paints bonfire:fences! normally",
 	);
 	await fire("turn_end", { type: "turn_end" }, ctx);
 	assert(
-		getLastStatus() === `${GLYPH} fences!`,
+		getLastStatus() === `${LABEL}:fences!`,
 		"turn_end after session_start is idempotent",
 	);
 } finally {
