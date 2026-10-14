@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.5.1] - 2026-10-14
+
+### Changed
+
+- **Status markers follow the value** in the Pi adapter, to match the shared footer convention across Vieko's pi extensions (marker after the value, warning color only when the user must act). `△ !init` -> `△ init!`, `△ !fences` -> `△ fences!`, `△ !7d 2d` -> `△ 7d! 2d`, `△ ?compact` -> `△ compact?`. Colors, `△ +IS` / `△ +F`, and the `fences!` migrate notify are unchanged.
+
 ## [7.5.0] - 2026-08-24
 
 Crash-resilient fallback writes on the Pi adapter: compaction failures now trigger the fallback rollup immediately instead of waiting for session shutdown. Requires no fence-format bump; older Pi versions simply never emit the new event.
