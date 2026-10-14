@@ -11,7 +11,7 @@ A pre-v7 `<git-root>/.bonfire/index.md` becomes v7.0-compliant: the v1 fence pai
 ## When to use this
 
 - One-off, manual trigger: `/skill:bonfire migrate` (or your host's equivalent).
-- After installing Bonfire 7.0+ on a repo whose `index.md` predates fences. The Pi adapter surfaces this state in two places: the footer shows `△ !fences` (yellow), and a one-shot notify points at this exact command. The Claude adapter is silent on this state.
+- After installing Bonfire 7.0+ on a repo whose `index.md` predates fences. The Pi adapter surfaces this state in two places: the footer shows `bonfire:fences!` (yellow), and a one-shot notify points at this exact command. The Claude adapter is silent on this state.
 - Native adapters never run this automatically. They leave fenceless files alone by design — auto-fencing a curated file would be destructive.
 
 ## Acceptance Criteria
@@ -159,4 +159,4 @@ _Migrated from index.md on 2026-05-21_
 - (15 more entries…)
 ```
 
-`index.md` shrinks from ~12 KB to ~3 KB (auto-managed + curated + runbook). `log.md` carries the ~9 KB of historical session narratives, accessible when wanted but no longer diluting the daily-read file. The `△ !fences` diagnostic clears on the next session_start once the adapter sees the v1 markers.
+`index.md` shrinks from ~12 KB to ~3 KB (auto-managed + curated + runbook). `log.md` carries the ~9 KB of historical session narratives, accessible when wanted but no longer diluting the daily-read file. The `bonfire:fences!` diagnostic clears on the next session_start once the adapter sees the v1 markers.

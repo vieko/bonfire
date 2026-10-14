@@ -19,7 +19,7 @@ import {
 	formatCompactResult,
 	formatFallbackResult,
 	formatNudge,
-	GLYPH,
+	LABEL,
 	hasEnoughSignal,
 	hasFences,
 	INFLIGHT_END,
@@ -535,7 +535,7 @@ notContains(renderedLowGoal, "what's next?", "low-signal goal text not surfaced"
 
 // --- v7.2: startup status diagnostics + compact label vocabulary ---
 //
-// Pi-style footer labels: single glyph (△) + compact sigils (!/?/+) + letters
+// Footer labels: one bonfire:<value> token, markers (!/?/+) with the value
 // (I/S/F). All resolution is a pure function of (index.md content, current
 // short id, now), so the matrix is fully unit-testable without booting Pi.
 
@@ -581,47 +581,47 @@ eq(formatAge(60), "2mo", "month threshold");
 eq(formatAge(180), "6mo", "six months");
 
 console.log("\nformatCompactResult / formatNudge / formatFallbackResult");
-eq(formatCompactResult(true, true), `${GLYPH} +IS`, "both -> +IS");
-eq(formatCompactResult(true, false), `${GLYPH} +I`, "inflight only -> +I");
-eq(formatCompactResult(false, true), `${GLYPH} +S`, "sessions only -> +S");
+eq(formatCompactResult(true, true), `${LABEL}:+IS`, "both -> +IS");
+eq(formatCompactResult(true, false), `${LABEL}:+I`, "inflight only -> +I");
+eq(formatCompactResult(false, true), `${LABEL}:+S`, "sessions only -> +S");
 eq(formatCompactResult(false, false), null, "neither -> null");
-eq(formatNudge(), `${GLYPH} compact?`, "nudge label");
-eq(formatFallbackResult(), `${GLYPH} +F`, "fallback label");
+eq(formatNudge(), `${LABEL}:compact?`, "nudge label");
+eq(formatFallbackResult(), `${LABEL}:+F`, "fallback label");
 
 console.log("\nresolveStartupStatus");
 
 // 1. No index.md at all -> init!
 let status = resolveStartupStatus(null, "abc12345", NOW);
-eq(status.label, `${GLYPH} init!`, "null content -> init! label");
+eq(status.label, `${LABEL}:init!`, "null content -> init! label");
 eq(status.severity, "warning", "null content -> warning");
 
 // 2. Legacy file without fences -> fences! (this is exactly the forge case)
 status = resolveStartupStatus(FENCES_NONE, "abc12345", NOW);
-eq(status.label, `${GLYPH} fences!`, "no fences -> fences! label");
+eq(status.label, `${LABEL}:fences!`, "no fences -> fences! label");
 eq(status.severity, "warning", "no fences -> warning");
 
 // 3. Healthy file, no in-flight content, no rows -> bare tracking
 status = resolveStartupStatus(FENCES_BOTH, "abc12345", NOW);
-eq(status.label, GLYPH, "empty fenced file -> bare glyph");
+eq(status.label, LABEL, "empty fenced file -> bare label");
 eq(status.severity, "dim", "empty fenced file -> dim");
 
-// 4. Healthy file with breadcrumb only (no stale in-flight) -> "△ Nd"
+// 4. Healthy file with breadcrumb only (no stale in-flight) -> "bonfire:Nd"
 const breadcrumbOnly = `# r\n${INFLIGHT_START}\n${INFLIGHT_END}\n${SESSIONS_START}\n## Sessions\n\n- 2026-05-19 [pi:abc12345] main \u2014 goal\n${SESSIONS_END}\n`;
 status = resolveStartupStatus(breadcrumbOnly, "abc12345", NOW);
-eq(status.label, `${GLYPH} 2d`, "breadcrumb only -> age label");
+eq(status.label, `${LABEL}:2d`, "breadcrumb only -> age label");
 eq(status.severity, "dim", "breadcrumb only -> dim");
 
-// 5. Stale in-flight from a different session, > 1d old -> "△ Nd!" warning
+// 5. Stale in-flight from a different session, > 1d old -> "bonfire:Nd!" warning
 const staleOther = `# r\n${INFLIGHT_START}\n## In flight\n\n_Updated 2026-05-14 from pi:deadbeef on \`main\`_\n\n### Goal\nold\n${INFLIGHT_END}\n${SESSIONS_START}\n## Sessions\n\n- 2026-05-14 [pi:deadbeef] main \u2014 old\n${SESSIONS_END}\n`;
 status = resolveStartupStatus(staleOther, "abc12345", NOW);
-eq(status.label, `${GLYPH} 7d!`, "stale other session -> warning label");
+eq(status.label, `${LABEL}:7d!`, "stale other session -> warning label");
 eq(status.severity, "warning", "stale -> warning");
 
 // 6. Stale in-flight + a newer breadcrumb from a *different* session ->
-//    composed "△ 7d! 2d" (in-flight stale, but newer session row exists)
+//    composed "bonfire:7d! 2d" (in-flight stale, but newer session row exists)
 const staleWithFresherBreadcrumb = `# r\n${INFLIGHT_START}\n## In flight\n\n_Updated 2026-05-14 from pi:deadbeef on \`main\`_\n\n### Goal\nold\n${INFLIGHT_END}\n${SESSIONS_START}\n## Sessions\n\n- 2026-05-19 [pi:cafe1234] main \u2014 newer\n- 2026-05-14 [pi:deadbeef] main \u2014 old\n${SESSIONS_END}\n`;
 status = resolveStartupStatus(staleWithFresherBreadcrumb, "abc12345", NOW);
-eq(status.label, `${GLYPH} 7d! 2d`, "stale + fresher breadcrumb -> composed label");
+eq(status.label, `${LABEL}:7d!,2d`, "stale + fresher breadcrumb -> composed label");
 eq(status.severity, "warning", "composed -> warning");
 
 // 7. In-flight from the *current* session (any age) is not stale
