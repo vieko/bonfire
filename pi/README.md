@@ -41,6 +41,13 @@ That's it. The next time Pi compacts (auto or `/compact`) in that repo, the
 adapter will bootstrap `.bonfire/index.md` from the template and start
 maintaining the fences. Disable by `rm -rf .bonfire/`.
 
+## Ephemeral sessions and worker opt-out
+
+An ephemeral session has no session file (`pi --no-session`), so the adapter
+skips index updates and fallback writes for it. For worker
+sessions that should not update Bonfire or show its status, set `BONFIRE=off`
+when launching Pi (for example, `BONFIRE=off pi ...`).
+
 ## What `.bonfire/index.md` looks like
 
 After bootstrap (file didn't exist):
