@@ -96,6 +96,8 @@ const notifiedSessions = new Set<string>(); // key: `${sessionId}:${kind}`
 const compactFailureNotified = new Set<string>();
 
 export default function (pi: ExtensionAPI) {
+	if (process.env.BONFIRE === "off") return;
+
 	// session_start: resolve a diagnostic startup status from the existing
 	// index.md so the user can see immediately whether the next compaction
 	// will land somewhere useful (e.g. "bonfire:fences!" for legacy files, "bonfire:7d!"
@@ -116,6 +118,7 @@ export default function (pi: ExtensionAPI) {
 	});
 
 	pi.on("session_compact", async (event, ctx) => {
+		if (isEphemeralSession(ctx)) return;
 		try {
 			const result = await updateBonfireIndex(event, ctx);
 			const sessionId = ctx.sessionManager.getSessionId();
@@ -180,6 +183,7 @@ export default function (pi: ExtensionAPI) {
 	// session short-circuits), so the later session_shutdown pass becomes a
 	// no-op when this handler already wrote.
 	pi.on("session_compact_failed", async (event, ctx) => {
+		if (isEphemeralSession(ctx)) return;
 		try {
 			if (event.aborted) return;
 			const wrote = await maybeWriteFallback(ctx);
@@ -209,6 +213,7 @@ export default function (pi: ExtensionAPI) {
 	// This makes bonfire useful even when Pi's compaction pipeline is broken or
 	// when sessions are too short to compact.
 	pi.on("session_shutdown", async (_event, ctx) => {
+		if (isEphemeralSession(ctx)) return;
 		try {
 			const wrote = await maybeWriteFallback(ctx);
 			if (wrote && ctx.hasUI) {
@@ -221,6 +226,11 @@ export default function (pi: ExtensionAPI) {
 			if (process.env.BONFIRE_DEBUG === "1") process.stderr.write(`bonfire fallback: ${msg}\n`);
 		}
 	});
+}
+
+function isEphemeralSession(ctx: ExtensionContext): boolean {
+	const getSessionFile = ctx.sessionManager.getSessionFile;
+	return typeof getSessionFile === "function" && getSessionFile.call(ctx.sessionManager) === undefined;
 }
 
 interface BonfireConfig {
