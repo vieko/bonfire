@@ -14,6 +14,12 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// The hook reads transcripts under ~/.claude/projects. Point HOME at a
+// temporary directory so the test never writes to the real one; the
+// spawned hook inherits it.
+const REAL_HOME = process.env.HOME;
+process.env.HOME = await fs.mkdtemp(path.join(os.tmpdir(), "bonfire-claude-home-"));
 const SCRIPT = path.join(__dirname, "update-bonfire.mjs");
 
 let passed = 0;
@@ -252,6 +258,9 @@ async function run() {
 			await fs.rm(path.join(os.homedir(), ".claude", "projects", enc), { recursive: true, force: true });
 		} catch {}
 	}
+
+	await fs.rm(process.env.HOME, { recursive: true, force: true });
+	process.env.HOME = REAL_HOME;
 
 	console.log(`\n${passed} passed, ${failed} failed`);
 	process.exit(failed === 0 ? 0 : 1);

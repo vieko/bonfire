@@ -7,3 +7,6 @@ packages/*/dist/
 packages/*/files/
 packages/*/node_modules/
 .claude/
+
+# Dev dependencies (tsx)
+node_modules/
