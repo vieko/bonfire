@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- **`npm test` is hermetic.** `tsx` is a dev dependency (with a lockfile), so `npm ci && npm test` works on a clean checkout without a global install. The test script ignores global and system git config, and the Claude adapter test uses a temporary `HOME` instead of writing under the real `~/.claude/projects`. CI runs the suites on Node 22 and 24 for every PR and push to `main`.
+
 ## [7.8.0] - 2026-11-12
 
 ### Added
