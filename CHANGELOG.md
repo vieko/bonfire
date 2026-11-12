@@ -2,11 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [7.8.0] - 2026-11-12
 
 ### Added
 
-- **Linked-worktree session rows.** Pi and Claude sessions in linked worktrees now upsert their Sessions row into the opted-in main worktree index without changing its in-flight fence. Local worktree behavior remains unchanged; detached worktrees do not mirror rows. Main-index failures are best-effort.
+- **Worktree sessions add their row to the main index.** A Pi or Claude session in a linked git worktree also upserts its Sessions row into the main worktree's `.bonfire/index.md`, when the main worktree has opted in and does not set `"auto": false`. The main index's in-flight block is never changed. The worktree's own `.bonfire/` is optional; detached checkouts add no row. Failures on the main index never block the local write or the host. Covered by `worktree.contract.mjs`, now part of `npm test`.
 
 ## [7.7.0] - 2026-11-11
 
