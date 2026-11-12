@@ -82,16 +82,12 @@ async function main() {
 	// Opt-in: only act when the user has created <git-root>/.bonfire/ themselves.
 	// We never auto-create the directory; that would pollute every repo where
 	// Claude Code happens to fire Stop.
-	const bonfireDir = path.join(gitRoot, ".bonfire");
-	try {
-		const stat = await fs.stat(bonfireDir);
-		if (!stat.isDirectory()) return;
-	} catch {
-		return;
-	}
-
-	const config = await readConfig(gitRoot);
-	if (config?.auto === false) return;
+	const localEnabled = await isBonfireEnabled(gitRoot);
+	const mainRoot = findMainWorktreeRoot(gitRoot);
+	const worktreeSession = mainRoot !== null && mainRoot !== gitRoot;
+	const localConfig = localEnabled ? await readConfig(gitRoot) : null;
+	const localWritable = localEnabled && localConfig?.auto !== false;
+	if (!localWritable && !worktreeSession) return;
 
 	const aiTitle = await findLatestAiTitle(cwd, sessionId);
 	if (!aiTitle) {
@@ -110,22 +106,24 @@ async function main() {
 	const date = new Date().toISOString().slice(0, 10);
 
 	const indexPath = path.join(gitRoot, ".bonfire", "index.md");
-	await ensureBonfireFile(indexPath, path.basename(gitRoot));
-
-	const content = await fs.readFile(indexPath, "utf8");
-	let next = content;
-
-	const inflightMd = renderInflight(summary, { date, host: HOST, shortId, branch });
-	const updatedInflight = replaceFence(next, INFLIGHT_START, INFLIGHT_END, inflightMd);
-	if (updatedInflight !== null) next = updatedInflight;
-
 	const row = `- ${date} [${HOST}:${shortId}] ${branch} — ${truncate(summary, ONE_LINER_MAX)}`;
-	const updatedSessions = upsertSessionRow(next, `[${HOST}:${shortId}]`, row);
-	if (updatedSessions !== null) next = updatedSessions;
+	if (localWritable) {
+		await ensureBonfireFile(indexPath, path.basename(gitRoot));
+		const content = await fs.readFile(indexPath, "utf8");
+		let next = content;
 
-	if (next === content) return; // no change, skip write
+		const inflightMd = renderInflight(summary, { date, host: HOST, shortId, branch });
+		const updatedInflight = replaceFence(next, INFLIGHT_START, INFLIGHT_END, inflightMd);
+		if (updatedInflight !== null) next = updatedInflight;
 
-	await atomicWrite(indexPath, next);
+		const updatedSessions = upsertSessionRow(next, `[${HOST}:${shortId}]`, row);
+		if (updatedSessions !== null) next = updatedSessions;
+
+		if (next !== content) await atomicWrite(indexPath, next); // unchanged Stop: no churn
+	}
+	if (worktreeSession && mainRoot && branch !== "(detached)") {
+		await upsertMainWorktreeRow(mainRoot, row);
+	}
 }
 
 async function readStdinJson() {
@@ -150,6 +148,56 @@ function findGitRoot(cwd) {
 		}).trim();
 	} catch {
 		return null;
+	}
+}
+
+async function isBonfireEnabled(gitRoot) {
+	try {
+		return (await fs.stat(path.join(gitRoot, ".bonfire"))).isDirectory();
+	} catch {
+		return false;
+	}
+}
+
+function findMainWorktreeRoot(gitRoot) {
+	try {
+		const commonDir = execSync("git rev-parse --path-format=absolute --git-common-dir", {
+			cwd: gitRoot,
+			encoding: "utf8",
+			stdio: ["ignore", "pipe", "ignore"],
+		}).trim();
+		if (commonDir) return path.resolve(commonDir, "..");
+	} catch {
+		// Older Git fallback: first entry in the worktree listing is the main worktree.
+	}
+	try {
+		const listing = execSync("git worktree list --porcelain", {
+			cwd: gitRoot,
+			encoding: "utf8",
+			stdio: ["ignore", "pipe", "ignore"],
+		}).trim();
+		const first = listing.split("\n").find((line) => line.startsWith("worktree "));
+		return first ? path.resolve(first.slice("worktree ".length)) : null;
+	} catch {
+		return null;
+	}
+}
+
+async function upsertMainWorktreeRow(mainRoot, row) {
+	try {
+		if (!(await isBonfireEnabled(mainRoot))) return;
+		const config = await readConfig(mainRoot);
+		if (config?.auto === false) return;
+		const indexPath = path.join(mainRoot, ".bonfire", "index.md");
+		await ensureBonfireFile(indexPath, path.basename(mainRoot));
+		const content = await fs.readFile(indexPath, "utf8");
+		const keyStart = row.indexOf("[");
+		const keyEnd = row.indexOf("]", keyStart);
+		const key = keyStart >= 0 && keyEnd > keyStart ? row.slice(keyStart, keyEnd + 1) : "";
+		const updated = upsertSessionRow(content, key, row);
+		if (updated !== null && updated !== content) await atomicWrite(indexPath, updated);
+	} catch {
+		// Main-index failures must never block this Stop hook or local index write.
 	}
 }
 

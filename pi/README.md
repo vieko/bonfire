@@ -9,6 +9,10 @@ Auto-updates two managed regions of `<git-root>/.bonfire/index.md` from two sour
 
 Rows are keyed by session id (`[pi:<8-char-id>]`), so re-compactions of the same session update the same row rather than accumulating.
 
+### Linked worktrees
+
+A session in a linked worktree keeps its in-flight block and local row in that worktree's index when its `.bonfire/` is opted in. It also upserts the same Sessions row into the main worktree's `.bonfire/index.md`, leaving the main index's in-flight block untouched. The main worktree is resolved from `git rev-parse --path-format=absolute --git-common-dir` (the parent directory), with `git worktree list --porcelain` as a fallback. Mirroring requires the main worktree's `.bonfire/` and is disabled by its `{ "auto": false }` config. The worktree's own `.bonfire/` is optional; no directory is created automatically. Detached worktrees do not add a row to the main index. Pi startup status continues to read the local index.
+
 Zero ritual. Pi runs, the file stays current.
 
 ## Install

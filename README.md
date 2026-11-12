@@ -91,6 +91,8 @@ When the skill runs under Pi 0.82.0+, it uses Pi's bash-tool session env vars (`
 
 ## Enable per repo
 
+In a linked Git worktree, adapters keep the in-flight block local and also upsert the session's row into the main worktree's index (when the main worktree has opted in). The main worktree is resolved via `git rev-parse --path-format=absolute --git-common-dir` or the first `git worktree list --porcelain` entry. Detached worktrees do not mirror a row; the main index's in-flight block is never changed by a worktree session.
+
 Adapters honor an opt-in gate — they never auto-create `.bonfire/` in random repos:
 
 ```bash
