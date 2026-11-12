@@ -14,8 +14,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 18 is the Claude adapter's floor; 24 is the current LTS.
-        node: [18, 24]
+        # Oldest maintained LTS and the current LTS. Node 18 is end of life,
+        # and tsx on it drops the named exports of pi/lib.ts (#54).
+        node: [22, 24]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5

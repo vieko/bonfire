@@ -67,7 +67,7 @@ ripple into `end.md` or the harness fails by design.
 
 When changing adapter behavior:
 - Both adapters (`pi/`, `claude/`) must stay behaviorally compatible — see the sync contract above.
-- Run all suites: `npm ci && npm test` (pi unit + smoke + skip contract, claude, conformance, worktree contract). `tsx` is a dev dependency, so no global install is needed; CI (`.github/workflows/ci.yml`) runs the same commands on Node 18 and 24 for every PR and push to `main`. `npm test` ignores your global and system git config, and the Claude test uses a temporary `HOME`, so a local run matches CI. Individually: `cd pi && npx tsx test.mjs && npx tsx smoke.mjs`; `cd claude && node test.mjs`; `npx tsx conformance.mjs` from the root.
+- Run all suites: `npm ci && npm test` (pi unit + smoke + skip contract, claude, conformance, worktree contract). `tsx` is a dev dependency, so no global install is needed; CI (`.github/workflows/ci.yml`) runs the same commands on Node 22 and 24 for every PR and push to `main`. `npm test` ignores your global and system git config, and the Claude test uses a temporary `HOME`, so a local run matches CI. Individually: `cd pi && npx tsx test.mjs && npx tsx smoke.mjs`; `cd claude && node test.mjs`; `npx tsx conformance.mjs` from the root.
 - `test.mjs` covers lib.ts pure functions; `smoke.mjs` exercises the composed flow that extension.ts uses (rollup + render + fence-replace + upsert + atomic write) against a tmpdir; `conformance.mjs` proves the three producers agree on the shared fence contract.
 - Update both READMEs and the top-level README if the user-visible behavior changes.
 - Update the fallback skill (`skills/bonfire/commands/end.md`) if the fence shape or short-id rule changes, then re-run `npx tsx conformance.mjs`.
