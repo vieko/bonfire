@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [7.7.0] - 2026-11-11
+
+### Added
+
+- **`BONFIRE=off`** turns the Pi adapter off for a session: no hooks write, no status. A summon script sets it for worker sessions so a worker cannot replace the in-flight block of the session that started it.
+
+### Fixed
+
+- **Ephemeral sessions write nothing.** A `pi --no-session` run (no session file) no longer runs the shutdown fallback. Covered by `pi/skip.contract.mjs`, now part of `npm test`.
+
 ## [7.6.0] - 2026-10-14
 
 ### Changed
