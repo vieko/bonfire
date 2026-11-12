@@ -315,16 +315,12 @@ async function updateBonfireIndex(
 	// Opt-in: only act when the user has created <git-root>/.bonfire/ themselves.
 	// We never auto-create the directory; that would pollute every repo where Pi
 	// happens to compact.
-	const bonfireDir = path.join(gitRoot, ".bonfire");
-	try {
-		const stat = await fs.stat(bonfireDir);
-		if (!stat.isDirectory()) return null;
-	} catch {
-		return null;
-	}
-
-	const config = await readConfig(gitRoot);
-	if (config?.auto === false) return null;
+	const localEnabled = await isBonfireEnabled(gitRoot);
+	const mainRoot = findMainWorktreeRoot(gitRoot);
+	const worktreeSession = mainRoot !== null && mainRoot !== gitRoot;
+	const localConfig = localEnabled ? await readConfig(gitRoot) : null;
+	const localWritable = localEnabled && localConfig?.auto !== false;
+	if (!localWritable && !worktreeSession) return null;
 
 	const summary = event.compactionEntry.summary;
 
@@ -344,33 +340,37 @@ async function updateBonfireIndex(
 	const date = new Date().toISOString().slice(0, 10);
 
 	const indexPath = path.join(gitRoot, ".bonfire", "index.md");
-	await ensureBonfireFile(indexPath, path.basename(gitRoot));
-
-	const content = await fs.readFile(indexPath, "utf8");
-
-	let next = content;
+	const row = `- ${date} [${HOST}:${shortId}] ${branch} — ${oneLiner}`;
 	let touchedInflight = false;
 	let touchedSessions = false;
 
-	const inflightMd = renderInflight(summary, { date, host: HOST, shortId, branch });
-	if (inflightMd) {
-		const updated = replaceFence(next, INFLIGHT_START, INFLIGHT_END, inflightMd);
-		if (updated !== null) {
-			next = updated;
-			touchedInflight = true;
+	if (localWritable) {
+		await ensureBonfireFile(indexPath, path.basename(gitRoot));
+		const content = await fs.readFile(indexPath, "utf8");
+		let next = content;
+
+		const inflightMd = renderInflight(summary, { date, host: HOST, shortId, branch });
+		if (inflightMd) {
+			const updated = replaceFence(next, INFLIGHT_START, INFLIGHT_END, inflightMd);
+			if (updated !== null) {
+				next = updated;
+				touchedInflight = true;
+			}
 		}
+
+		const updatedSessions = upsertSessionRow(next, `[${HOST}:${shortId}]`, row);
+		if (updatedSessions !== null) {
+			next = updatedSessions;
+			touchedSessions = true;
+		}
+		if (touchedInflight || touchedSessions) await atomicWrite(indexPath, next);
 	}
 
-	const row = `- ${date} [${HOST}:${shortId}] ${branch} — ${oneLiner}`;
-	const updatedSessions = upsertSessionRow(next, `[${HOST}:${shortId}]`, row);
-	if (updatedSessions !== null) {
-		next = updatedSessions;
-		touchedSessions = true;
+	if (worktreeSession && mainRoot && branch !== "(detached)") {
+		await upsertMainWorktreeRow(mainRoot, row);
 	}
 
 	if (!touchedInflight && !touchedSessions) return null;
-
-	await atomicWrite(indexPath, next);
 	return { touchedInflight, touchedSessions };
 }
 
@@ -426,6 +426,61 @@ function getGitBranch(cwd: string): string | null {
 		return branch === "HEAD" ? null : branch;
 	} catch {
 		return null;
+	}
+}
+
+async function isBonfireEnabled(gitRoot: string): Promise<boolean> {
+	try {
+		return (await fs.stat(path.join(gitRoot, ".bonfire"))).isDirectory();
+	} catch {
+		return false;
+	}
+}
+
+/** Resolve the first (main) worktree using Git's shared git directory. */
+function findMainWorktreeRoot(gitRoot: string): string | null {
+	try {
+		const commonDir = execSync("git rev-parse --path-format=absolute --git-common-dir", {
+			cwd: gitRoot,
+			encoding: "utf8",
+			stdio: ["ignore", "pipe", "ignore"],
+		}).trim();
+		if (commonDir) return path.resolve(commonDir, "..");
+	} catch {
+		// Older Git fallback: the first porcelain entry is the main worktree.
+	}
+	try {
+		const listing = execSync("git worktree list --porcelain", {
+			cwd: gitRoot,
+			encoding: "utf8",
+			stdio: ["ignore", "pipe", "ignore"],
+		}).trim();
+		const first = listing.split("\n").find((line) => line.startsWith("worktree "));
+		return first ? path.resolve(first.slice("worktree ".length)) : null;
+	} catch {
+		return null;
+	}
+}
+
+/** Best-effort main-index row mirror. It deliberately only edits Sessions. */
+async function upsertMainWorktreeRow(mainRoot: string, row: string): Promise<boolean> {
+	try {
+		if (!(await isBonfireEnabled(mainRoot))) return false;
+		const config = await readConfig(mainRoot);
+		if (config?.auto === false) return false;
+		const indexPath = path.join(mainRoot, ".bonfire", "index.md");
+		await ensureBonfireFile(indexPath, path.basename(mainRoot));
+		const content = await fs.readFile(indexPath, "utf8");
+		const keyStart = row.indexOf("[");
+		const keyEnd = row.indexOf("]", keyStart);
+		const key = keyStart >= 0 && keyEnd > keyStart ? row.slice(keyStart, keyEnd + 1) : "";
+		const updated = upsertSessionRow(content, key, row);
+		if (updated === null) return false;
+		if (updated !== content) await atomicWrite(indexPath, updated);
+		return true;
+	} catch {
+		// Main-index failures must never prevent this worktree's local write.
+		return false;
 	}
 }
 
@@ -502,22 +557,38 @@ async function maybeWriteFallback(ctx: ExtensionContext): Promise<boolean> {
 	const gitRoot = findGitRoot(ctx.cwd);
 	if (!gitRoot) return false;
 
-	const bonfireDir = path.join(gitRoot, ".bonfire");
-	try {
-		const stat = await fs.stat(bonfireDir);
-		if (!stat.isDirectory()) return false;
-	} catch {
-		return false;
-	}
-
-	const config = await readConfig(gitRoot);
-	if (config?.auto === false) return false;
+	const localEnabled = await isBonfireEnabled(gitRoot);
+	const mainRoot = findMainWorktreeRoot(gitRoot);
+	const worktreeSession = mainRoot !== null && mainRoot !== gitRoot;
+	const localConfig = localEnabled ? await readConfig(gitRoot) : null;
+	const localWritable = localEnabled && localConfig?.auto !== false;
+	if (!localWritable && !worktreeSession) return false;
 
 	const sessionId = ctx.sessionManager.getSessionId();
 	if (!sessionId) return false;
 	const shortId = shortenSessionId(sessionId);
 
 	const indexPath = path.join(gitRoot, ".bonfire", "index.md");
+	if (!localWritable) {
+		if (!mainRoot) return false;
+		// Same rule as the local path: a usable row from compaction beats the
+		// rollup's weaker one-liner, so the fallback does not replace it.
+		try {
+			const mainContent = await fs.readFile(path.join(mainRoot, ".bonfire", "index.md"), "utf8");
+			const mainRow = findRowForKey(mainContent, `[pi:${shortId}]`);
+			if (mainRow && !isGarbageSummary(mainRow)) return false;
+		} catch {
+			// no main index yet; upsertMainWorktreeRow bootstraps it
+		}
+		const rollup = summarizeSessionEntries(ctx.sessionManager.getEntries());
+		if (!hasEnoughSignal(rollup)) return false;
+		const oneLiner = rollupOneLiner(rollup);
+		const branch = getGitBranch(gitRoot);
+		if (!oneLiner || !branch || !mainRoot || branch === "HEAD") return false;
+		const date = new Date().toISOString().slice(0, 10);
+		const row = `- ${date} [${HOST}:${shortId}] ${branch} — ${oneLiner}`;
+		return await upsertMainWorktreeRow(mainRoot, row);
+	}
 
 	let content: string | null = null;
 	try {
@@ -548,7 +619,13 @@ async function maybeWriteFallback(ctx: ExtensionContext): Promise<boolean> {
 	const inflightNeedsFallback =
 		!existingInflight || isGarbageSummary(existingInflight) || inflightIsStale;
 
-	if (!rowNeedsFallback && !inflightNeedsFallback) return false;
+	if (!rowNeedsFallback && !inflightNeedsFallback) {
+		if (worktreeSession && mainRoot && existingRow) {
+			const branch = getGitBranch(gitRoot);
+			if (branch) await upsertMainWorktreeRow(mainRoot, existingRow);
+		}
+		return false;
+	}
 
 	const rollup = summarizeSessionEntries(ctx.sessionManager.getEntries());
 	if (!hasEnoughSignal(rollup)) return false;
@@ -570,6 +647,7 @@ async function maybeWriteFallback(ctx: ExtensionContext): Promise<boolean> {
 		if (updated !== null) next = updated;
 	}
 
+	let rowForSession = rowNeedsFallback ? null : existingRow;
 	if (rowNeedsFallback) {
 		// Prefer the rollup's cleaned goal as the one-liner. Bail on the row
 		// when the goal is too low-signal to write (hasEnoughSignal may still
@@ -577,13 +655,15 @@ async function maybeWriteFallback(ctx: ExtensionContext): Promise<boolean> {
 		// don't pollute the sessions cap).
 		const oneLiner = rollupOneLiner(rollup);
 		if (oneLiner) {
-			const row = `- ${date} [pi:${shortId}] ${branch} — ${oneLiner}`;
-			const updated = upsertSessionRow(next, `[pi:${shortId}]`, row);
+			rowForSession = `- ${date} [pi:${shortId}] ${branch} — ${oneLiner}`;
+			const updated = upsertSessionRow(next, `[pi:${shortId}]`, rowForSession);
 			if (updated !== null) next = updated;
 		}
 	}
 
-	if (next === content) return false;
-	await atomicWrite(indexPath, next);
-	return true;
+	if (next !== content) await atomicWrite(indexPath, next);
+	if (worktreeSession && mainRoot && rowForSession && branch !== "(detached)") {
+		await upsertMainWorktreeRow(mainRoot, rowForSession);
+	}
+	return next !== content;
 }

@@ -10,7 +10,7 @@ disable-model-invocation: true
 
 ## Acceptance Criteria
 
-1. **Opt-in respected**: `<git-root>/.bonfire/` exists. If not, exit silently without creating anything.
+1. **Opt-in respected**: `<git-root>/.bonfire/` exists. If not, write nothing locally and create nothing; in a linked worktree, criterion 7 still applies.
 2. **Per-repo opt-out respected**: if `<git-root>/.bonfire/config.json` exists and has `{ "auto": false }`, exit silently.
 3. **File bootstrapped if missing**: if `<git-root>/.bonfire/index.md` doesn't exist, create it from [templates/index.md](../templates/index.md) (which includes both fence markers).
 4. **In-flight fence updated** between `<!-- bonfire:auto-inflight:start v1 -->` and `<!-- bonfire:auto-inflight:end -->`:
@@ -25,6 +25,7 @@ disable-model-invocation: true
    - De-dupe by `[<host>:<short-session-id>]` — same session updates its existing row instead of duplicating
    - Cap at 5 newest rows; drop the rest
 6. **Atomic write**: write to a tmpfile and rename. Don't truncate-in-place.
+7. **Main-worktree session row**: when running in a linked worktree, also upsert the byte-identical Sessions row into the main worktree's `.bonfire/index.md`, without changing its in-flight fence or any text outside the sessions fence. Find the main worktree with `git rev-parse --path-format=absolute --git-common-dir` (the parent directory), or the first entry of `git worktree list --porcelain`. Only do this when the main worktree has `.bonfire/` and its config does not set `"auto": false`; never create `.bonfire/`. If the session is in the main worktree, keep the existing behavior. A detached worktree adds no row to the main index; local behavior is unchanged.
 
 ## Constraints
 

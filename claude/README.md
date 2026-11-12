@@ -4,6 +4,8 @@ Claude Code Stop hook that auto-updates `<git-root>/.bonfire/index.md` from Clau
 
 Uses the same fence-block contract as the Pi adapter. Both can write to the same file; latest writer wins on the in-flight block.
 
+When a session runs in a linked worktree, its in-flight block remains local and the same Sessions row is also upserted into the main worktree's `.bonfire/index.md`. The main worktree is resolved from `git rev-parse --path-format=absolute --git-common-dir` (the parent directory), with `git worktree list --porcelain` as a fallback. Mirroring requires the main worktree's `.bonfire/` opt-in and respects its `{ "auto": false }` config; it never creates `.bonfire/`. The worktree's own `.bonfire/` is optional. Detached worktrees do not add a row to the main index, and failures to update the main index never block Claude Code.
+
 ## How it differs from the Pi adapter
 
 | | Pi | Claude Code |

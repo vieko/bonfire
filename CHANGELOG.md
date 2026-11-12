@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- **Linked-worktree session rows.** Pi and Claude sessions in linked worktrees now upsert their Sessions row into the opted-in main worktree index without changing its in-flight fence. Local worktree behavior remains unchanged; detached worktrees do not mirror rows. Main-index failures are best-effort.
+
 ## [7.7.0] - 2026-11-11
 
 ### Added
