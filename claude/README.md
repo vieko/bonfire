@@ -35,6 +35,8 @@ That's it. The next time Claude Code's `Stop` event fires (i.e. after an assista
 
 No package install. Just point Claude Code at the script via your settings file.
 
+The adapter is two files: `update-bonfire.mjs` imports the shared fence primitives from `./lib.mjs`. It has no npm dependencies, but if you copy the hook out of this repo, copy `lib.mjs` into the same directory.
+
 **Global** (applies everywhere): add to `~/.claude/settings.json`:
 
 ```json
